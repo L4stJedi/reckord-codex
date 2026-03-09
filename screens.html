@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reckord Codex – Screen & Form Gallery</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --red:#E10B17; --black:#111; --dark:#1c1c1c; --dark2:#2a2a2a;
+  --gray:#555; --mid:#888; --light:#e8e8e8; --bg:#f0f0f0; --white:#fff;
+  --green:#27ae60; --orange:#e67e22; --blue:#2980b9; --yellow:#f39c12;
+  --purple:#8e44ad;
+}
+html,body { height:100%; font-family:'Roboto',sans-serif; background:var(--bg); color:var(--black); font-size:14px; }
+
+/* ── LAYOUT ── */
+.layout { display:flex; height:100vh; overflow:hidden; }
+.sidebar { width:230px; background:var(--black); color:white; display:flex; flex-direction:column; flex-shrink:0; overflow-y:auto; }
+.main { flex:1; overflow-y:auto; }
+
+/* ── SIDEBAR ── */
+.sidebar-logo { padding:18px 16px 14px; border-bottom:1px solid #2a2a2a; }
+.logo-mark { display:flex; align-items:center; gap:9px; }
+.logo-r { width:30px; height:30px; background:var(--red); color:white; font-weight:800; font-size:16px; display:flex; align-items:center; justify-content:center; border-radius:3px; flex-shrink:0; }
+.logo-text { font-size:14px; font-weight:700; letter-spacing:1px; }
+.logo-sub { font-size:9px; color:var(--mid); letter-spacing:2px; text-transform:uppercase; margin-top:1px; }
+
+.nav-back { display:flex; align-items:center; gap:6px; padding:10px 16px; color:#aaa; font-size:11px; cursor:pointer; border-bottom:1px solid #2a2a2a; }
+.nav-back:hover { color:white; }
+.nav-section { padding:10px 0 4px; }
+.nav-label { font-size:8px; letter-spacing:2px; text-transform:uppercase; color:var(--mid); padding:0 16px 6px; }
+.nav-item { display:flex; align-items:center; gap:9px; padding:8px 16px; cursor:pointer; color:#aaa; font-size:12px; border-left:2px solid transparent; transition:all 0.1s; }
+.nav-item:hover { background:var(--dark); color:white; }
+.nav-item.active { background:var(--dark2); color:white; border-left-color:var(--red); font-weight:500; }
+.nav-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.d-green{background:var(--green)} .d-blue{background:var(--blue)} .d-orange{background:var(--orange)} .d-yellow{background:var(--yellow)} .d-red{background:var(--red)} .d-purple{background:var(--purple)}
+.sidebar-footer { margin-top:auto; padding:12px 16px; border-top:1px solid #2a2a2a; font-size:10px; color:#555; line-height:1.6; }
+.sidebar-footer a { color:var(--red); text-decoration:none; }
+
+/* ── PAGE HEADER ── */
+.page-header { background:var(--black); color:white; padding:28px 36px 24px; border-bottom:3px solid var(--red); }
+.page-header-label { font-size:9px; letter-spacing:3px; text-transform:uppercase; color:var(--mid); margin-bottom:6px; }
+.page-header-title { font-size:26px; font-weight:800; margin-bottom:6px; }
+.page-header-sub { font-size:13px; color:#aaa; max-width:700px; line-height:1.5; }
+
+/* ── LEGEND ── */
+.legend { display:flex; gap:16px; padding:14px 36px; background:white; border-bottom:1px solid var(--light); flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--gray); }
+.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+/* ── CONTENT ── */
+.content { padding:28px 36px; }
+.section { margin-bottom:48px; }
+.section-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:14px; border-bottom:2px solid var(--light); }
+.section-badge { width:32px; height:32px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:900; color:white; flex-shrink:0; }
+.sb-green{background:var(--green)} .sb-blue{background:var(--blue)} .sb-orange{background:var(--orange)} .sb-yellow{background:var(--yellow)} .sb-red{background:var(--red)} .sb-purple{background:var(--purple)}
+.section-title { font-size:18px; font-weight:800; }
+.section-sub { font-size:12px; color:var(--mid); }
+
+/* ── SCREEN GRID ── */
+.screens-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; }
+.screens-grid.wide { grid-template-columns:repeat(auto-fill,minmax(420px,1fr)); }
+.screens-grid.single { grid-template-columns:1fr; max-width:460px; }
+
+/* ── SCREEN CARD ── */
+.screen-card { background:white; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,0.08); overflow:hidden; }
+.screen-label { padding:10px 16px; background:#fafafa; border-bottom:1px solid var(--light); display:flex; align-items:center; gap:8px; }
+.screen-label-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; flex:1; }
+.screen-label-note { font-size:10px; padding:2px 8px; border-radius:10px; font-weight:600; }
+.note-green { background:#e8f5e9; color:#2e7d32; }
+.note-yellow { background:#fff8e1; color:#f57f17; }
+.note-red { background:#fde8e8; color:#b71c1c; }
+
+/* ── APPSHEET FRAME ── */
+/* AppSheet desktop form look */
+.as-frame { background:#f5f5f5; }
+.as-topbar { background:var(--red); color:white; display:flex; align-items:center; padding:0 12px; height:46px; gap:8px; }
+.as-topbar-back { font-size:20px; cursor:pointer; padding:4px; }
+.as-topbar-title { font-size:14px; font-weight:700; flex:1; }
+.as-topbar-save { background:rgba(255,255,255,0.25); border:none; color:white; padding:5px 14px; border-radius:3px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; }
+.as-topbar-action { font-size:20px; cursor:pointer; }
+
+.as-section-header { padding:10px 16px 4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--mid); background:#f5f5f5; }
+.as-card { background:white; margin:8px; border-radius:4px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+.as-field { padding:10px 14px; border-bottom:1px solid #f0f0f0; }
+.as-field:last-child { border-bottom:none; }
+.as-field-label { font-size:10px; color:var(--mid); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; display:flex; justify-content:space-between; }
+.as-field-label span { color:var(--red); }
+.as-field-value { font-size:13px; color:#333; }
+.as-field-input { font-size:13px; color:#333; border:none; outline:none; width:100%; background:transparent; font-family:inherit; }
+.as-field-placeholder { font-size:13px; color:#bbb; }
+.as-field-select { font-size:13px; color:#333; border:none; outline:none; width:100%; background:transparent; font-family:inherit; appearance:none; }
+.as-field-hint { font-size:10px; color:#aaa; margin-top:3px; }
+.as-field-required::after { content:' *'; color:var(--red); }
+.as-field-row { display:flex; align-items:center; gap:8px; }
+.as-field-icon { font-size:16px; flex-shrink:0; }
+
+/* Enum chips */
+.chip-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+.as-chip { padding:4px 12px; border-radius:20px; font-size:11px; font-weight:500; border:1.5px solid var(--light); cursor:pointer; transition:all 0.1s; }
+.as-chip.selected { background:var(--red); border-color:var(--red); color:white; }
+.as-chip.sel-green { background:var(--green); border-color:var(--green); color:white; }
+.as-chip.sel-blue { background:var(--blue); border-color:var(--blue); color:white; }
+.as-chip.sel-orange { background:var(--orange); border-color:var(--orange); color:white; }
+
+/* Ref chip */
+.as-ref { display:inline-flex; align-items:center; gap:6px; background:#f0f0f0; border:1px solid var(--light); border-radius:4px; padding:4px 10px; font-size:12px; }
+.as-ref-icon { font-size:12px; }
+
+/* Inline table */
+.as-inline-table { margin:0; }
+.as-inline-row { padding:10px 14px; border-bottom:1px solid #f5f5f5; display:flex; align-items:center; gap:10px; }
+.as-inline-row:last-child { border-bottom:none; }
+.as-inline-main { font-size:12px; font-weight:500; flex:1; }
+.as-inline-sub { font-size:10px; color:var(--mid); }
+.as-inline-val { font-size:12px; font-weight:700; color:var(--black); }
+.as-add-row { padding:10px 14px; color:var(--red); font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; }
+
+/* Action buttons in form */
+.as-action-bar { padding:12px; display:flex; gap:8px; }
+.as-btn { flex:1; padding:11px; border:none; border-radius:4px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; text-transform:uppercase; letter-spacing:0.5px; }
+.as-btn-primary { background:var(--red); color:white; }
+.as-btn-secondary { background:#eee; color:var(--black); }
+
+/* Progress steps */
+.as-steps { display:flex; padding:10px 16px; gap:0; background:#f5f5f5; }
+.as-step { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; position:relative; }
+.as-step::after { content:''; position:absolute; top:10px; left:50%; width:100%; height:2px; background:var(--light); z-index:0; }
+.as-step:last-child::after { display:none; }
+.as-step-dot { width:20px; height:20px; border-radius:50%; background:var(--light); color:white; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; z-index:1; position:relative; }
+.as-step.done .as-step-dot { background:var(--green); }
+.as-step.active .as-step-dot { background:var(--red); }
+.as-step-label { font-size:9px; color:var(--mid); text-align:center; line-height:1.2; }
+.as-step.active .as-step-label { color:var(--red); font-weight:700; }
+
+/* Status badge in read views */
+.as-status { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.st-green { background:#e8f5e9; color:#2e7d32; }
+.st-blue { background:#e3f2fd; color:#1565c0; }
+.st-orange { background:#fff3e0; color:#e65100; }
+.st-red { background:#fde8e8; color:#b71c1c; }
+.st-gray { background:#f5f5f5; color:#555; }
+.st-yellow { background:#fff8e1; color:#f57f17; }
+
+/* Detail sections */
+.as-detail-section { padding:12px 14px; }
+.as-detail-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--mid); margin-bottom:8px; }
+.as-detail-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; font-size:12px; }
+.as-detail-key { color:var(--mid); }
+.as-detail-val { font-weight:500; text-align:right; max-width:55%; }
+
+/* MOBILE PHONE FRAME */
+.phone-frame { width:295px; background:#111; border-radius:36px; padding:10px; box-shadow:0 20px 60px rgba(0,0,0,0.25); margin:0 auto; }
+.phone-screen { background:#f5f5f5; border-radius:28px; overflow:hidden; }
+.phone-notch { height:28px; background:var(--black); display:flex; align-items:center; justify-content:center; }
+.phone-notch-bar { width:80px; height:5px; background:#333; border-radius:3px; }
+.phone-content { height:580px; overflow-y:auto; }
+
+/* Mobile AppSheet */
+.mob-topbar { background:var(--red); color:white; padding:10px 14px; display:flex; align-items:center; gap:8px; }
+.mob-topbar-back { font-size:20px; }
+.mob-topbar-title { font-size:13px; font-weight:700; flex:1; }
+.mob-topbar-action { font-size:20px; }
+.mob-section { padding:8px 10px 2px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--mid); }
+.mob-card { background:white; margin:6px 10px; border-radius:6px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+.mob-field { padding:8px 12px; border-bottom:1px solid #f5f5f5; }
+.mob-field:last-child { border-bottom:none; }
+.mob-label { font-size:9px; color:var(--mid); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px; }
+.mob-value { font-size:12px; font-weight:500; }
+.mob-value.placeholder { color:#ccc; }
+.mob-big-btn { margin:8px 10px; padding:12px; border-radius:8px; border:none; font-family:inherit; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer; width:calc(100% - 20px); display:block; text-align:center; }
+.mob-btn-red { background:var(--red); color:white; }
+.mob-btn-gray { background:#eee; color:var(--black); }
+.mob-list-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid #f5f5f5; }
+.mob-list-item:last-child { border-bottom:none; }
+.mob-list-icon { font-size:18px; flex-shrink:0; }
+.mob-list-main { flex:1; }
+.mob-list-title { font-size:12px; font-weight:600; }
+.mob-list-sub { font-size:10px; color:var(--mid); margin-top:1px; }
+.mob-list-right { font-size:11px; font-weight:600; }
+.mob-check { width:20px; height:20px; border-radius:4px; border:2px solid var(--light); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:11px; }
+.mob-check.done { background:var(--green); border-color:var(--green); color:white; }
+.mob-bottomnav { background:white; border-top:1px solid var(--light); display:flex; padding:6px 0 8px; }
+.mob-nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; }
+.mob-nav-icon { font-size:18px; }
+.mob-nav-label { font-size:8px; color:var(--mid); }
+.mob-nav-item.active .mob-nav-label { color:var(--red); }
+.mob-nav-item.active .mob-nav-icon { filter:none; }
+
+/* Scan screen */
+.scan-area { height:160px; background:#111; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:white; }
+.scan-crosshair { width:100px; height:100px; border:2px solid rgba(255,255,255,0.3); border-radius:4px; position:relative; }
+.scan-crosshair::before,.scan-crosshair::after { content:''; position:absolute; background:var(--red); }
+.scan-crosshair::before { height:2px; width:100%; top:50%; left:0; }
+.scan-crosshair::after { width:2px; height:100%; left:50%; top:0; }
+
+/* Warning / limitation callout */
+.limit-box { margin:8px; padding:8px 10px; border-radius:4px; font-size:10px; line-height:1.5; }
+.limit-ok { background:#e8f5e9; border-left:3px solid var(--green); color:#2e7d32; }
+.limit-warn { background:#fff8e1; border-left:3px solid var(--yellow); color:#795548; }
+.limit-no { background:#fde8e8; border-left:3px solid var(--red); color:#b71c1c; }
+
+/* Detail view tabs */
+.as-tab-bar { display:flex; border-bottom:2px solid var(--light); background:white; overflow-x:auto; }
+.as-tab { padding:8px 14px; font-size:11px; font-weight:500; cursor:pointer; color:var(--mid); border-bottom:2px solid transparent; margin-bottom:-2px; white-space:nowrap; }
+.as-tab.active { color:var(--red); border-bottom-color:var(--red); font-weight:700; }
+
+/* Approval card */
+.approval-card { margin:8px; background:#fff8e1; border:1.5px solid var(--yellow); border-radius:6px; padding:12px 14px; }
+.approval-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#795548; margin-bottom:8px; }
+.approval-row { display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px; }
+.approval-btns { display:flex; gap:8px; margin-top:10px; }
+.approval-btn { flex:1; padding:8px; border:none; border-radius:4px; font-family:inherit; font-size:11px; font-weight:700; cursor:pointer; text-transform:uppercase; }
+.approval-approve { background:var(--green); color:white; }
+.approval-reject { background:#eee; color:var(--black); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:3px; height:3px; }
+::-webkit-scrollbar-thumb { background:#ccc; border-radius:2px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-r">R</div>
+      <div><div class="logo-text">RECKORD</div><div class="logo-sub">Screen Gallery</div></div>
+    </div>
+  </div>
+  <a class="nav-back" href="index.html">← Mockup overview</a>
+  <a class="nav-back" href="guide.html" style="border-top:none">📋 Implementation guide</a>
+
+  <div class="nav-section">
+    <div class="nav-label">Modules</div>
+    <div class="nav-item active" onclick="go('clients')"><div class="nav-dot d-blue"></div> Clients & Contacts</div>
+    <div class="nav-item" onclick="go('projects')"><div class="nav-dot d-green"></div> Projects</div>
+    <div class="nav-item" onclick="go('offers')"><div class="nav-dot d-orange"></div> Offers & Finance</div>
+    <div class="nav-item" onclick="go('equipment')"><div class="nav-dot d-purple"></div> Equipment & QR</div>
+    <div class="nav-item" onclick="go('fleet')"><div class="nav-dot d-yellow"></div> Fleet</div>
+    <div class="nav-item" onclick="go('crew')"><div class="nav-dot d-red"></div> Crew (mobile)</div>
+    <div class="nav-item" onclick="go('maintenance')"><div class="nav-dot d-orange"></div> Maintenance</div>
+  </div>
+  <div class="sidebar-footer">
+    All screens reflect AppSheet Core capabilities on Google Workspace Business Starter.<br><br>
+    <a href="index.html">← Overview mockup</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <div class="page-header-label">Reckord Codex · AppSheet Forms Gallery</div>
+    <div class="page-header-title">All screens — what users will actually see</div>
+    <div class="page-header-sub">These mockups reflect the real AppSheet interface with Reckord branding applied. Forms cannot be fully custom-styled — layout is AppSheet's own. Colour, logo, and icon can match Reckord identity.</div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Fully doable – AppSheet Core + Business Starter</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Doable with workaround or minor limitation</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Not deliverable / requires upgrade</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Implemented via Apps Script (not AppSheet native)</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- CLIENTS -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section" id="clients">
+      <div class="section-header">
+        <div class="section-badge sb-blue">🏢</div>
+        <div><div class="section-title">Clients & Contacts</div><div class="section-sub">Client form · Client detail with contacts · Risk flags</div></div>
+      </div>
+      <div class="screens-grid">
+
+        <!-- NEW CLIENT FORM -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">New / Edit Client</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">New Client</div>
+              <button class="as-topbar-save">SAVE</button>
+            </div>
+            <div class="as-section-header">Company information</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Company name</div>
+                <div class="as-field-placeholder">e.g. Czech Television</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">VAT / IČO number</div>
+                <div class="as-field-placeholder">CZ12345678</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Country</div>
+                <div class="chip-row">
+                  <div class="as-chip selected">🇨🇿 Czech Republic</div>
+                  <div class="as-chip">🇸🇰 Slovakia</div>
+                  <div class="as-chip">🇩🇪 Germany</div>
+                  <div class="as-chip">Other</div>
+                </div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Billing address</div>
+                <div class="as-field-placeholder">Full billing address…</div>
+              </div>
+            </div>
+            <div class="as-section-header">Primary contact</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Contact name</div>
+                <div class="as-field-placeholder">Full name</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Email</div>
+                <div class="as-field-row"><div class="as-field-icon">✉️</div><div class="as-field-placeholder">email@company.com</div></div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Phone</div>
+                <div class="as-field-row"><div class="as-field-icon">📞</div><div class="as-field-placeholder">+420 …</div></div>
+              </div>
+            </div>
+            <div class="as-section-header">Risk & notes</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Risk flag</div>
+                <div class="chip-row">
+                  <div class="as-chip sel-green">Normal</div>
+                  <div class="as-chip">Watch</div>
+                  <div class="as-chip">Blocked</div>
+                </div>
+                <div class="as-field-hint">⚠️ Blocked clients cannot be assigned new projects</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Notes</div>
+                <div class="as-field-placeholder">Internal notes…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CLIENT DETAIL -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">Client Detail View</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">Czech Television</div>
+              <div class="as-topbar-action">✏️</div>
+            </div>
+            <div class="as-tab-bar">
+              <div class="as-tab active">Info</div>
+              <div class="as-tab">Contacts (3)</div>
+              <div class="as-tab">Projects (8)</div>
+              <div class="as-tab">Offers</div>
+            </div>
+            <div class="as-card" style="margin-top:8px">
+              <div class="as-detail-section">
+                <div class="as-detail-title">Company</div>
+                <div class="as-detail-row"><span class="as-detail-key">Company</span><span class="as-detail-val">Czech Television</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">VAT</span><span class="as-detail-val">CZ00027383</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Country</span><span class="as-detail-val">🇨🇿 Czech Republic</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Risk</span><span class="as-detail-val"><span class="as-status st-green">● Normal</span></span></div>
+              </div>
+            </div>
+            <div class="as-card">
+              <div class="as-detail-section">
+                <div class="as-detail-title">Primary Contact</div>
+                <div class="as-detail-row"><span class="as-detail-key">Name</span><span class="as-detail-val">Jan Procházka</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Email</span><span class="as-detail-val" style="font-size:11px">j.prochazka@ct24.cz</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Phone</span><span class="as-detail-val">+420 602 111 222</span></div>
+              </div>
+            </div>
+            <div class="as-section-header">Related projects</div>
+            <div class="as-card">
+              <div class="as-inline-row"><div class="as-inline-main"><div>Ostrava Live 2025</div><div class="as-inline-sub">Mar 18–20</div></div><span class="as-status st-green">Active</span></div>
+              <div class="as-inline-row"><div class="as-inline-main"><div>Brno Studio Live</div><div class="as-inline-sub">Jan 10–11</div></div><span class="as-status st-gray">Closed</span></div>
+              <div class="as-add-row">+ See all 8 projects</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="limit-box limit-warn" style="margin-top:12px">⚠️ <strong>Additional contacts per client</strong> are stored in a separate Contacts tab (linked by ClientID). AppSheet shows them as inline related rows on the client detail view. Adding/editing contacts opens a sub-form. Maximum ~500 contacts per client before performance degrades in Sheets — not a concern for Reckord's scale.</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- PROJECTS -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section" id="projects">
+      <div class="section-header">
+        <div class="section-badge sb-green">📁</div>
+        <div><div class="section-title">Projects</div><div class="section-sub">New project form · Project detail with crew, fleet, equipment tabs</div></div>
+      </div>
+      <div class="screens-grid">
+
+        <!-- NEW PROJECT FORM -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">New / Edit Project</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">New Project</div>
+              <button class="as-topbar-save">SAVE</button>
+            </div>
+            <div class="as-section-header">Basic information</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Project name</div>
+                <div class="as-field-placeholder">e.g. Ostrava Live 2025</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Client</div>
+                <div class="as-ref"><span class="as-ref-icon">🏢</span> Search client…</div>
+                <div class="as-field-hint">Select from existing clients. New client → go to Clients first.</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Status</div>
+                <div class="chip-row">
+                  <div class="as-chip selected">Request</div>
+                  <div class="as-chip">Offer</div>
+                  <div class="as-chip">Confirmed</div>
+                  <div class="as-chip">Active</div>
+                </div>
+              </div>
+            </div>
+            <div class="as-section-header">Dates & location</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Start date</div>
+                <div class="as-field-row"><div class="as-field-icon">📅</div><div class="as-field-placeholder">Pick date…</div></div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">End date</div>
+                <div class="as-field-row"><div class="as-field-icon">📅</div><div class="as-field-placeholder">Pick date…</div></div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Location / Venue</div>
+                <div class="as-field-placeholder">e.g. Ostrava Arena, Gate C</div>
+              </div>
+            </div>
+            <div class="as-section-header">Responsibility</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Project manager</div>
+                <div class="as-ref"><span class="as-ref-icon">👤</span> Search crew…</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Notes</div>
+                <div class="as-field-placeholder">Internal notes, special requirements…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROJECT DETAIL -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">Project Detail — Crew tab</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">Ostrava Live 2025</div>
+              <div class="as-topbar-action">✏️</div>
+            </div>
+            <div class="as-tab-bar">
+              <div class="as-tab">Overview</div>
+              <div class="as-tab active">Crew (3/4)</div>
+              <div class="as-tab">Equipment</div>
+              <div class="as-tab">Fleet</div>
+              <div class="as-tab">Offer</div>
+            </div>
+            <div style="margin:8px 8px 0">
+              <div style="background:#fde8e8;border-left:3px solid var(--red);border-radius:3px;padding:7px 10px;font-size:11px;color:#b71c1c;">⚠️ Technical Director not assigned — event in 9 days</div>
+            </div>
+            <div class="as-card">
+              <div class="as-inline-row"><span style="font-size:18px">👤</span><div class="as-inline-main"><div>Martin Novák</div><div class="as-inline-sub">Director of Photography · Call 07:00</div></div><span class="as-status st-green">Confirmed</span></div>
+              <div class="as-inline-row"><span style="font-size:18px">👤</span><div class="as-inline-main"><div>Lukáš Pospíšil</div><div class="as-inline-sub">Camera Operator · Call 07:30</div></div><span class="as-status st-green">Confirmed</span></div>
+              <div class="as-inline-row"><span style="font-size:18px">👤</span><div class="as-inline-main"><div>Tomáš Krejčí</div><div class="as-inline-sub">Sound Engineer · Call 08:00</div></div><span class="as-status st-yellow">Assigned</span></div>
+              <div class="as-inline-row" style="opacity:0.5"><span style="font-size:18px">❓</span><div class="as-inline-main"><div style="color:var(--mid)">Technical Director — missing</div><div class="as-inline-sub">Required role not assigned</div></div></div>
+              <div class="as-add-row">+ Add crew member</div>
+            </div>
+            <div class="as-section-header">Fleet assigned</div>
+            <div class="as-card">
+              <div class="as-inline-row"><span style="font-size:18px">🚛</span><div class="as-inline-main"><div>OB Truck 1 – 1AB 1234</div><div class="as-inline-sub">Main production unit</div></div><span class="as-status st-green">On project</span></div>
+              <div class="as-inline-row"><span style="font-size:18px">🚛</span><div class="as-inline-main"><div>OB Truck 3 – 3CD 5678</div><div class="as-inline-sub">Camera truck</div></div><span class="as-status st-green">On project</span></div>
+              <div class="as-add-row">+ Assign vehicle</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="limit-box limit-warn" style="margin-top:12px">⚠️ <strong>Real-time conflict prevention:</strong> AppSheet can show a warning when a vehicle or crew is already booked for overlapping dates, but it cannot hard-block the save at database level (Google Sheets has no row locking). The system will flag the conflict visually — a coordinator must resolve it manually. This is a known limitation of Sheets-based backends.</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- OFFERS -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section" id="offers">
+      <div class="section-header">
+        <div class="section-badge sb-orange">💶</div>
+        <div><div class="section-title">Offers & Finance</div><div class="section-sub">3-step offer wizard · Line items · Approval flow · Finance stages</div></div>
+      </div>
+      <div class="screens-grid wide">
+
+        <!-- OFFER STEP 1 -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">Offer Wizard — Step 1: Basics</div>
+            <div class="screen-label-note note-yellow">⚠ Simulated multi-step</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">New Offer</div>
+              <button class="as-topbar-save">NEXT →</button>
+            </div>
+            <div class="as-steps">
+              <div class="as-step active"><div class="as-step-dot">1</div><div class="as-step-label">Basics</div></div>
+              <div class="as-step"><div class="as-step-dot">2</div><div class="as-step-label">Items</div></div>
+              <div class="as-step"><div class="as-step-dot">3</div><div class="as-step-label">Review</div></div>
+            </div>
+            <div class="as-section-header">Link to project</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Project</div>
+                <div class="as-ref"><span class="as-ref-icon">📁</span> Search project…</div>
+                <div class="as-field-hint">Select the project this offer belongs to</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Created by</div>
+                <div class="as-field-value">Karel Kadlec <span style="color:var(--mid);font-size:11px">(auto-filled)</span></div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Valid until</div>
+                <div class="as-field-row"><div class="as-field-icon">📅</div><div class="as-field-placeholder">Pick date…</div></div>
+              </div>
+            </div>
+            <div class="as-section-header">Discount</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Discount %</div>
+                <div class="as-field-row"><div class="as-field-input">0</div><div style="color:var(--mid);font-size:12px">%</div></div>
+                <div class="as-field-hint">Discounts above 5% require manager approval</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Discount reason</div>
+                <div class="as-field-placeholder">Required if discount applied…</div>
+              </div>
+            </div>
+            <div class="as-section-header">Internal notes</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Notes</div>
+                <div class="as-field-placeholder">Internal notes for this offer…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OFFER STEP 2 -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">Offer Wizard — Step 2: Line Items</div>
+            <div class="screen-label-note note-yellow">⚠ Simulated multi-step</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">← Back</div>
+              <div class="as-topbar-title">Offer Items</div>
+              <button class="as-topbar-save">NEXT →</button>
+            </div>
+            <div class="as-steps">
+              <div class="as-step done"><div class="as-step-dot">✓</div><div class="as-step-label">Basics</div></div>
+              <div class="as-step active"><div class="as-step-dot">2</div><div class="as-step-label">Items</div></div>
+              <div class="as-step"><div class="as-step-dot">3</div><div class="as-step-label">Review</div></div>
+            </div>
+            <div class="as-section-header">Offer line items</div>
+            <div class="as-card">
+              <div class="as-inline-row">
+                <div class="as-inline-main"><div>OB Truck 1 (3 days)</div><div class="as-inline-sub">Vehicle · Qty 1 · CZK 45,000/day</div></div>
+                <div class="as-inline-val">135,000</div>
+              </div>
+              <div class="as-inline-row">
+                <div class="as-inline-main"><div>Sony HDC-5500 camera</div><div class="as-inline-sub">Equipment · Qty 2 · CZK 8,000/day</div></div>
+                <div class="as-inline-val">48,000</div>
+              </div>
+              <div class="as-inline-row">
+                <div class="as-inline-main"><div>Director of Photography</div><div class="as-inline-sub">Crew · Qty 1 · CZK 12,000/day</div></div>
+                <div class="as-inline-val">36,000</div>
+              </div>
+              <div class="as-inline-row">
+                <div class="as-inline-main"><div>External satellite uplink</div><div class="as-inline-sub">Service · External rental</div></div>
+                <div class="as-inline-val">85,000</div>
+              </div>
+              <div class="as-add-row">+ Add line item</div>
+            </div>
+            <div class="as-card" style="margin-top:0">
+              <div class="as-field">
+                <div class="as-field-label">Item type</div>
+                <div class="chip-row">
+                  <div class="as-chip">Vehicle</div>
+                  <div class="as-chip">Equipment</div>
+                  <div class="as-chip">Crew</div>
+                  <div class="as-chip selected">Service</div>
+                </div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Description</div>
+                <div class="as-field-placeholder">Item name…</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Unit price (CZK)</div>
+                <div class="as-field-input">85000</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Quantity</div>
+                <div class="as-field-input">1</div>
+              </div>
+            </div>
+            <div style="background:#e3f2fd;margin:8px;border-radius:4px;padding:8px 12px;font-size:11px;color:#1565c0">ℹ️ Adding a vehicle or equipment item automatically creates a <strong>tentative reservation</strong> for the project dates.</div>
+          </div>
+        </div>
+
+        <!-- OFFER STEP 3 -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">Offer Wizard — Step 3: Review</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">← Back</div>
+              <div class="as-topbar-title">Review & Submit</div>
+              <button class="as-topbar-save">SUBMIT</button>
+            </div>
+            <div class="as-steps">
+              <div class="as-step done"><div class="as-step-dot">✓</div><div class="as-step-label">Basics</div></div>
+              <div class="as-step done"><div class="as-step-dot">✓</div><div class="as-step-label">Items</div></div>
+              <div class="as-step active"><div class="as-step-dot">3</div><div class="as-step-label">Review</div></div>
+            </div>
+            <div class="as-card" style="margin-top:8px">
+              <div class="as-detail-section">
+                <div class="as-detail-title">Summary</div>
+                <div class="as-detail-row"><span class="as-detail-key">Project</span><span class="as-detail-val">Ostrava Live 2025</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Client</span><span class="as-detail-val">Czech Television</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Items</span><span class="as-detail-val">4 line items</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Subtotal</span><span class="as-detail-val">CZK 304,000</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Discount</span><span class="as-detail-val">0%</span></div>
+                <div class="as-detail-row" style="border-top:1.5px solid var(--light);padding-top:6px;margin-top:6px"><span class="as-detail-key" style="font-weight:700">Total</span><span class="as-detail-val" style="font-size:16px;font-weight:800;color:var(--red)">CZK 304,000</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Est. margin</span><span class="as-detail-val" style="color:var(--green);font-weight:700">38%</span></div>
+              </div>
+            </div>
+            <div class="approval-card">
+              <div class="approval-title">✅ No approval required</div>
+              <div style="font-size:11px;color:#795548">Discount is 0% — below the 5% threshold. Offer can be submitted directly.</div>
+            </div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Approval status</div>
+                <div class="as-status st-green">● Auto-approved</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Next step</div>
+                <div class="as-field-value" style="font-size:12px">After saving, status moves to <strong>Draft</strong>. Mark as <strong>Sent</strong> once emailed to client.</div>
+              </div>
+            </div>
+            <div class="as-action-bar">
+              <button class="as-btn as-btn-secondary">Save Draft</button>
+              <button class="as-btn as-btn-primary">Submit Offer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- APPROVAL SCREEN -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">Manager Approval Screen</div>
+            <div class="screen-label-note note-yellow">⚠ Via AppSheet automation email</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">Offer #OFF-0044</div>
+              <div class="as-topbar-action">✏️</div>
+            </div>
+            <div style="background:#fde8e8;margin:8px;border-radius:4px;padding:8px 12px;font-size:11px;color:#b71c1c;border-left:3px solid var(--red)">⚠️ This offer has a <strong>8% discount</strong> — above the 5% threshold. <strong>Manager approval required</strong> before submitting to client.</div>
+            <div class="as-card">
+              <div class="as-detail-section">
+                <div class="as-detail-title">Offer details</div>
+                <div class="as-detail-row"><span class="as-detail-key">Project</span><span class="as-detail-val">ESL Gaming Tournament</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Created by</span><span class="as-detail-val">J. Kratochvíl</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Subtotal</span><span class="as-detail-val">CZK 413,000</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Discount</span><span class="as-detail-val" style="color:var(--red);font-weight:700">8% (–CZK 33,040)</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Total</span><span class="as-detail-val" style="font-weight:800">CZK 379,960</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Margin after discount</span><span class="as-detail-val" style="color:var(--orange);font-weight:700">26% ⚠️</span></div>
+              </div>
+            </div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Discount reason (from seller)</div>
+                <div class="as-field-value" style="font-size:12px;font-style:italic">"Long-term client relationship, potential for 3 more events in 2025"</div>
+              </div>
+            </div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Manager decision</div>
+                <div class="chip-row">
+                  <div class="as-chip">Pending</div>
+                  <div class="as-chip sel-green">Approved</div>
+                  <div class="as-chip">Rejected</div>
+                </div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Manager note</div>
+                <div class="as-field-placeholder">Reason for decision…</div>
+              </div>
+            </div>
+            <div class="as-action-bar">
+              <button class="as-btn as-btn-secondary">Reject</button>
+              <button class="as-btn as-btn-primary">Approve Offer</button>
+            </div>
+          </div>
+          <div class="limit-box limit-warn">⚠️ Approval notification sent by AppSheet Automation email. Manager opens AppSheet on phone or desktop, approves inline. <strong>No email reply-to-approve</strong> — must open the app. Core plan automation runs are capped (~2,000/month — sufficient for Reckord's volume).</div>
+        </div>
+
+      </div>
+      <div class="limit-box limit-warn" style="margin-top:12px">⚠️ <strong>Multi-step wizard:</strong> AppSheet does not have a true wizard with separate pages. The "steps" are simulated using page-break sections within a single form. The step indicator is a visual-only display element — it cannot enforce sequential completion. Users could skip sections. Workaround: mark required fields in each section so the form cannot be saved incomplete.</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- EQUIPMENT & QR -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section" id="equipment">
+      <div class="section-header">
+        <div class="section-badge sb-purple">📦</div>
+        <div><div class="section-title">Equipment & Warehouse — QR Scanning</div><div class="section-sub">New asset form · Mobile scan screen · Quick actions · Checkout form</div></div>
+      </div>
+      <div class="screens-grid">
+
+        <!-- NEW ASSET FORM -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">New / Edit Asset</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">New Asset</div>
+              <button class="as-topbar-save">SAVE</button>
+            </div>
+            <div class="as-section-header">Identification</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Asset tag</div>
+                <div class="as-field-value">A043 <span style="color:var(--mid);font-size:11px">(auto-generated)</span></div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Category</div>
+                <div class="chip-row">
+                  <div class="as-chip selected">Camera</div>
+                  <div class="as-chip">Audio</div>
+                  <div class="as-chip">Cable</div>
+                  <div class="as-chip">Monitor</div>
+                  <div class="as-chip">Signal</div>
+                  <div class="as-chip">Lighting</div>
+                  <div class="as-chip">Other</div>
+                </div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Manufacturer</div>
+                <div class="as-field-placeholder">e.g. Sony</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Model</div>
+                <div class="as-field-placeholder">e.g. HDC-5500</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Serial number</div>
+                <div class="as-field-row"><div class="as-field-icon">📷</div><div class="as-field-placeholder">Scan or type…</div></div>
+                <div class="as-field-hint">Tap camera icon to scan serial number barcode</div>
+              </div>
+            </div>
+            <div class="as-section-header">Ownership & value</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Ownership type</div>
+                <div class="chip-row">
+                  <div class="as-chip selected">Owned</div>
+                  <div class="as-chip">Leased</div>
+                  <div class="as-chip">External rental</div>
+                </div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Purchase date</div>
+                <div class="as-field-row"><div class="as-field-icon">📅</div><div class="as-field-placeholder">Pick date…</div></div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Purchase value (CZK)</div>
+                <div class="as-field-placeholder">0</div>
+              </div>
+            </div>
+            <div class="as-section-header">Status</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Current status</div>
+                <div class="chip-row">
+                  <div class="as-chip sel-green">In Stock</div>
+                  <div class="as-chip">Reserved</div>
+                  <div class="as-chip">Assigned</div>
+                  <div class="as-chip">Maintenance</div>
+                  <div class="as-chip">Faulty</div>
+                </div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Current location</div>
+                <div class="as-field-placeholder">Warehouse Brno</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Notes</div>
+                <div class="as-field-placeholder">Condition notes, accessories included…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOBILE QR SCAN -->
+        <div class="screen-card" style="display:flex;flex-direction:column;align-items:center;padding:20px;background:#f0f0f0;">
+          <div class="screen-label" style="width:100%;border-radius:6px 6px 0 0;margin-bottom:0">
+            <div class="screen-label-title">Mobile — QR Scan & Quick Actions</div>
+            <div class="screen-label-note note-green">✓ Native AppSheet scan</div>
+          </div>
+          <div class="phone-frame" style="margin-top:0;border-radius:0 0 36px 36px;border-top:none">
+            <div class="phone-screen">
+              <div class="phone-notch"><div class="phone-notch-bar"></div></div>
+              <div class="phone-content">
+                <div class="mob-topbar">
+                  <div class="mob-topbar-back">←</div>
+                  <div class="mob-topbar-title">Scan Asset</div>
+                </div>
+                <div class="scan-area">
+                  <div class="scan-crosshair"></div>
+                  <div style="font-size:11px;color:#aaa;margin-top:6px">Point at QR code or barcode</div>
+                </div>
+                <div class="mob-section">Or search by tag</div>
+                <div class="mob-card">
+                  <div class="mob-field"><div class="mob-label">Asset tag or name</div><div class="mob-value placeholder">Type A041…</div></div>
+                </div>
+                <!-- After scan result -->
+                <div class="mob-section">Scanned: Sony HDC-5500 #A041</div>
+                <div class="mob-card">
+                  <div class="mob-field"><div class="mob-label">Status</div><div class="mob-value"><span class="as-status st-orange">● Maintenance Due</span></div></div>
+                  <div class="mob-field"><div class="mob-label">Location</div><div class="mob-value">Warehouse Brno</div></div>
+                  <div class="mob-field"><div class="mob-label">Last moved</div><div class="mob-value">Feb 15 by M. Novák</div></div>
+                </div>
+                <div class="mob-section">Quick actions</div>
+                <button class="mob-big-btn mob-btn-red">✓ Check Out to Project</button>
+                <button class="mob-big-btn mob-btn-gray">↩ Check In to Warehouse</button>
+                <button class="mob-big-btn mob-btn-gray">🔧 Report Damage / Issue</button>
+                <button class="mob-big-btn mob-btn-gray">🚛 Assign to Truck</button>
+              </div>
+            </div>
+          </div>
+          <div class="limit-box limit-ok" style="width:100%;margin:8px 0 0">✓ QR scanning is native in AppSheet Core. Works on both iOS and Android. Requires the AppSheet mobile app installed (free from App Store / Play Store).</div>
+        </div>
+
+        <!-- CHECKOUT FORM MOBILE -->
+        <div class="screen-card" style="display:flex;flex-direction:column;align-items:center;padding:20px;background:#f0f0f0;">
+          <div class="screen-label" style="width:100%;border-radius:6px 6px 0 0;margin-bottom:0">
+            <div class="screen-label-title">Mobile — Check-Out Form</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="phone-frame" style="margin-top:0;border-radius:0 0 36px 36px;border-top:none">
+            <div class="phone-screen">
+              <div class="phone-notch"><div class="phone-notch-bar"></div></div>
+              <div class="phone-content">
+                <div class="mob-topbar">
+                  <div class="mob-topbar-back">←</div>
+                  <div class="mob-topbar-title">Check Out Asset</div>
+                  <div class="mob-topbar-action">✓</div>
+                </div>
+                <div class="mob-section">Asset</div>
+                <div class="mob-card">
+                  <div class="mob-field"><div class="mob-label">Item</div><div class="mob-value">Sony HDC-5500 #A041</div></div>
+                </div>
+                <div class="mob-section">Assign to</div>
+                <div class="mob-card">
+                  <div class="mob-field">
+                    <div class="mob-label">Project *</div>
+                    <div class="mob-value"><div class="as-ref"><span class="as-ref-icon">📁</span> Ostrava Live 2025</div></div>
+                  </div>
+                  <div class="mob-field">
+                    <div class="mob-label">Or assign to truck</div>
+                    <div class="mob-value placeholder">Optional…</div>
+                  </div>
+                </div>
+                <div class="mob-section">Movement details</div>
+                <div class="mob-card">
+                  <div class="mob-field"><div class="mob-label">Moved by</div><div class="mob-value">M. Novák (auto)</div></div>
+                  <div class="mob-field"><div class="mob-label">Date & time</div><div class="mob-value">Mar 9 2025, 14:32 (auto)</div></div>
+                  <div class="mob-field">
+                    <div class="mob-label">Condition on checkout</div>
+                    <div class="chip-row" style="margin-top:4px">
+                      <div class="as-chip sel-green">Good</div>
+                      <div class="as-chip">Minor wear</div>
+                      <div class="as-chip">Issue noted</div>
+                    </div>
+                  </div>
+                  <div class="mob-field"><div class="mob-label">Notes</div><div class="mob-value placeholder">Optional note…</div></div>
+                </div>
+                <button class="mob-big-btn mob-btn-red">Confirm Check-Out</button>
+                <div style="height:10px"></div>
+              </div>
+            </div>
+          </div>
+          <div class="limit-box limit-ok" style="width:100%;margin:8px 0 0">✓ Each checkout automatically writes a row to EquipmentMovements table (full audit trail) and updates the asset Status and Location fields.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- FLEET -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section" id="fleet">
+      <div class="section-header">
+        <div class="section-badge sb-yellow">🚛</div>
+        <div><div class="section-title">Fleet Management</div><div class="section-sub">Vehicle form · Service tracking · Assignment history</div></div>
+      </div>
+      <div class="screens-grid">
+
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">New / Edit Vehicle</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">New Vehicle</div>
+              <button class="as-topbar-save">SAVE</button>
+            </div>
+            <div class="as-section-header">Vehicle identification</div>
+            <div class="as-card">
+              <div class="as-field"><div class="as-field-label as-field-required">Vehicle name</div><div class="as-field-placeholder">e.g. OB Truck 1</div></div>
+              <div class="as-field"><div class="as-field-label as-field-required">Registration plate</div><div class="as-field-placeholder">1AB 1234</div></div>
+              <div class="as-field"><div class="as-field-label">VIN</div><div class="as-field-placeholder">Vehicle Identification Number</div></div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Type</div>
+                <div class="chip-row">
+                  <div class="as-chip selected">OB Truck</div>
+                  <div class="as-chip">Van</div>
+                  <div class="as-chip">Car</div>
+                  <div class="as-chip">Trailer</div>
+                </div>
+              </div>
+              <div class="as-field"><div class="as-field-label">Home base</div><div class="as-field-placeholder">e.g. Brno depot</div></div>
+            </div>
+            <div class="as-section-header">Status & availability</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Status</div>
+                <div class="chip-row">
+                  <div class="as-chip sel-green">Available</div>
+                  <div class="as-chip">Reserved</div>
+                  <div class="as-chip">On Project</div>
+                  <div class="as-chip">Maintenance</div>
+                  <div class="as-chip">Out of order</div>
+                </div>
+              </div>
+            </div>
+            <div class="as-section-header">Service & compliance</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Next service date</div>
+                <div class="as-field-row"><div class="as-field-icon">📅</div><div class="as-field-placeholder">Pick date…</div></div>
+                <div class="as-field-hint">⚠️ Alert sent 14 days before due date</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Insurance expiry</div>
+                <div class="as-field-row"><div class="as-field-icon">📅</div><div class="as-field-placeholder">Pick date…</div></div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">STK / MOT expiry</div>
+                <div class="as-field-row"><div class="as-field-icon">📅</div><div class="as-field-placeholder">Pick date…</div></div>
+              </div>
+              <div class="as-field"><div class="as-field-label">Notes</div><div class="as-field-placeholder">Technical notes, special equipment fitted…</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">Vehicle Detail View</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">OB Truck 1</div>
+              <div class="as-topbar-action">✏️</div>
+            </div>
+            <div class="as-tab-bar">
+              <div class="as-tab active">Info</div>
+              <div class="as-tab">Projects (12)</div>
+              <div class="as-tab">Maintenance (3)</div>
+            </div>
+            <div class="as-card" style="margin-top:8px">
+              <div class="as-detail-section">
+                <div class="as-detail-row"><span class="as-detail-key">Registration</span><span class="as-detail-val">1AB 1234</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Type</span><span class="as-detail-val">OB Truck</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Status</span><span class="as-detail-val"><span class="as-status st-green">● On Project</span></span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Current project</span><span class="as-detail-val">Ostrava Live 2025</span></div>
+              </div>
+            </div>
+            <div class="as-card">
+              <div class="as-detail-section">
+                <div class="as-detail-title">Service</div>
+                <div class="as-detail-row"><span class="as-detail-key">Next service</span><span class="as-detail-val" style="color:var(--green)">Apr 15, 2025 ✓</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Insurance</span><span class="as-detail-val">Dec 31, 2025</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">STK / MOT</span><span class="as-detail-val">Aug 20, 2025</span></div>
+              </div>
+            </div>
+            <div class="as-section-header">Upcoming projects</div>
+            <div class="as-card">
+              <div class="as-inline-row"><div class="as-inline-main"><div>Brno Fashion Week</div><div class="as-inline-sub">Mar 22–24</div></div><span class="as-status st-blue">Confirmed</span></div>
+              <div class="as-inline-row"><div class="as-inline-main"><div>Prague Marathon</div><div class="as-inline-sub">Apr 5</div></div><span class="as-status st-yellow">Offer Sent</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- CREW MOBILE -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section" id="crew">
+      <div class="section-header">
+        <div class="section-badge sb-red">👥</div>
+        <div><div class="section-title">Crew — Mobile-first views</div><div class="section-sub">My day · Equipment checklist · Leave request · Crew member form (coordinator)</div></div>
+      </div>
+      <div class="screens-grid">
+
+        <!-- CREW MEMBER FORM (coordinator) -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">Crew Member — Add / Edit (Coordinator)</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">New Crew Member</div>
+              <button class="as-topbar-save">SAVE</button>
+            </div>
+            <div class="as-section-header">Personal info</div>
+            <div class="as-card">
+              <div class="as-field"><div class="as-field-label as-field-required">Full name</div><div class="as-field-placeholder">First Last</div></div>
+              <div class="as-field"><div class="as-field-label as-field-required">Email</div><div class="as-field-row"><div class="as-field-icon">✉️</div><div class="as-field-placeholder">name@reckord.tv</div></div><div class="as-field-hint">Must match their Google Workspace login</div></div>
+              <div class="as-field"><div class="as-field-label">Phone</div><div class="as-field-row"><div class="as-field-icon">📞</div><div class="as-field-placeholder">+420…</div></div></div>
+            </div>
+            <div class="as-section-header">Role & employment</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Primary role</div>
+                <div class="chip-row">
+                  <div class="as-chip">Director of Photography</div>
+                  <div class="as-chip selected">Camera Operator</div>
+                  <div class="as-chip">Sound Engineer</div>
+                  <div class="as-chip">Vision Mixer</div>
+                  <div class="as-chip">Technical Director</div>
+                  <div class="as-chip">Driver</div>
+                  <div class="as-chip">Other</div>
+                </div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Employment type</div>
+                <div class="chip-row">
+                  <div class="as-chip sel-blue">Employee</div>
+                  <div class="as-chip">Freelancer</div>
+                </div>
+              </div>
+              <div class="as-field"><div class="as-field-label">Skills / certifications</div><div class="as-field-placeholder">e.g. Sony HDC, Grass Valley, HDVS…</div></div>
+              <div class="as-field">
+                <div class="as-field-label">Status</div>
+                <div class="chip-row">
+                  <div class="as-chip sel-green">Active</div>
+                  <div class="as-chip">Inactive</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOBILE MY DAY -->
+        <div class="screen-card" style="display:flex;flex-direction:column;align-items:center;padding:20px;background:#f0f0f0;">
+          <div class="screen-label" style="width:100%;border-radius:6px 6px 0 0;margin-bottom:0">
+            <div class="screen-label-title">Mobile — My Day (Crew Member)</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="phone-frame" style="margin-top:0;border-radius:0 0 36px 36px;border-top:none">
+            <div class="phone-screen">
+              <div class="phone-notch"><div class="phone-notch-bar"></div></div>
+              <div class="phone-content">
+                <div class="mob-topbar">
+                  <div style="flex:1"><div style="font-size:14px;font-weight:800">Hi, Martin 👋</div><div style="font-size:10px;color:rgba(255,255,255,0.7)">Mon Mar 9 · 3 days to event</div></div>
+                  <div style="width:30px;height:30px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">MN</div>
+                </div>
+                <div class="mob-section">Next project</div>
+                <div class="mob-card">
+                  <div class="mob-field"><div class="mob-label">Project</div><div class="mob-value" style="font-size:14px;font-weight:800">Ostrava Live 2025</div></div>
+                  <div class="mob-field"><div class="mob-label">Date</div><div class="mob-value">Mar 18–20, 2025</div></div>
+                  <div class="mob-field"><div class="mob-label">Location</div><div class="mob-value">Ostrava Arena, Gate C</div></div>
+                  <div class="mob-field"><div class="mob-label">Your role</div><div class="mob-value">Director of Photography</div></div>
+                  <div class="mob-field"><div class="mob-label">Call time</div><div class="mob-value" style="color:var(--red);font-size:16px;font-weight:800">07:00</div></div>
+                </div>
+                <div class="mob-section">Equipment assigned to me</div>
+                <div class="mob-card">
+                  <div class="mob-list-item"><div class="mob-check done">✓</div><div class="mob-list-main"><div class="mob-list-title">Sony HDC-5500 #A041</div><div class="mob-list-sub">Camera</div></div></div>
+                  <div class="mob-list-item"><div class="mob-check done">✓</div><div class="mob-list-main"><div class="mob-list-title">Fujinon UA107 #C007</div><div class="mob-list-sub">Lens</div></div></div>
+                  <div class="mob-list-item"><div class="mob-check"></div><div class="mob-list-main"><div class="mob-list-title">Tripod #E022</div><div class="mob-list-sub">Support</div></div></div>
+                </div>
+                <button class="mob-big-btn mob-btn-red">🔧 Report Issue</button>
+                <div class="mob-bottomnav">
+                  <div class="mob-nav-item active"><div class="mob-nav-icon">🏠</div><div class="mob-nav-label" style="color:var(--red)">My Day</div></div>
+                  <div class="mob-nav-item"><div class="mob-nav-icon">📋</div><div class="mob-nav-label">Checklist</div></div>
+                  <div class="mob-nav-item"><div class="mob-nav-icon">🏖️</div><div class="mob-nav-label">Leave</div></div>
+                  <div class="mob-nav-item"><div class="mob-nav-icon">👤</div><div class="mob-nav-label">Profile</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MOBILE LEAVE REQUEST -->
+        <div class="screen-card" style="display:flex;flex-direction:column;align-items:center;padding:20px;background:#f0f0f0;">
+          <div class="screen-label" style="width:100%;border-radius:6px 6px 0 0;margin-bottom:0">
+            <div class="screen-label-title">Mobile — Leave Request Form</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="phone-frame" style="margin-top:0;border-radius:0 0 36px 36px;border-top:none">
+            <div class="phone-screen">
+              <div class="phone-notch"><div class="phone-notch-bar"></div></div>
+              <div class="phone-content">
+                <div class="mob-topbar">
+                  <div class="mob-topbar-back">←</div>
+                  <div class="mob-topbar-title">Request Leave</div>
+                  <div class="mob-topbar-action" style="font-size:14px;font-weight:700">SEND</div>
+                </div>
+                <div class="mob-section">Leave type</div>
+                <div class="mob-card">
+                  <div class="mob-field">
+                    <div class="mob-label">Type *</div>
+                    <div class="chip-row" style="margin-top:6px">
+                      <div class="as-chip selected">🏖️ Vacation</div>
+                      <div class="as-chip">🤒 Sick day</div>
+                      <div class="as-chip">📋 Other</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mob-section">Dates</div>
+                <div class="mob-card">
+                  <div class="mob-field"><div class="mob-label">From *</div><div class="mob-value"><span style="color:var(--red)">📅</span> Mar 24, 2025</div></div>
+                  <div class="mob-field"><div class="mob-label">To *</div><div class="mob-value"><span style="color:var(--red)">📅</span> Mar 28, 2025</div></div>
+                  <div class="mob-field"><div class="mob-label">Duration</div><div class="mob-value" style="font-weight:700">5 days</div></div>
+                </div>
+                <div style="background:#e3f2fd;margin:6px 10px;border-radius:6px;padding:8px 10px;font-size:10px;color:#1565c0">ℹ️ No project conflicts detected for this period ✓</div>
+                <div class="mob-section">Note</div>
+                <div class="mob-card">
+                  <div class="mob-field"><div class="mob-label">Note for coordinator</div><div class="mob-value placeholder">Optional…</div></div>
+                </div>
+                <button class="mob-big-btn mob-btn-red">Send Request</button>
+                <div style="font-size:10px;color:var(--mid);text-align:center;padding:6px;margin-bottom:8px">Coordinator will be notified and must approve</div>
+                <div class="mob-bottomnav">
+                  <div class="mob-nav-item"><div class="mob-nav-icon">🏠</div><div class="mob-nav-label">My Day</div></div>
+                  <div class="mob-nav-item"><div class="mob-nav-icon">📋</div><div class="mob-nav-label">Checklist</div></div>
+                  <div class="mob-nav-item active"><div class="mob-nav-icon">🏖️</div><div class="mob-nav-label" style="color:var(--red)">Leave</div></div>
+                  <div class="mob-nav-item"><div class="mob-nav-icon">👤</div><div class="mob-nav-label">Profile</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEAVE APPROVAL (COORDINATOR) -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">Leave Approval — Coordinator View</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">Leave Request</div>
+              <button class="as-topbar-save">SAVE</button>
+            </div>
+            <div class="as-card" style="margin-top:8px">
+              <div class="as-detail-section">
+                <div class="as-detail-title">Request from</div>
+                <div class="as-detail-row"><span class="as-detail-key">Name</span><span class="as-detail-val">Pavel Horáček</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Role</span><span class="as-detail-val">Technical Director</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Type</span><span class="as-detail-val">🏖️ Vacation</span></div>
+                <div class="as-detail-row"><span class="as-detail-key">Period</span><span class="as-detail-val">Mar 24–28 (5 days)</span></div>
+              </div>
+            </div>
+            <div style="background:#fde8e8;margin:8px;border-radius:4px;padding:8px 10px;font-size:11px;color:#b71c1c;border-left:3px solid var(--red)">⚠️ <strong>Conflict detected:</strong> Pavel is assigned as Technical Director on <strong>Ostrava Live 2025</strong> (Mar 18–20). Ensure cover is arranged before approving.</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Decision</div>
+                <div class="chip-row">
+                  <div class="as-chip">Pending</div>
+                  <div class="as-chip sel-green">Approve</div>
+                  <div class="as-chip">Reject</div>
+                </div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Coordinator note</div>
+                <div class="as-field-placeholder">Reason / instructions…</div>
+              </div>
+            </div>
+            <div class="as-action-bar">
+              <button class="as-btn as-btn-secondary">Reject</button>
+              <button class="as-btn as-btn-primary">Approve Leave</button>
+            </div>
+            <div class="limit-box limit-ok">✓ Approval notification sent automatically to crew member via AppSheet automation email.</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="limit-box limit-warn" style="margin-top:12px">⚠️ <strong>Crew app installation:</strong> Crew members must install the AppSheet app from App Store / Play Store (free). They cannot use a web browser for QR scanning or offline mode — these require the native app. The install process takes ~2 minutes: share the app link by email, crew taps it on their phone, app installs automatically.</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- MAINTENANCE -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="section" id="maintenance">
+      <div class="section-header">
+        <div class="section-badge sb-orange">🔧</div>
+        <div><div class="section-title">Maintenance</div><div class="section-sub">Report form for vehicles and equipment · Service history</div></div>
+      </div>
+      <div class="screens-grid">
+
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">Log Maintenance Record</div>
+            <div class="screen-label-note note-green">✓ Fully doable</div>
+          </div>
+          <div class="as-frame">
+            <div class="as-topbar">
+              <div class="as-topbar-back">←</div>
+              <div class="as-topbar-title">New Maintenance Record</div>
+              <button class="as-topbar-save">SAVE</button>
+            </div>
+            <div class="as-section-header">What needs maintenance?</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Asset type</div>
+                <div class="chip-row">
+                  <div class="as-chip selected">Vehicle</div>
+                  <div class="as-chip">Equipment</div>
+                </div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Asset</div>
+                <div class="as-ref"><span class="as-ref-icon">🚛</span> OB Truck 4 – 4DE 6789</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Reported date</div>
+                <div class="as-field-value">Mar 9, 2025 <span style="color:var(--mid);font-size:11px">(auto)</span></div>
+              </div>
+            </div>
+            <div class="as-section-header">Issue details</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label as-field-required">Issue description</div>
+                <div class="as-field-placeholder">Describe the problem in detail…</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Photo</div>
+                <div class="as-field-row"><div class="as-field-icon">📷</div><div class="as-field-placeholder">Take or upload photo…</div></div>
+                <div class="as-field-hint">Optional — attach photo of damage or issue</div>
+              </div>
+              <div class="as-field">
+                <div class="as-field-label">Priority</div>
+                <div class="chip-row">
+                  <div class="as-chip">Low</div>
+                  <div class="as-chip selected">Normal</div>
+                  <div class="as-chip">Urgent</div>
+                  <div class="as-chip">Blocks project</div>
+                </div>
+              </div>
+            </div>
+            <div class="as-section-header">Resolution</div>
+            <div class="as-card">
+              <div class="as-field">
+                <div class="as-field-label">Status</div>
+                <div class="chip-row">
+                  <div class="as-chip selected">Open</div>
+                  <div class="as-chip">In Repair</div>
+                  <div class="as-chip sel-green">Completed</div>
+                </div>
+              </div>
+              <div class="as-field"><div class="as-field-label">Assigned technician</div><div class="as-field-placeholder">Name or company…</div></div>
+              <div class="as-field"><div class="as-field-label">Repair cost (CZK)</div><div class="as-field-placeholder">0</div></div>
+              <div class="as-field"><div class="as-field-label">Completed date</div><div class="as-field-row"><div class="as-field-icon">📅</div><div class="as-field-placeholder">Pick date…</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CANNOT DELIVER -->
+        <div class="screen-card">
+          <div class="screen-label">
+            <div class="screen-label-title">What we CANNOT deliver with Business Starter</div>
+            <div class="screen-label-note note-red">⚠ Limitations</div>
+          </div>
+          <div class="as-frame" style="padding:12px">
+            <div class="limit-box limit-no" style="margin:0 0 8px">
+              <strong>🔴 External system integrations (YouTrack, etc.)</strong><br>
+              AppSheet Core cannot connect directly to REST APIs. Integration with YouTrack or other external tools requires an Apps Script middleware. Doable but adds complexity — not a simple toggle.
+            </div>
+            <div class="limit-box limit-no" style="margin:0 0 8px">
+              <strong>🔴 Fully custom-branded forms</strong><br>
+              AppSheet forms follow AppSheet's layout — you get the company colour and logo, but cannot change fonts, field layouts, or add custom CSS. Forms will look like AppSheet, not a bespoke web app.
+            </div>
+            <div class="limit-box limit-no" style="margin:0 0 8px">
+              <strong>🔴 Hard real-time conflict locking</strong><br>
+              Google Sheets has no row-level locking. Two coordinators saving at the same moment could create a duplicate booking. Warnings are shown but cannot be enforced at the database level. Acceptable for a team of this size.
+            </div>
+            <div class="limit-box limit-warn" style="margin:0 0 8px">
+              <strong>🟡 PDF offer styling</strong><br>
+              AppSheet's built-in PDF is basic. A professionally branded offer PDF requires Apps Script + a Google Docs template (additional setup time: ~1 day).
+            </div>
+            <div class="limit-box limit-warn" style="margin:0 0 8px">
+              <strong>🟡 Automation email volume</strong><br>
+              Apps Script: 1,500 emails/day. AppSheet Core automations: ~2,000 runs/month. For Reckord's team size this is more than enough, but worth monitoring as the team grows.
+            </div>
+            <div class="limit-box limit-ok" style="margin:0 0 8px">
+              <strong>🟢 Offline mode — YES, included</strong><br>
+              AppSheet Core includes offline mode with background sync. Crew can use checklists without mobile data on-set. Requires the native AppSheet app (not browser).
+            </div>
+            <div class="limit-box limit-ok" style="margin:0">
+              <strong>🟢 Shared Drives — YES, included</strong><br>
+              Google Workspace Business Starter includes Shared Drives. All project files, offers, and attachments can live in organisation-owned folders — not tied to any individual's account.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="height:40px"></div>
+  </div><!-- /content -->
+</main>
+</div>
+
+<script>
+function go(id) {
+  document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const map = {clients:0,projects:1,offers:2,equipment:3,fleet:4,crew:5,maintenance:6};
+  const items = document.querySelectorAll('.nav-item');
+  if (map[id] !== undefined && items[map[id]]) items[map[id]].classList.add('active');
+}
+</script>
+</body>
+</html>
