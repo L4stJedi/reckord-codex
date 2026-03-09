@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reckord Codex – Implementation Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --red: #E10B17; --red-dark: #c2030d; --black: #111111; --dark: #1c1c1c;
+    --dark2: #2a2a2a; --gray: #555; --mid: #888; --light: #e8e8e8; --bg: #f4f4f4;
+    --white: #fff; --green: #27ae60; --orange: #e67e22; --blue: #2980b9; --yellow: #f39c12;
+    --sidebar-w: 260px;
+  }
+  html, body { height: 100%; font-family: 'Roboto', sans-serif; background: var(--bg); color: var(--black); font-size: 14px; }
+
+  .layout { display: flex; height: 100vh; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar { width: var(--sidebar-w); background: var(--black); color: white; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+  .sidebar-logo { padding: 22px 20px 18px; border-bottom: 1px solid #2a2a2a; }
+  .logo-mark { display: flex; align-items: center; gap: 10px; }
+  .logo-r { width: 34px; height: 34px; background: var(--red); color: white; font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center; border-radius: 4px; flex-shrink: 0; }
+  .logo-text { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+  .logo-sub { font-size: 9px; color: var(--mid); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+
+  .nav-section { padding: 14px 0 6px; }
+  .nav-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); padding: 0 20px 8px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; cursor: pointer; color: #aaa; font-size: 13px; border-left: 3px solid transparent; transition: all 0.15s; }
+  .nav-item:hover { background: var(--dark); color: white; }
+  .nav-item.active { background: var(--dark2); color: white; border-left-color: var(--red); }
+  .phase-num { width: 20px; height: 20px; border-radius: 50%; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .nav-item.active .phase-num { background: var(--red); }
+  .nav-item.done .phase-num { background: var(--green); }
+  .nav-back { display: flex; align-items: center; gap: 8px; padding: 12px 20px; color: #aaa; font-size: 12px; cursor: pointer; border-bottom: 1px solid #2a2a2a; transition: color 0.15s; }
+  .nav-back:hover { color: white; }
+
+  .sidebar-footer { margin-top: auto; padding: 14px 20px; border-top: 1px solid #2a2a2a; font-size: 11px; color: var(--mid); }
+  .sidebar-footer a { color: var(--red); text-decoration: none; }
+
+  /* MAIN */
+  .main { flex: 1; overflow-y: auto; }
+
+  /* HERO */
+  .hero { background: var(--black); color: white; padding: 48px 56px 40px; border-bottom: 3px solid var(--red); }
+  .hero-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--mid); margin-bottom: 10px; }
+  .hero-title { font-size: 36px; font-weight: 800; line-height: 1.1; margin-bottom: 12px; }
+  .hero-title span { color: var(--red); }
+  .hero-sub { font-size: 15px; color: #aaa; max-width: 600px; line-height: 1.6; }
+  .hero-stack { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .stack-pill { display: flex; align-items: center; gap: 6px; background: #1c1c1c; border: 1px solid #333; border-radius: 20px; padding: 5px 14px; font-size: 12px; }
+  .stack-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* CONTENT */
+  .content { padding: 40px 56px; max-width: 1000px; }
+
+  /* PHASE OVERVIEW CARDS */
+  .phases-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 48px; }
+  .phase-card { background: white; border-radius: 8px; padding: 16px; border-top: 3px solid var(--light); cursor: pointer; transition: all 0.15s; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .phase-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
+  .phase-card.p1 { border-top-color: var(--blue); }
+  .phase-card.p2 { border-top-color: var(--orange); }
+  .phase-card.p3 { border-top-color: var(--green); }
+  .phase-card.p4 { border-top-color: var(--yellow); }
+  .phase-card.p5 { border-top-color: var(--red); }
+  .pc-num { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--mid); margin-bottom: 6px; }
+  .pc-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .pc-tags { display: flex; flex-direction: column; gap: 3px; }
+  .pc-tag { font-size: 10px; color: var(--gray); }
+
+  /* PHASE SECTION */
+  .phase-section { margin-bottom: 64px; }
+  .phase-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 2px solid var(--light); }
+  .phase-badge { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: white; flex-shrink: 0; }
+  .b1 { background: var(--blue); } .b2 { background: var(--orange); } .b3 { background: var(--green); } .b4 { background: var(--yellow); } .b5 { background: var(--red); }
+  .phase-title { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+  .phase-desc { font-size: 13px; color: var(--gray); line-height: 1.5; }
+  .phase-meta { display: flex; gap: 16px; margin-top: 8px; }
+  .phase-meta-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--mid); }
+
+  /* TOOLS USED */
+  .tools-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .tool-badge { display: flex; align-items: center; gap: 6px; background: white; border: 1.5px solid var(--light); border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 500; }
+
+  /* MODULE */
+  .module { background: white; border-radius: 8px; margin-bottom: 16px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .module-header { padding: 16px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; border-bottom: 1px solid transparent; transition: background 0.1s; }
+  .module-header:hover { background: #fafafa; }
+  .module-header.open { border-bottom-color: var(--light); }
+  .module-icon { font-size: 20px; }
+  .module-title { font-weight: 700; font-size: 14px; flex: 1; }
+  .module-sub { font-size: 12px; color: var(--mid); margin-top: 2px; }
+  .module-chevron { font-size: 12px; color: var(--mid); transition: transform 0.2s; }
+  .module-header.open .module-chevron { transform: rotate(180deg); }
+  .module-body { display: none; padding: 0 20px 20px; }
+  .module-body.open { display: block; }
+
+  /* STEPS */
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 14px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #f5f5f5; }
+  .step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--black); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .step-content { flex: 1; }
+  .step-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+  .step-body { font-size: 13px; color: var(--gray); line-height: 1.7; }
+  .step-body ul { margin: 8px 0 0 16px; }
+  .step-body li { margin-bottom: 4px; }
+  .step-body code { background: #f0f0f0; border: 1px solid var(--light); border-radius: 3px; padding: 1px 6px; font-family: 'Courier New', monospace; font-size: 12px; color: var(--black); }
+  .step-body strong { color: var(--black); font-weight: 600; }
+
+  /* SCHEMA BOX */
+  .schema-box { background: #1c1c1c; color: #e8e8e8; border-radius: 6px; padding: 16px 20px; margin: 12px 0; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.8; overflow-x: auto; }
+  .schema-box .key { color: #7ec8e3; }
+  .schema-box .val { color: #a8d8a8; }
+  .schema-box .comment { color: #666; }
+  .schema-box .tab-name { color: var(--red); font-weight: 700; }
+
+  /* NOTE BOX */
+  .note { background: #fff8e1; border-left: 3px solid var(--yellow); border-radius: 0 6px 6px 0; padding: 10px 14px; margin: 12px 0; font-size: 12px; line-height: 1.6; color: #555; }
+  .note strong { color: var(--black); }
+  .tip { background: #e8f5e9; border-left: 3px solid var(--green); border-radius: 0 6px 6px 0; padding: 10px 14px; margin: 12px 0; font-size: 12px; line-height: 1.6; color: #555; }
+  .warn { background: #fde8e8; border-left: 3px solid var(--red); border-radius: 0 6px 6px 0; padding: 10px 14px; margin: 12px 0; font-size: 12px; line-height: 1.6; color: #555; }
+
+  /* OUTCOME */
+  .outcome { background: var(--black); color: white; border-radius: 6px; padding: 16px 20px; margin-top: 20px; }
+  .outcome-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--mid); margin-bottom: 8px; }
+  .outcome-list { list-style: none; }
+  .outcome-list li { padding: 4px 0; font-size: 13px; display: flex; gap: 8px; }
+  .outcome-list li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  /* SHEET TABLE */
+  .sheet-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+  .sheet-table th { background: var(--black); color: white; padding: 8px 12px; text-align: left; font-weight: 600; font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .sheet-table td { padding: 7px 12px; border-bottom: 1px solid var(--light); vertical-align: top; }
+  .sheet-table tr:last-child td { border-bottom: none; }
+  .sheet-table tr:nth-child(even) td { background: #fafafa; }
+  .type-str { color: var(--blue); font-size: 11px; }
+  .type-num { color: var(--green); font-size: 11px; }
+  .type-date { color: var(--orange); font-size: 11px; }
+  .type-enum { color: var(--red); font-size: 11px; }
+  .type-ref { color: #9b59b6; font-size: 11px; }
+  .type-bool { color: #16a085; font-size: 11px; }
+
+  /* SECTION DIVIDER */
+  .section-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--light); }
+
+  /* SCRIPT BLOCK */
+  .script-block { background: #1e1e1e; color: #d4d4d4; border-radius: 6px; padding: 16px 20px; margin: 12px 0; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.8; overflow-x: auto; }
+  .sc-keyword { color: #569cd6; }
+  .sc-string { color: #ce9178; }
+  .sc-comment { color: #6a9955; }
+  .sc-func { color: #dcdcaa; }
+  .sc-var { color: #9cdcfe; }
+
+  /* ROLE TABLE */
+  .role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+  .role-card { background: #fafafa; border: 1.5px solid var(--light); border-radius: 6px; padding: 12px 14px; }
+  .role-name { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+  .role-perms { font-size: 11px; color: var(--gray); line-height: 1.6; }
+
+  /* PROGRESS OVERVIEW */
+  .progress-bar-wrap { margin: 6px 0; }
+  .pb-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; }
+  .pb { height: 5px; background: var(--light); border-radius: 3px; overflow: hidden; }
+  .pb-fill { height: 100%; border-radius: 3px; }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .hero { padding: 28px 24px; }
+    .content { padding: 24px; }
+    .phases-grid { grid-template-columns: repeat(2, 1fr); }
+    .role-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-r">R</div>
+      <div>
+        <div class="logo-text">RECKORD</div>
+        <div class="logo-sub">Implementation Guide</div>
+      </div>
+    </div>
+  </div>
+  <a class="nav-back" href="index.html">← Back to mockup</a>
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" onclick="scrollTo('overview')"><span>📋</span> Platform Overview</div>
+    <div class="nav-item" onclick="scrollTo('prereqs')"><span>⚙️</span> Prerequisites</div>
+    <div class="nav-item" onclick="scrollTo('structure')"><span>🗂️</span> Folder & Sheet Structure</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Phases</div>
+    <div class="nav-item" onclick="scrollTo('phase1')"><div class="phase-num">1</div> Foundation</div>
+    <div class="nav-item" onclick="scrollTo('phase2')"><div class="phase-num">2</div> Operations MVP</div>
+    <div class="nav-item" onclick="scrollTo('phase3')"><div class="phase-num">3</div> Commercial Flow</div>
+    <div class="nav-item" onclick="scrollTo('phase4')"><div class="phase-num">4</div> Crew Rollout</div>
+    <div class="nav-item" onclick="scrollTo('phase5')"><div class="phase-num">5</div> Reporting</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Reference</div>
+    <div class="nav-item" onclick="scrollTo('automation')"><span>⚡</span> Apps Script Reference</div>
+    <div class="nav-item" onclick="scrollTo('roles')"><span>👤</span> Roles & Permissions</div>
+  </div>
+  <div class="sidebar-footer">
+    Reckord Codex · Google Workspace Build<br>
+    <a href="index.html">← Platform Mockup</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label">Reckord Codex · Implementation Guide</div>
+    <div class="hero-title">Build it step by step<br>on <span>Google Workspace</span></div>
+    <div class="hero-sub">A practical, phase-by-phase guide for building the Reckord Outdoor Broadcasting operations platform using AppSheet, Google Sheets, Apps Script, and Looker Studio. No code experience required for most steps.</div>
+    <div class="hero-stack">
+      <div class="stack-pill"><div class="stack-dot" style="background:#4285F4"></div> AppSheet</div>
+      <div class="stack-pill"><div class="stack-dot" style="background:#0F9D58"></div> Google Sheets</div>
+      <div class="stack-pill"><div class="stack-dot" style="background:#F4B400"></div> Apps Script</div>
+      <div class="stack-pill"><div class="stack-dot" style="background:#DB4437"></div> Looker Studio</div>
+      <div class="stack-pill"><div class="stack-dot" style="background:#673AB7"></div> Google Drive</div>
+      <div class="stack-pill"><div class="stack-dot" style="background:#00BCD4"></div> Google Workspace</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- PHASE OVERVIEW CARDS -->
+    <div id="overview" class="section-title" style="margin-top:0">5 Phases · From zero to live</div>
+    <div class="phases-grid">
+      <div class="phase-card p1" onclick="scrollTo('phase1')">
+        <div class="pc-num">Phase 1</div>
+        <div class="pc-title">Foundation</div>
+        <div class="pc-tags">
+          <div class="pc-tag">📋 Sheets structure</div>
+          <div class="pc-tag">🔐 Users & roles</div>
+          <div class="pc-tag">📁 Drive folders</div>
+          <div class="pc-tag">📱 AppSheet setup</div>
+        </div>
+      </div>
+      <div class="phase-card p2" onclick="scrollTo('phase2')">
+        <div class="pc-num">Phase 2</div>
+        <div class="pc-title">Operations MVP</div>
+        <div class="pc-tags">
+          <div class="pc-tag">🚛 Fleet management</div>
+          <div class="pc-tag">📦 Asset tracking</div>
+          <div class="pc-tag">📷 QR code scanning</div>
+          <div class="pc-tag">🔒 Reservations</div>
+        </div>
+      </div>
+      <div class="phase-card p3" onclick="scrollTo('phase3')">
+        <div class="pc-num">Phase 3</div>
+        <div class="pc-title">Commercial Flow</div>
+        <div class="pc-tags">
+          <div class="pc-tag">🏢 CRM & clients</div>
+          <div class="pc-tag">💶 Offer builder</div>
+          <div class="pc-tag">✅ Approvals</div>
+          <div class="pc-tag">💳 Finance stages</div>
+        </div>
+      </div>
+      <div class="phase-card p4" onclick="scrollTo('phase4')">
+        <div class="pc-num">Phase 4</div>
+        <div class="pc-title">Crew Rollout</div>
+        <div class="pc-tags">
+          <div class="pc-tag">📅 Scheduling</div>
+          <div class="pc-tag">🏖️ Leave requests</div>
+          <div class="pc-tag">📋 Checklists</div>
+          <div class="pc-tag">📱 Mobile views</div>
+        </div>
+      </div>
+      <div class="phase-card p5" onclick="scrollTo('phase5')">
+        <div class="pc-num">Phase 5</div>
+        <div class="pc-title">Reporting</div>
+        <div class="pc-tags">
+          <div class="pc-tag">📊 Looker Studio</div>
+          <div class="pc-tag">📈 KPI dashboards</div>
+          <div class="pc-tag">⚡ 72h ops view</div>
+          <div class="pc-tag">💰 Margin analysis</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREREQUISITES -->
+    <div id="prereqs" class="section-title">Prerequisites</div>
+    <div class="module">
+      <div class="module-header open" onclick="toggleModule(this)">
+        <div class="module-icon">⚙️</div>
+        <div><div class="module-title">What you need before starting</div><div class="module-sub">Accounts, licences, and access</div></div>
+        <div class="module-chevron">▼</div>
+      </div>
+      <div class="module-body open">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">Google Workspace account</div>
+              <div class="step-body">You need a <strong>Google Workspace Business Starter</strong> (or higher) subscription. Individual Gmail accounts cannot be used for AppSheet with team access.<br><br>
+              Minimum recommended plan: <strong>Business Starter</strong> — covers Sheets, Drive, and AppSheet Core.<br>
+              For AppSheet automations (Apps Script triggers): <strong>Business Standard</strong> or higher.<br><br>
+              Admin access is required to add users and configure sharing permissions.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">AppSheet account</div>
+              <div class="step-body">AppSheet is included in Google Workspace. Activate it at <code>appsheet.com</code> using your Workspace Google account. No separate subscription is needed for the initial build — AppSheet Core is included with most Workspace plans.<br><br>
+              If you need <strong>offline mode or advanced automation</strong>, you may need AppSheet Enterprise Standard.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">User accounts for the team</div>
+              <div class="step-body">Create Google Workspace user accounts for all staff who will use the platform. Suggested naming: <code>firstname.lastname@reckord.tv</code><br><br>
+              Create the following Google Groups (used for role-based access):
+              <ul>
+                <li><code>operations@reckord.tv</code> — warehouse, fleet</li>
+                <li><code>sales@reckord.tv</code> — sellers, coordinators</li>
+                <li><code>finance@reckord.tv</code> — finance team</li>
+                <li><code>crew@reckord.tv</code> — all crew members</li>
+                <li><code>management@reckord.tv</code> — directors, managers</li>
+                <li><code>admins@reckord.tv</code> — platform administrators</li>
+              </ul>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">Looker Studio access</div>
+              <div class="step-body">Looker Studio is free at <code>lookerstudio.google.com</code>. Sign in with your Workspace account. No additional setup needed — you will connect it to Sheets in Phase 5.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOLDER STRUCTURE -->
+    <div id="structure" class="section-title">Google Drive Folder Structure</div>
+    <div class="module">
+      <div class="module-header open" onclick="toggleModule(this)">
+        <div class="module-icon">📁</div>
+        <div><div class="module-title">Create the folder hierarchy in Google Drive</div><div class="module-sub">All files live here — shared with the right groups</div></div>
+        <div class="module-chevron">▼</div>
+      </div>
+      <div class="module-body open">
+        <div class="step-body" style="margin-bottom:14px">Create a <strong>Shared Drive</strong> (not My Drive) named <code>Reckord Codex</code> so files are owned by the organisation, not individuals. Then build this folder tree:</div>
+        <div class="schema-box">
+<span class="tab-name">📁 Reckord Codex</span>  <span class="comment">← Shared Drive root</span>
+│
+├── <span class="tab-name">📁 _Database</span>          <span class="comment">← All Google Sheets live here</span>
+│   ├── ReckordDB_Master.xlsx    <span class="comment">← Main operational spreadsheet</span>
+│   └── ReckordDB_Backup/        <span class="comment">← Weekly snapshots</span>
+│
+├── <span class="tab-name">📁 Offers</span>
+│   ├── 2025/
+│   │   ├── OFF-0001_ClientName.pdf
+│   │   └── OFF-0002_ClientName.pdf
+│   └── Templates/
+│
+├── <span class="tab-name">📁 Projects</span>
+│   └── PRJ-0001_OstravaLive2025/
+│       ├── CallSheet.pdf
+│       ├── PackingList.pdf
+│       └── Attachments/
+│
+├── <span class="tab-name">📁 Maintenance</span>
+│   ├── Vehicles/
+│   └── Equipment/
+│
+├── <span class="tab-name">📁 Crew</span>
+│   ├── Contracts/
+│   └── Certifications/
+│
+└── <span class="tab-name">📁 Reports</span>
+    └── Monthly/
+        </div>
+        <div class="note"><strong>Sharing:</strong> Grant the <code>admins@reckord.tv</code> group Manager access to the Shared Drive. Other groups get Contributor or Viewer access per folder as needed. Never share with "Everyone at Reckord" — use explicit groups.</div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- PHASE 1 -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div id="phase1" class="phase-section">
+      <div class="phase-header">
+        <div class="phase-badge b1">1</div>
+        <div>
+          <div class="phase-title">Foundation — Data backbone & AppSheet setup</div>
+          <div class="phase-desc">Build the master Google Sheet with all tables, configure AppSheet, and set up user roles. Everything else depends on this being stable and well-structured.</div>
+          <div class="phase-meta">
+            <div class="phase-meta-item">📋 Google Sheets</div>
+            <div class="phase-meta-item">📱 AppSheet</div>
+            <div class="phase-meta-item">🔐 Workspace Admin</div>
+            <div class="phase-meta-item">⏱ Estimated: 2–3 days</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tools-row">
+        <div class="tool-badge">📋 Google Sheets</div>
+        <div class="tool-badge">📱 AppSheet</div>
+        <div class="tool-badge">🔐 Google Workspace Admin</div>
+        <div class="tool-badge">📁 Google Drive</div>
+      </div>
+
+      <!-- MODULE 1.1 -->
+      <div class="module">
+        <div class="module-header open" onclick="toggleModule(this)">
+          <div class="module-icon">📋</div>
+          <div><div class="module-title">1.1 — Create the master Google Sheet</div><div class="module-sub">One spreadsheet, one tab per table</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body open">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Create the file</div>
+                <div class="step-body">In the <code>_Database</code> folder on the Shared Drive, create a new Google Sheet named <code>ReckordDB_Master</code>.<br>
+                Rename the default "Sheet1" tab to <code>Clients</code>.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Create all 12 tabs</div>
+                <div class="step-body">Add one tab for each table. Name them exactly as shown (AppSheet is case-sensitive):
+                <table class="sheet-table" style="margin-top:10px">
+                  <thead><tr><th>Tab name</th><th>Purpose</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>Clients</code></td><td>Customer companies</td></tr>
+                    <tr><td><code>Contacts</code></td><td>Individual contacts per client</td></tr>
+                    <tr><td><code>Projects</code></td><td>All broadcast projects / events</td></tr>
+                    <tr><td><code>Offers</code></td><td>Quotes and offer lifecycle</td></tr>
+                    <tr><td><code>OfferItems</code></td><td>Line items per offer</td></tr>
+                    <tr><td><code>Vehicles</code></td><td>Fleet records</td></tr>
+                    <tr><td><code>Equipment</code></td><td>Individual tracked assets</td></tr>
+                    <tr><td><code>EquipmentMovements</code></td><td>Audit log of asset movements</td></tr>
+                    <tr><td><code>Crew</code></td><td>Crew member profiles</td></tr>
+                    <tr><td><code>CrewAvailability</code></td><td>Availability and leave records</td></tr>
+                    <tr><td><code>CrewAssignments</code></td><td>Project-to-crew linking</td></tr>
+                    <tr><td><code>Maintenance</code></td><td>Maintenance records (vehicles + assets)</td></tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Add column headers to each tab</div>
+                <div class="step-body">Row 1 of every tab must contain column headers in row 1 — these become field names in AppSheet. <strong>Use exact names, no spaces.</strong>
+
+                <br><br><strong>Clients tab:</strong>
+                <table class="sheet-table">
+                  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>ClientID</code></td><td class="type-str">Text</td><td>Primary key — auto-generated by AppSheet (UNIQUEID())</td></tr>
+                    <tr><td><code>CompanyName</code></td><td class="type-str">Text</td><td>Required</td></tr>
+                    <tr><td><code>BillingAddress</code></td><td class="type-str">Text</td><td></td></tr>
+                    <tr><td><code>Country</code></td><td class="type-enum">Enum</td><td>Czech Republic, Slovakia, Germany, Other</td></tr>
+                    <tr><td><code>VATNumber</code></td><td class="type-str">Text</td><td></td></tr>
+                    <tr><td><code>PrimaryContactName</code></td><td class="type-str">Text</td><td></td></tr>
+                    <tr><td><code>PrimaryContactEmail</code></td><td class="type-str">Email</td><td></td></tr>
+                    <tr><td><code>PrimaryContactPhone</code></td><td class="type-str">Phone</td><td></td></tr>
+                    <tr><td><code>RiskFlag</code></td><td class="type-enum">Enum</td><td>Normal, Watch, Blocked</td></tr>
+                    <tr><td><code>Notes</code></td><td class="type-str">LongText</td><td></td></tr>
+                    <tr><td><code>CreatedDate</code></td><td class="type-date">Date</td><td>Auto-set on creation</td></tr>
+                  </tbody>
+                </table>
+
+                <br><strong>Projects tab:</strong>
+                <table class="sheet-table">
+                  <thead><tr><th>Column</th><th>Type</th><th>Notes</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>ProjectID</code></td><td class="type-str">Text</td><td>Auto-generated</td></tr>
+                    <tr><td><code>ClientID</code></td><td class="type-ref">Ref → Clients</td><td>Foreign key</td></tr>
+                    <tr><td><code>ProjectName</code></td><td class="type-str">Text</td><td>Required</td></tr>
+                    <tr><td><code>Location</code></td><td class="type-str">Text</td><td></td></tr>
+                    <tr><td><code>StartDate</code></td><td class="type-date">Date</td><td></td></tr>
+                    <tr><td><code>EndDate</code></td><td class="type-date">Date</td><td></td></tr>
+                    <tr><td><code>Status</code></td><td class="type-enum">Enum</td><td>Request, Offer, Confirmed, Active, Completed, Closed</td></tr>
+                    <tr><td><code>ProjectManager</code></td><td class="type-ref">Ref → Crew</td><td></td></tr>
+                    <tr><td><code>Description</code></td><td class="type-str">LongText</td><td></td></tr>
+                    <tr><td><code>CreatedDate</code></td><td class="type-date">Date</td><td>Auto-set</td></tr>
+                  </tbody>
+                </table>
+
+                <div class="note"><strong>Tip:</strong> Repeat this for all 12 tabs using the schema document. Keep column names consistent — any mismatch between tabs and AppSheet field names will break references.</div>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <div class="step-title">Add data validation to Enum columns</div>
+                <div class="step-body">For status and enum columns, add Google Sheets data validation so users can't type invalid values directly in the sheet. Select the column → <strong>Data → Data validation → Dropdown</strong> → add allowed values.<br><br>
+                This is a safety net — AppSheet will also enforce enums on its side.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">5</div>
+              <div class="step-content">
+                <div class="step-title">Freeze row 1 and lock headers</div>
+                <div class="step-body">On every tab: <strong>View → Freeze → 1 row</strong>. Then select row 1, right-click → <strong>Protect range</strong> → restrict editing to admins only. This prevents accidental header deletion which would break AppSheet.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULE 1.2 -->
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">📱</div>
+          <div><div class="module-title">1.2 — Connect AppSheet and create the app</div><div class="module-sub">Link the Sheet, let AppSheet detect the schema</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Create new AppSheet app from your Sheet</div>
+                <div class="step-body">Go to <code>appsheet.com</code> → <strong>+ New app → Start with existing data → Google Sheets</strong>. Select <code>ReckordDB_Master</code> from your Drive. AppSheet will auto-detect all 12 tabs and import the schema.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Verify detected column types</div>
+                <div class="step-body">In AppSheet editor: <strong>Data → Tables → [each table] → View columns</strong>. Check that:
+                <ul>
+                  <li>ID columns are set to <code>Text</code> with <code>UNIQUEID()</code> as initial value</li>
+                  <li>Date columns are <code>Date</code> type</li>
+                  <li>Reference columns (ClientID in Projects, etc.) are set to <code>Ref</code> pointing to the correct table</li>
+                  <li>Enum columns show the correct dropdown values</li>
+                </ul>
+                Correct any misdetected types manually.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Configure Ref (relationship) columns</div>
+                <div class="step-body">For each foreign key column, set the type to <strong>Ref</strong>:
+                <ul>
+                  <li><code>Projects.ClientID</code> → Ref to <code>Clients</code>, label column: <code>CompanyName</code></li>
+                  <li><code>Offers.ProjectID</code> → Ref to <code>Projects</code>, label: <code>ProjectName</code></li>
+                  <li><code>OfferItems.OfferID</code> → Ref to <code>Offers</code></li>
+                  <li><code>CrewAssignments.CrewID</code> → Ref to <code>Crew</code>, label: <code>Name</code></li>
+                  <li><code>CrewAssignments.ProjectID</code> → Ref to <code>Projects</code></li>
+                  <li><code>EquipmentMovements.EquipmentID</code> → Ref to <code>Equipment</code></li>
+                </ul>
+                This enables AppSheet to show dropdowns when selecting related records.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <div class="step-title">Enable "Referenced rows" on parent tables</div>
+                <div class="step-body">On the <code>Clients</code> table → <strong>View columns</strong> → Add virtual column → <code>Related Projects</code> → type <code>List</code>, formula: <code>REF_ROWS("Projects","ClientID")</code><br><br>
+                Do the same for Projects → Related Offers, Projects → Related Assignments, etc. This allows a client record to show all linked projects inline.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">5</div>
+              <div class="step-content">
+                <div class="step-title">Name and brand the app</div>
+                <div class="step-body">App settings → <strong>Info</strong>: set name to <code>Reckord Codex</code>. Under <strong>Theme</strong>: set primary color to <code>#E10B17</code>, background dark. Upload the Reckord logo as the app icon.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULE 1.3 -->
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">🔐</div>
+          <div><div class="module-title">1.3 — Configure roles and access control</div><div class="module-sub">Who sees what — role-based views in AppSheet</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Define user roles in AppSheet</div>
+                <div class="step-body">Go to <strong>Security → Roles</strong>. Create the following roles:
+                <div class="role-grid" style="margin-top:10px">
+                  <div class="role-card"><div class="role-name">🔧 Operations</div><div class="role-perms">Fleet, Equipment, Projects (read), Maintenance</div></div>
+                  <div class="role-card"><div class="role-name">💼 Sales</div><div class="role-perms">Clients, Contacts, Projects, Offers, OfferItems</div></div>
+                  <div class="role-card"><div class="role-name">💰 Finance</div><div class="role-perms">Offers (all stages), Projects (read), Clients (read)</div></div>
+                  <div class="role-card"><div class="role-name">👤 Crew</div><div class="role-perms">Own assignments only, Checklists, Leave requests</div></div>
+                  <div class="role-card"><div class="role-name">📊 Management</div><div class="role-perms">Read-all + Dashboards. No direct data edit.</div></div>
+                  <div class="role-card"><div class="role-name">⚙️ Admin</div><div class="role-perms">Full access. Manages users, reference data, config.</div></div>
+                </div>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Assign users to roles</div>
+                <div class="step-body">In AppSheet: <strong>Security → Users → Add users</strong>. Add each team member's <code>@reckord.tv</code> email and assign their role. You can also use Google Groups — add the group email and assign a role to the entire group.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Set row-level security for Crew</div>
+                <div class="step-body">Crew members should only see their own assignments. On the <code>CrewAssignments</code> table → <strong>Security filters</strong> → add:<br>
+                <code>USEREMAIL() = [CrewEmail]</code><br><br>
+                This ensures a crew member logging in only sees rows where their email matches the assigned crew email.</div>
+              </div>
+            </div>
+          </div>
+          <div class="outcome">
+            <div class="outcome-title">Phase 1 outcome — you can now:</div>
+            <ul class="outcome-list">
+              <li>Open AppSheet and see a working app connected to live Sheets data</li>
+              <li>Add a client record without touching the spreadsheet</li>
+              <li>Add a project linked to a client</li>
+              <li>Each team member logs in and sees only their permitted data</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- PHASE 2 -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div id="phase2" class="phase-section">
+      <div class="phase-header">
+        <div class="phase-badge b2">2</div>
+        <div>
+          <div class="phase-title">Operations MVP — Fleet, assets & QR scanning</div>
+          <div class="phase-desc">Build the warehouse and fleet control layer. Crew and warehouse staff can scan QR codes, check items in and out, and flag issues — all from their phone.</div>
+          <div class="phase-meta">
+            <div class="phase-meta-item">🚛 Fleet views</div>
+            <div class="phase-meta-item">📦 Asset tracking</div>
+            <div class="phase-meta-item">📷 QR scanning</div>
+            <div class="phase-meta-item">⏱ Estimated: 3–5 days</div>
+          </div>
+        </div>
+      </div>
+      <div class="tools-row">
+        <div class="tool-badge">📱 AppSheet</div>
+        <div class="tool-badge">📋 Google Sheets</div>
+        <div class="tool-badge">⚡ Apps Script</div>
+        <div class="tool-badge">📷 QR Code API</div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">🚛</div>
+          <div><div class="module-title">2.1 — Fleet management views</div><div class="module-sub">Vehicle records, status tracking, service alerts</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Build the Fleet list view in AppSheet</div>
+                <div class="step-body">In AppSheet → <strong>Views → + New view</strong>. Create a <code>Deck</code> view named <strong>Fleet</strong> on the <code>Vehicles</code> table. Configure:
+                <ul>
+                  <li><strong>Title</strong>: <code>[Name]</code></li>
+                  <li><strong>Subtitle</strong>: <code>[RegistrationNumber] · [Type]</code></li>
+                  <li><strong>Summary column</strong>: <code>[Status]</code></li>
+                  <li><strong>Image</strong>: Optional vehicle photo field</li>
+                </ul>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Add colour coding by status</div>
+                <div class="step-body">On the <code>Status</code> enum column → <strong>Column settings → Valid if / Color</strong>. Set:
+                <ul>
+                  <li>Available → Green</li>
+                  <li>On Project → Blue</li>
+                  <li>Maintenance → Orange</li>
+                  <li>Out of order → Red</li>
+                </ul>
+                These colours appear as badges in the list view.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Add conflict prevention with a formula</div>
+                <div class="step-body">On the <code>Vehicles</code> table → add a virtual column <code>IsAvailableForPeriod</code>. When a new assignment is being created, use an AppSheet expression to check for overlaps:
+                <div class="schema-box" style="margin-top:8px"><span class="comment">// Virtual column on Vehicles — checks for booking conflicts</span>
+COUNTIF(
+  SELECT(
+    CrewAssignments[VehicleID],
+    AND(
+      [VehicleID] = [_THISROW].[VehicleID],
+      [StartDate] &lt;= [_INPUTROW].[EndDate],
+      [EndDate] &gt;= [_INPUTROW].[StartDate]
+    )
+  )
+) = 0</div>
+                <div class="note"><strong>Note:</strong> Full conflict prevention requires an Apps Script trigger — this is built in Phase 3 automation.</div>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <div class="step-title">Maintenance alert badge</div>
+                <div class="step-body">Add a virtual column <code>ServiceAlert</code> on Vehicles:<br>
+                <code>IF([NextServiceDate] &lt; TODAY() + 14, "⚠️ Service due", "")</code><br><br>
+                Show this in the deck view subtitle. The warning appears 14 days before service is due.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">📷</div>
+          <div><div class="module-title">2.2 — QR code generation & scanning</div><div class="module-sub">Every asset gets a scannable card — actions from mobile</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Auto-generate QR codes for each asset</div>
+                <div class="step-body">Add a column <code>QRCode</code> to the <code>Equipment</code> tab. Use this Apps Script function to generate and store a QR URL automatically when a new row is added:
+                <div class="script-block">
+<span class="sc-keyword">function</span> <span class="sc-func">generateQRCodes</span>() {
+  <span class="sc-keyword">const</span> <span class="sc-var">sheet</span> = SpreadsheetApp.getActive()
+    .getSheetByName(<span class="sc-string">'Equipment'</span>);
+  <span class="sc-keyword">const</span> <span class="sc-var">data</span> = sheet.getDataRange().getValues();
+  <span class="sc-keyword">const</span> <span class="sc-var">qrCol</span> = <span class="sc-var">data</span>[0].indexOf(<span class="sc-string">'QRCode'</span>);
+  <span class="sc-keyword">const</span> <span class="sc-var">idCol</span> = <span class="sc-var">data</span>[0].indexOf(<span class="sc-string">'EquipmentID'</span>);
+
+  <span class="sc-keyword">for</span> (<span class="sc-keyword">let</span> i = 1; i &lt; <span class="sc-var">data</span>.length; i++) {
+    <span class="sc-keyword">if</span> (!<span class="sc-var">data</span>[i][<span class="sc-var">qrCol</span>] &amp;&amp; <span class="sc-var">data</span>[i][<span class="sc-var">idCol</span>]) {
+      <span class="sc-keyword">const</span> <span class="sc-var">id</span> = <span class="sc-var">data</span>[i][<span class="sc-var">idCol</span>];
+      <span class="sc-keyword">const</span> <span class="sc-var">qrUrl</span> = <span class="sc-string">`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${</span><span class="sc-var">id</span><span class="sc-string">}`</span>;
+      sheet.getRange(i + 1, <span class="sc-var">qrCol</span> + 1).setValue(<span class="sc-var">qrUrl</span>);
+    }
+  }
+}
+                </div>
+                Run this manually or set a trigger: <strong>Apps Script → Triggers → On sheet edit</strong>.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Display QR in AppSheet asset card</div>
+                <div class="step-body">In AppSheet → <code>Equipment</code> table → set <code>QRCode</code> column type to <strong>Image</strong>. In the detail view for each asset, drag the QR code image to a prominent position. Warehouse staff can now show the phone screen to a handheld scanner, or print labels.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Enable scanning from AppSheet</div>
+                <div class="step-body">In AppSheet: <strong>UX → Views → + New view</strong> → type <strong>Form</strong>, table: <code>EquipmentMovements</code>. Set the <code>EquipmentID</code> field to use <strong>Scan</strong> as input type.<br><br>
+                When a warehouse user taps this view, the phone camera opens. Scanning a QR code auto-fills the asset reference and shows the asset record instantly.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <div class="step-title">Build fast scan actions</div>
+                <div class="step-body">In AppSheet → <strong>Behavior → Actions</strong>. Create quick-action buttons that appear after a QR scan:
+                <ul>
+                  <li><strong>Check Out to Project</strong> — opens a form to select project, updates Status to "Assigned"</li>
+                  <li><strong>Check In</strong> — sets Status to "In Stock", Location to "Warehouse"</li>
+                  <li><strong>Assign to Truck</strong> — sets Location to selected vehicle</li>
+                  <li><strong>Report Damage</strong> — opens a form, creates a Maintenance record, sets Status to "Faulty"</li>
+                </ul>
+                Each action updates the relevant Equipment row and adds a row to EquipmentMovements for the audit trail.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">📦</div>
+          <div><div class="module-title">2.3 — Asset card printing</div><div class="module-sub">Print QR labels for physical assets</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Create a Google Docs print template</div>
+                <div class="step-body">In <code>📁 _Database/Templates/</code>, create a Google Doc named <code>AssetLabel_Template</code>. Design a small label (approx 6×4 cm) with placeholders:<br>
+                <code>{{AssetTag}}</code> · <code>{{Category}}</code> · <code>{{Model}}</code> · <code>{{QRCode image}}</code></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Generate labels via Apps Script</div>
+                <div class="step-body">Write an Apps Script that reads the Equipment sheet and generates a Google Doc with one label per asset, populated with real data. Use the <code>DocumentApp</code> service to replace template placeholders and insert the QR image URL.
+                <div class="tip"><strong>Tip:</strong> Use the free "Labelmaker" add-on for Google Sheets for quick label generation without custom code.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="outcome">
+            <div class="outcome-title">Phase 2 outcome — you can now:</div>
+            <ul class="outcome-list">
+              <li>Scan an asset QR code on a phone and see its full record instantly</li>
+              <li>Check assets in/out with 2 taps — full audit trail recorded automatically</li>
+              <li>See vehicle status board with service alerts highlighted</li>
+              <li>Report damaged equipment from mobile — maintenance record auto-created</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- PHASE 3 -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div id="phase3" class="phase-section">
+      <div class="phase-header">
+        <div class="phase-badge b3">3</div>
+        <div>
+          <div class="phase-title">Commercial Flow — CRM, offers & approvals</div>
+          <div class="phase-desc">Build the guided offer wizard, automatic pricing, soft reservations, approval gates for discounts, and the full offer-to-invoice lifecycle.</div>
+          <div class="phase-meta">
+            <div class="phase-meta-item">🏢 CRM</div>
+            <div class="phase-meta-item">💶 Offer builder</div>
+            <div class="phase-meta-item">✅ Approval workflow</div>
+            <div class="phase-meta-item">⏱ Estimated: 5–7 days</div>
+          </div>
+        </div>
+      </div>
+      <div class="tools-row">
+        <div class="tool-badge">📱 AppSheet</div>
+        <div class="tool-badge">⚡ Apps Script</div>
+        <div class="tool-badge">📧 Gmail API</div>
+        <div class="tool-badge">📄 Google Docs</div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">🏢</div>
+          <div><div class="module-title">3.1 — CRM: Clients and contacts</div><div class="module-sub">Client records with linked contacts and project history</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Build the client detail view</div>
+                <div class="step-body">In AppSheet → Views → create a <strong>Detail</strong> view on <code>Clients</code>. Show inline related rows: Related Contacts, Related Projects, Related Offers. This gives sellers a 360° view of each client in one screen.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Risk flag visual indicator</div>
+                <div class="step-body">Add a conditional format to the <code>RiskFlag</code> column: set enum colour to Red for "Blocked", Orange for "Watch". Add an AppSheet notification action that fires when a user tries to create a new project for a "Blocked" client — shows a warning message.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">💶</div>
+          <div><div class="module-title">3.2 — Offer builder with automatic pricing</div><div class="module-sub">Guided wizard, line items, margin calculation</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Build the offer wizard as a multi-step form</div>
+                <div class="step-body">In AppSheet → Views → create a <strong>Form</strong> view on <code>Offers</code>. Use <strong>page break</strong> columns to split the form into steps:
+                <ul>
+                  <li><strong>Step 1:</strong> Select project (Ref to Projects)</li>
+                  <li><strong>Step 2:</strong> Offer details — validity date, internal notes</li>
+                  <li><strong>Step 3:</strong> Add line items (inline <code>OfferItems</code> table)</li>
+                  <li><strong>Step 4:</strong> Review totals — show calculated fields, margin, any alerts</li>
+                </ul>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Automatic pricing formulas</div>
+                <div class="step-body">On the <code>OfferItems</code> table, add a computed column:
+                <div class="schema-box">
+<span class="comment">// TotalPrice virtual column on OfferItems</span>
+[Quantity] * [UnitPrice]
+
+<span class="comment">// TotalPrice on Offers (sum of all line items)</span>
+SUMIF(OfferItems[OfferID], [OfferID], OfferItems[TotalPrice])
+
+<span class="comment">// DiscountedTotal on Offers</span>
+[TotalPrice] * (1 - [DiscountPercent] / 100)
+
+<span class="comment">// Margin (requires CostPrice column on OfferItems)</span>
+([TotalPrice] - SUM(OfferItems[CostPrice])) / [TotalPrice] * 100
+                </div>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Soft reservations on offer confirmation</div>
+                <div class="step-body">When an offer item references a vehicle or asset, set <code>ReservationStatus</code> to <code>Tentative</code> automatically using an AppSheet action triggered on item save.<br><br>
+                When the offer is accepted (status → Confirmed), an Apps Script trigger updates all linked reservations to <code>Confirmed</code> and updates asset/vehicle <code>Status</code> to <code>Reserved</code>.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <div class="step-title">Discount approval gate</div>
+                <div class="step-body">Add a validation rule to the <code>Offers</code> table that triggers when <code>DiscountPercent > 5</code>:
+                <div class="schema-box">
+<span class="comment">// Require approval for discounts above 5%</span>
+<span class="sc-keyword">IF</span>([DiscountPercent] > 5,
+  [ApprovalStatus] = <span class="sc-string">"Approved"</span>,
+  <span class="sc-keyword">TRUE</span>)
+                </div>
+                Additionally create an <strong>AppSheet Automation</strong> (Bots section): when <code>DiscountPercent</code> changes to > 5, send an email notification to the manager with a link to the offer for approval. The manager approves directly in AppSheet.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">5</div>
+              <div class="step-content">
+                <div class="step-title">Generate offer PDF</div>
+                <div class="step-body">Create a Google Docs template for the offer PDF in <code>📁 Offers/Templates/</code>. Use Apps Script to merge data:
+                <div class="script-block">
+<span class="sc-keyword">function</span> <span class="sc-func">generateOfferPDF</span>(offerId) {
+  <span class="sc-keyword">const</span> <span class="sc-var">templateId</span> = <span class="sc-string">'YOUR_TEMPLATE_DOC_ID'</span>;
+  <span class="sc-keyword">const</span> <span class="sc-var">doc</span> = DocumentApp.openById(
+    DriveApp.getFileById(<span class="sc-var">templateId</span>)
+      .makeCopy(<span class="sc-string">`OFF-${offerId}`</span>).getId()
+  );
+  <span class="sc-comment">// Replace {{placeholders}} with offer data</span>
+  <span class="sc-var">doc</span>.getBody().replaceText(<span class="sc-string">'{{OfferID}}'</span>, offerId);
+  <span class="sc-comment">// ... more replacements</span>
+  <span class="sc-var">doc</span>.saveAndClose();
+  <span class="sc-comment">// Convert to PDF and save to Drive</span>
+  DriveApp.getFileById(<span class="sc-var">doc</span>.getId())
+    .getAs(MimeType.PDF);
+}
+                </div>
+                Trigger this from an AppSheet action button on the Offer detail view: <strong>"Generate PDF"</strong>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">💳</div>
+          <div><div class="module-title">3.3 — Finance lifecycle tracking</div><div class="module-sub">From deposit request to invoiced and closed</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Map the offer stage pipeline</div>
+                <div class="step-body">Configure <code>OfferStatus</code> as a strict enum with ordered values. In AppSheet, use a <strong>Progress</strong> column type to display the current stage as a visual progress bar.<br><br>
+                Stages: <code>Draft → Sent → Negotiation → Accepted → Deposit Requested → Deposit Paid → Active → Completed → Invoiced → Closed</code></div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Add payment tracking columns</div>
+                <div class="step-body">Add to the <code>Offers</code> tab: <code>DepositAmount</code>, <code>DepositDueDate</code>, <code>DepositPaidDate</code>, <code>DepositPaidAmount</code>, <code>InvoiceNumber</code>, <code>InvoicedDate</code>, <code>PaidDate</code>.<br><br>
+                Create an Apps Script trigger: if <code>DepositDueDate</code> passes and <code>DepositPaidDate</code> is empty, send a reminder email to the finance team and the sales owner.</div>
+              </div>
+            </div>
+          </div>
+          <div class="outcome">
+            <div class="outcome-title">Phase 3 outcome — you can now:</div>
+            <ul class="outcome-list">
+              <li>Build a quote in a guided multi-step form — no raw spreadsheet editing</li>
+              <li>Pricing and margins calculated automatically on every change</li>
+              <li>Discounts above threshold automatically route to manager for approval</li>
+              <li>Confirmed offer triggers resource reservations across fleet and equipment</li>
+              <li>Generate a professional PDF offer with one button tap</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- PHASE 4 -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div id="phase4" class="phase-section">
+      <div class="phase-header">
+        <div class="phase-badge b4">4</div>
+        <div>
+          <div class="phase-title">Crew Rollout — Mobile-first field execution</div>
+          <div class="phase-desc">Give crew members a simple, phone-optimised view showing only what they need: their project, call time, checklist, and leave requests. No training needed.</div>
+          <div class="phase-meta">
+            <div class="phase-meta-item">📱 Mobile AppSheet</div>
+            <div class="phase-meta-item">📋 Checklists</div>
+            <div class="phase-meta-item">🏖️ Leave workflow</div>
+            <div class="phase-meta-item">⏱ Estimated: 3–4 days</div>
+          </div>
+        </div>
+      </div>
+      <div class="tools-row">
+        <div class="tool-badge">📱 AppSheet (mobile)</div>
+        <div class="tool-badge">⚡ Apps Script</div>
+        <div class="tool-badge">📧 Gmail</div>
+        <div class="tool-badge">📄 Docs (call sheets)</div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">📱</div>
+          <div><div class="module-title">4.1 — Crew mobile view</div><div class="module-sub">What crews see when they open the app on their phone</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Create a crew-specific home view</div>
+                <div class="step-body">In AppSheet → Views → create a <strong>Dashboard</strong> view visible only to the <code>Crew</code> role. It should contain two panels:
+                <ul>
+                  <li><strong>My Today</strong> — filtered <code>CrewAssignments</code> showing only today/upcoming assignments for the logged-in user</li>
+                  <li><strong>My Checklist</strong> — equipment assigned to the user for the current project</li>
+                </ul>
+                Use <code>USEREMAIL()</code> to filter automatically — no manual selection needed.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Equipment checklist with confirmation</div>
+                <div class="step-body">Add a <code>ChecklistItems</code> table (or reuse <code>EquipmentMovements</code>) with a <code>Confirmed</code> boolean column. In the mobile view, show each item as a checkbox. When all items are confirmed, trigger an action that stamps <code>ConfirmedBy</code> and <code>ConfirmedAt</code> — acts as the crew member's digital signature for the load-out.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Install the AppSheet app on crew phones</div>
+                <div class="step-body">Send crew members an install link: in AppSheet → <strong>Manage → Deploy → Share</strong> → copy the install URL.<br><br>
+                On iOS: open the link in Safari → tap Share → Add to Home Screen.<br>
+                On Android: Chrome will prompt to install as a PWA.<br><br>
+                <div class="tip"><strong>Tip:</strong> Enable AppSheet's <strong>offline mode</strong> so crew can use the checklist even without mobile data on set.</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">🏖️</div>
+          <div><div class="module-title">4.2 — Leave requests & availability</div><div class="module-sub">Crew submits, coordinator approves, calendar updates</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Leave request form for crew</div>
+                <div class="step-body">Create a <strong>Form</strong> view on <code>CrewAvailability</code> visible to Crew role. Fields: <code>StartDate</code>, <code>EndDate</code>, <code>AvailabilityStatus</code> (pre-filled to "Vacation" or "Sick"), <code>Notes</code>. <code>CrewID</code> is auto-filled from <code>USEREMAIL()</code>.<br><br>
+                Set initial <code>ApprovalStatus</code> to <code>Pending</code> on submission.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Conflict detection before approval</div>
+                <div class="step-body">When a coordinator views a pending leave request, show a virtual column <code>ConflictWarning</code>:
+                <div class="schema-box">
+<span class="comment">// Check if crew member has project assignments in the requested leave period</span>
+COUNTIF(
+  SELECT(
+    CrewAssignments[AssignmentID],
+    AND(
+      [CrewID] = [_THISROW].[CrewID],
+      [StartDate] &lt;= [_THISROW].[EndDate],
+      [EndDate] &gt;= [_THISROW].[StartDate]
+    )
+  )
+) > 0
+                </div>
+                Show a red warning banner if <code>ConflictWarning = TRUE</code> on the approval screen.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Approval automation</div>
+                <div class="step-body">In AppSheet → <strong>Automation → Bots → + New bot</strong>:
+                <ul>
+                  <li><strong>Trigger:</strong> Row added to <code>CrewAvailability</code> where <code>AvailabilityStatus = Vacation</code></li>
+                  <li><strong>Action:</strong> Send email to coordinator with approve/reject links</li>
+                  <li>When approved: set <code>ApprovalStatus = Approved</code>, send confirmation email to crew member</li>
+                </ul>
+                Sick leave (<code>AvailabilityStatus = Sick</code>) can be auto-approved — set a condition to skip the approval step.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">📄</div>
+          <div><div class="module-title">4.3 — Auto-generated call sheets</div><div class="module-sub">PDF call sheets sent to crew before each project</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Create call sheet template in Google Docs</div>
+                <div class="step-body">In <code>📁 _Database/Templates/</code>, create <code>CallSheet_Template.docx</code>. Include placeholders: <code>{{ProjectName}}</code>, <code>{{Location}}</code>, <code>{{Date}}</code>, <code>{{CrewName}}</code>, <code>{{Role}}</code>, <code>{{CallTime}}</code>, <code>{{Notes}}</code>.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Apps Script to generate and send</div>
+                <div class="step-body">Write a script that runs 3 days before each project start date, generates individual call sheets for each crew member, saves them to <code>📁 Projects/PRJ-XXXX/CallSheet.pdf</code>, and sends them via Gmail. Trigger it with a time-based Apps Script trigger: <strong>daily at 09:00</strong>, check for projects starting in 3 days.</div>
+              </div>
+            </div>
+          </div>
+          <div class="outcome">
+            <div class="outcome-title">Phase 4 outcome — you can now:</div>
+            <ul class="outcome-list">
+              <li>Crew opens the app on their phone and immediately sees their project and call time</li>
+              <li>Crew completes equipment checklist on mobile — digital sign-off recorded</li>
+              <li>Leave request submitted in 30 seconds from phone — conflict warning shown to coordinator</li>
+              <li>Call sheets auto-generated and emailed 3 days before each project</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- PHASE 5 -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div id="phase5" class="phase-section">
+      <div class="phase-header">
+        <div class="phase-badge b5">5</div>
+        <div>
+          <div class="phase-title">Reporting — Management dashboards in Looker Studio</div>
+          <div class="phase-desc">Connect Looker Studio to the master Sheet and build the management overview: pipeline, utilisation, margins, 72-hour operational view, and payment health.</div>
+          <div class="phase-meta">
+            <div class="phase-meta-item">📊 Looker Studio</div>
+            <div class="phase-meta-item">📋 Google Sheets</div>
+            <div class="phase-meta-item">📈 KPIs</div>
+            <div class="phase-meta-item">⏱ Estimated: 3–4 days</div>
+          </div>
+        </div>
+      </div>
+      <div class="tools-row">
+        <div class="tool-badge">📊 Looker Studio</div>
+        <div class="tool-badge">📋 Google Sheets</div>
+        <div class="tool-badge">⚡ Apps Script (computed summary tabs)</div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">📊</div>
+          <div><div class="module-title">5.1 — Prepare summary Sheets for reporting</div><div class="module-sub">Looker Studio reads clean aggregated data — don't expose raw tables</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Create summary tabs in the master Sheet</div>
+                <div class="step-body">Add these tabs to <code>ReckordDB_Master</code> — these are computed tabs Looker Studio will read:
+                <ul>
+                  <li><code>RPT_Pipeline</code> — projects grouped by status with offer values</li>
+                  <li><code>RPT_Utilization</code> — vehicles and equipment utilisation %</li>
+                  <li><code>RPT_Finance</code> — offers by stage, deposit status, margin</li>
+                  <li><code>RPT_Crew</code> — crew assignments per week</li>
+                  <li><code>RPT_Ops72h</code> — projects starting in next 72h with missing resources</li>
+                </ul>
+                Use <code>QUERY()</code> or <code>SUMIF()</code> / <code>COUNTIFS()</code> formulas to populate these from the live data tabs — no manual updating needed.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Example: RPT_Utilization formula</div>
+                <div class="step-body">
+                <div class="schema-box">
+<span class="comment">// In RPT_Utilization, column B — vehicle utilisation this month</span>
+=COUNTIFS(
+  CrewAssignments!E:E, <span class="val">"&gt;="&TEXT(DATE(YEAR(TODAY()),MONTH(TODAY()),1),"YYYY-MM-DD")</span>,
+  CrewAssignments!F:F, <span class="val">"&lt;="&TEXT(EOMONTH(TODAY(),0),"YYYY-MM-DD")</span>
+) / COUNTA(Vehicles!A:A)
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-icon">📈</div>
+          <div><div class="module-title">5.2 — Build the Looker Studio dashboard</div><div class="module-sub">Step-by-step: connect data, add charts, share with management</div></div>
+          <div class="module-chevron">▼</div>
+        </div>
+        <div class="module-body">
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">Create a new report in Looker Studio</div>
+                <div class="step-body">Go to <code>lookerstudio.google.com</code> → <strong>+ Create → Report</strong>. When prompted to add a data source, select <strong>Google Sheets</strong> → choose <code>ReckordDB_Master</code> → start with the <code>RPT_Pipeline</code> tab.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">Add all data sources</div>
+                <div class="step-body">In the report → <strong>Resource → Manage added data sources → + Add a data source</strong>. Add one connection for each RPT_ tab. Name them clearly: <em>Pipeline</em>, <em>Utilization</em>, <em>Finance</em>, <em>Crew</em>, <em>Ops72h</em>.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">Build the management dashboard page</div>
+                <div class="step-body">Add the following components on the main page:
+                <table class="sheet-table">
+                  <thead><tr><th>Component</th><th>Chart type</th><th>Data source</th></tr></thead>
+                  <tbody>
+                    <tr><td>Revenue pipeline total</td><td>Scorecard</td><td>RPT_Pipeline</td></tr>
+                    <tr><td>Win rate %</td><td>Scorecard</td><td>RPT_Finance</td></tr>
+                    <tr><td>Average margin %</td><td>Scorecard</td><td>RPT_Finance</td></tr>
+                    <tr><td>Projects by status</td><td>Bar chart</td><td>RPT_Pipeline</td></tr>
+                    <tr><td>Fleet utilisation %</td><td>Gauge</td><td>RPT_Utilization</td></tr>
+                    <tr><td>Equipment utilisation %</td><td>Gauge</td><td>RPT_Utilization</td></tr>
+                    <tr><td>Offer value by stage</td><td>Funnel</td><td>RPT_Finance</td></tr>
+                    <tr><td>Upcoming projects (72h)</td><td>Table</td><td>RPT_Ops72h</td></tr>
+                  </tbody>
+                </table>
+                </div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <div class="step-title">Brand the report</div>
+                <div class="step-body">In Looker Studio: <strong>Theme and layout</strong> → set primary colour to <code>#E10B17</code>, font to Roboto, background to dark (<code>#111111</code>) or white depending on management preference. Add the Reckord logo to the header.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">5</div>
+              <div class="step-content">
+                <div class="step-title">Share with management</div>
+                <div class="step-body">In Looker Studio → <strong>Share → Invite people</strong> → add the <code>management@reckord.tv</code> group as <strong>Viewer</strong>. They can open it in any browser — no login required if you enable link sharing.<br><br>
+                <div class="tip"><strong>Tip:</strong> Schedule a weekly email report: <strong>Share → Schedule email delivery</strong> → set to every Monday 08:00 → select all management emails. They receive a PDF snapshot automatically.</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="outcome">
+            <div class="outcome-title">Phase 5 outcome — management can now:</div>
+            <ul class="outcome-list">
+              <li>Open a live dashboard showing current pipeline, utilisation, and margin</li>
+              <li>See the next 72h operational view with any resource conflicts flagged</li>
+              <li>Receive a weekly PDF summary by email automatically</li>
+              <li>Filter all charts by date range, project manager, or client</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <!-- APPS SCRIPT REFERENCE -->
+    <!-- ════════════════════════════════════════════════════════════════ -->
+    <div id="automation" class="section-title">Apps Script Reference</div>
+    <div class="module">
+      <div class="module-header" onclick="toggleModule(this)">
+        <div class="module-icon">⚡</div>
+        <div><div class="module-title">Key automation scripts — where to put them</div><div class="module-sub">All scripts live in the master Sheet's bound Apps Script project</div></div>
+        <div class="module-chevron">▼</div>
+      </div>
+      <div class="module-body">
+        <div class="step-body" style="margin-bottom:16px">Open the master Sheet → <strong>Extensions → Apps Script</strong>. All scripts below go here. Create one <code>.gs</code> file per logical area.</div>
+        <table class="sheet-table">
+          <thead><tr><th>File name</th><th>Purpose</th><th>Trigger</th></tr></thead>
+          <tbody>
+            <tr><td><code>QRGenerator.gs</code></td><td>Generate QR codes for new equipment rows</td><td>On edit (Equipment sheet)</td></tr>
+            <tr><td><code>OfferPDF.gs</code></td><td>Generate PDF offer from Google Docs template</td><td>AppSheet action button</td></tr>
+            <tr><td><code>ReservationSync.gs</code></td><td>Update asset/vehicle status when offer is confirmed</td><td>On edit (Offers.Status)</td></tr>
+            <tr><td><code>DiscountAlert.gs</code></td><td>Email manager when discount exceeds threshold</td><td>On edit (Offers.DiscountPercent)</td></tr>
+            <tr><td><code>DepositReminder.gs</code></td><td>Daily check for overdue deposits — send email</td><td>Time-based daily 09:00</td></tr>
+            <tr><td><code>CallSheetGen.gs</code></td><td>Generate and email call sheets 3 days before project</td><td>Time-based daily 09:00</td></tr>
+            <tr><td><code>ServiceAlert.gs</code></td><td>Weekly check for vehicles/equipment due service</td><td>Time-based weekly Monday</td></tr>
+            <tr><td><code>SummaryRefresh.gs</code></td><td>Refresh RPT_ tabs for Looker Studio</td><td>Time-based daily 06:00</td></tr>
+          </tbody>
+        </table>
+        <div class="warn"><strong>Important:</strong> Apps Script triggers run under the account of the user who created them. Use a dedicated <code>codex-automation@reckord.tv</code> service account to avoid automations breaking if a staff member leaves.</div>
+      </div>
+    </div>
+
+    <!-- ROLES REFERENCE -->
+    <div id="roles" class="section-title">Roles & Permissions Reference</div>
+    <div class="module">
+      <div class="module-header" onclick="toggleModule(this)">
+        <div class="module-icon">👤</div>
+        <div><div class="module-title">Complete permissions matrix</div><div class="module-sub">Which role can read / edit / delete which table</div></div>
+        <div class="module-chevron">▼</div>
+      </div>
+      <div class="module-body">
+        <table class="sheet-table">
+          <thead><tr><th>Table</th><th>Operations</th><th>Sales</th><th>Finance</th><th>Crew</th><th>Management</th><th>Admin</th></tr></thead>
+          <tbody>
+            <tr><td>Clients</td><td>Read</td><td>Read/Write</td><td>Read</td><td>—</td><td>Read</td><td>Full</td></tr>
+            <tr><td>Contacts</td><td>—</td><td>Read/Write</td><td>Read</td><td>—</td><td>Read</td><td>Full</td></tr>
+            <tr><td>Projects</td><td>Read/Write</td><td>Read/Write</td><td>Read</td><td>Own only</td><td>Read</td><td>Full</td></tr>
+            <tr><td>Offers</td><td>Read</td><td>Read/Write</td><td>Read/Write</td><td>—</td><td>Read</td><td>Full</td></tr>
+            <tr><td>OfferItems</td><td>—</td><td>Read/Write</td><td>Read/Write</td><td>—</td><td>Read</td><td>Full</td></tr>
+            <tr><td>Vehicles</td><td>Read/Write</td><td>Read</td><td>—</td><td>—</td><td>Read</td><td>Full</td></tr>
+            <tr><td>Equipment</td><td>Read/Write</td><td>Read</td><td>—</td><td>Read</td><td>Read</td><td>Full</td></tr>
+            <tr><td>EquipmentMovements</td><td>Read/Write</td><td>—</td><td>—</td><td>Write</td><td>Read</td><td>Full</td></tr>
+            <tr><td>Crew</td><td>Read</td><td>Read</td><td>—</td><td>Own only</td><td>Read</td><td>Full</td></tr>
+            <tr><td>CrewAvailability</td><td>Read/Write</td><td>Read</td><td>—</td><td>Own only</td><td>Read</td><td>Full</td></tr>
+            <tr><td>CrewAssignments</td><td>Read/Write</td><td>Read</td><td>—</td><td>Own only</td><td>Read</td><td>Full</td></tr>
+            <tr><td>Maintenance</td><td>Read/Write</td><td>—</td><td>Read</td><td>—</td><td>Read</td><td>Full</td></tr>
+          </tbody>
+        </table>
+        <div class="note"><strong>Note:</strong> "Own only" means the user can only see/edit rows where their email matches the assigned crew/project field. Enforced with AppSheet security filters using <code>USEREMAIL()</code>.</div>
+      </div>
+    </div>
+
+    <div style="height:60px"></div>
+  </div><!-- /content -->
+</main>
+</div>
+
+<script>
+  function toggleModule(header) {
+    header.classList.toggle('open');
+    const body = header.nextElementSibling;
+    body.classList.toggle('open');
+  }
+
+  function scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const map = { overview: 0, prereqs: 1, structure: 2, phase1: 3, phase2: 4, phase3: 5, phase4: 6, phase5: 7, automation: 8, roles: 9 };
+    const items = document.querySelectorAll('.nav-item');
+    if (map[id] !== undefined && items[map[id]]) items[map[id]].classList.add('active');
+  }
+</script>
+</body>
+</html>
