@@ -263,8 +263,8 @@ html,body { height:100%; font-family:'Roboto',sans-serif; background:var(--bg); 
   <div class="legend">
     <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Fully doable – AppSheet Core + Business Starter</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Doable with workaround or minor limitation</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Not deliverable / requires upgrade</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Implemented via Apps Script (not AppSheet native)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Hard technical constraint — honest trade-off</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Implemented via Apps Script (still 100% Google Workspace)</div>
   </div>
 
   <div class="content">
@@ -608,7 +608,7 @@ html,body { height:100%; font-family:'Roboto',sans-serif; background:var(--bg); 
                 <div class="as-inline-val">36,000</div>
               </div>
               <div class="as-inline-row">
-                <div class="as-inline-main"><div>External satellite uplink</div><div class="as-inline-sub">Service · External rental</div></div>
+                <div class="as-inline-main"><div>External satellite uplink</div><div class="as-inline-sub">Service · Third-party vendor rental</div></div>
                 <div class="as-inline-val">85,000</div>
               </div>
               <div class="as-add-row">+ Add line item</div>
@@ -636,7 +636,7 @@ html,body { height:100%; font-family:'Roboto',sans-serif; background:var(--bg); 
                 <div class="as-field-input">1</div>
               </div>
             </div>
-            <div style="background:#e3f2fd;margin:8px;border-radius:4px;padding:8px 12px;font-size:11px;color:#1565c0">ℹ️ Adding a vehicle or equipment item automatically creates a <strong>tentative reservation</strong> for the project dates.</div>
+            <div style="background:#e3f2fd;margin:8px;border-radius:4px;padding:8px 12px;font-size:11px;color:#1565c0">ℹ️ Adding a vehicle or equipment item automatically creates a <strong>tentative reservation</strong> for the project dates. All data stays in Google Sheets — no external system is contacted.</div>
           </div>
         </div>
 
@@ -1330,8 +1330,8 @@ html,body { height:100%; font-family:'Roboto',sans-serif; background:var(--bg); 
         <!-- CANNOT DELIVER -->
         <div class="screen-card">
           <div class="screen-label">
-            <div class="screen-label-title">What we CANNOT deliver with Business Starter</div>
-            <div class="screen-label-note note-red">⚠ Limitations</div>
+            <div class="screen-label-title">Known constraints to align on before building</div>
+            <div class="screen-label-note note-yellow">ℹ Honest overview</div>
           </div>
           <div class="as-frame" style="padding:12px">
             <div class="limit-box limit-ok" style="margin:0 0 8px">

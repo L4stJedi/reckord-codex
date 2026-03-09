@@ -665,7 +665,7 @@
         <div class="tool-badge">📱 AppSheet</div>
         <div class="tool-badge">📋 Google Sheets</div>
         <div class="tool-badge">⚡ Apps Script</div>
-        <div class="tool-badge">📷 QR Code API</div>
+        <div class="tool-badge">📷 Google Charts QR</div>
       </div>
 
       <div class="module">
@@ -761,7 +761,7 @@ COUNTIF(
   <span class="sc-keyword">for</span> (<span class="sc-keyword">let</span> i = 1; i &lt; <span class="sc-var">data</span>.length; i++) {
     <span class="sc-keyword">if</span> (!<span class="sc-var">data</span>[i][<span class="sc-var">qrCol</span>] &amp;&amp; <span class="sc-var">data</span>[i][<span class="sc-var">idCol</span>]) {
       <span class="sc-keyword">const</span> <span class="sc-var">id</span> = <span class="sc-var">data</span>[i][<span class="sc-var">idCol</span>];
-      <span class="sc-keyword">const</span> <span class="sc-var">qrUrl</span> = <span class="sc-string">`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${</span><span class="sc-var">id</span><span class="sc-string">}`</span>;
+      <span class="sc-keyword">const</span> <span class="sc-var">qrUrl</span> = <span class="sc-string">`https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${</span><span class="sc-var">encodeURIComponent(id)</span><span class="sc-string">}`</span>; <span class="sc-comment">// Google Charts — no external service</span>
       sheet.getRange(i + 1, <span class="sc-var">qrCol</span> + 1).setValue(<span class="sc-var">qrUrl</span>);
     }
   }
@@ -824,7 +824,7 @@ COUNTIF(
               <div class="step-content">
                 <div class="step-title">Generate labels via Apps Script</div>
                 <div class="step-body">Write an Apps Script that reads the Equipment sheet and generates a Google Doc with one label per asset, populated with real data. Use the <code>DocumentApp</code> service to replace template placeholders and insert the QR image URL.
-                <div class="tip"><strong>Tip:</strong> Use the free "Labelmaker" add-on for Google Sheets for quick label generation without custom code.</div>
+                <div class="tip"><strong>Tip:</strong> Use the "Labelmaker" add-on for Google Sheets (available in the Google Workspace Marketplace) for quick label generation without custom code. Stays fully within Google Workspace.</div>
                 </div>
               </div>
             </div>
@@ -862,7 +862,7 @@ COUNTIF(
       <div class="tools-row">
         <div class="tool-badge">📱 AppSheet</div>
         <div class="tool-badge">⚡ Apps Script</div>
-        <div class="tool-badge">📧 Gmail API</div>
+        <div class="tool-badge">📧 Gmail (Apps Script)</div>
         <div class="tool-badge">📄 Google Docs</div>
       </div>
 
@@ -1341,7 +1341,7 @@ COUNTIF(
             <tr><td><code>SummaryRefresh.gs</code></td><td>Refresh RPT_ tabs for Looker Studio</td><td>Time-based daily 06:00</td></tr>
           </tbody>
         </table>
-        <div class="warn"><strong>Important:</strong> Apps Script triggers run under the account of the user who created them. Use a dedicated <code>codex-automation@reckord.tv</code> service account to avoid automations breaking if a staff member leaves.</div>
+        <div class="warn"><strong>Important:</strong> Apps Script triggers run under the account of the user who created them. Use a dedicated <code>codex-automation@reckord.tv</code> Google Workspace account as the automation owner — this avoids automations breaking if a staff member leaves. This is a standard Google Workspace account, no extra cost.</div>
       </div>
     </div>
 
