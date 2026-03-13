@@ -240,6 +240,7 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
             "company_vat_id": "CZ25486420",
             "company_vat_note": "VAT payer. Official ID on file: C 20436 vedená u KSUL",
             "offer_currency": "Kč",
+            "offer_vat_rate": "0.21",
             "offer_footer": "",
         }
         for k, v in defaults.items():
@@ -1712,11 +1713,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
                                           (offer["client_id"],)).fetchone() if offer["client_id"] else None
                 client_name = client_row[0] if client_row else "Project"
                 name = f"{client_name} \u2013 {offer['number']}"
+                today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                # Use total from line items if present, else offer total
+                items_total = conn.execute(
+                    "SELECT COALESCE(SUM(qty * unit_price),0) FROM offer_items WHERE offer_id=?",
+                    (oid,)).fetchone()[0]
+                budget = items_total if items_total else (offer["total_value"] or 0)
                 conn.execute(
                     "INSERT INTO projects (code,name,client_id,status,budget_total,"
-                    "description,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)",
+                    "start_date,description,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
                     (code, name, offer["client_id"], "planning",
-                     offer["total_value"] or 0,
+                     budget, today,
                      f"Created from offer {offer['number']}", now, now)
                 )
                 conn.commit()
@@ -1861,7 +1868,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return str(d or "")[:10] if d else "—"
 
         sup = settings
-        vat_rate = 0.21
+        try:
+            vat_rate = float(settings.get("offer_vat_rate") or 0.21)
+        except Exception:
+            vat_rate = 0.21
         total = float(o.get("total_value") or 0)
         # If line items exist, compute total from items
         if items:
@@ -2011,10 +2021,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
   .btn-print {{ background: #E10B17; color: white; }}
   .btn-close {{ background: white; border: 1.5px solid #ddd !important; color: #333; }}
 
+  @page {{ size: A4; margin: 15mm 12mm; }}
   @media print {{
     .print-bar {{ display: none !important; }}
     body {{ padding: 0; }}
-    .page {{ padding: 24px 32px; }}
+    .page {{ max-width: 100%; padding: 0; }}
   }}
 </style>
 </head>
@@ -2063,7 +2074,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
   <!-- Red bar -->
   <div class="offer-bar">
     <div class="offer-bar-item">Price Offer No.<strong>{esc(o.get('number',''))}</strong></div>
-    <div class="offer-bar-item">Date of issue<strong>{fmt_date(o.get('valid_until') or o.get('created_at','')[:10])}</strong></div>
+    <div class="offer-bar-item">Date of issue<strong>{fmt_date((o.get('created_at') or '')[:10] or o.get('valid_until'))}</strong></div>
     {('<div class="offer-bar-item">Valid until<strong>' + fmt_date(o.get('valid_until')) + '</strong></div>') if o.get('valid_until') else ''}
   </div>
 
@@ -2081,7 +2092,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
       <span class="total-value">{money(total)}</span>
     </div>
     <div class="total-row" style="color:#999;font-size:12px">
-      <span class="total-label">VAT 21%</span>
+      <span class="total-label">VAT {int(vat_rate * 100)}%</span>
       <span class="total-value">{money(vat)}</span>
     </div>
     <div class="total-row" style="font-size:14px;font-weight:700;color:#E10B17">

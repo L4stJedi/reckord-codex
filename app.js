@@ -730,6 +730,7 @@ async function renderDashboard(el) {
     const s = data.stats;
     const html = (
       '<div class="topbar"><div class="topbar-title">' + esc(t('screen.dashboard')) + '</div>' +
+      '<button class="btn btn-outline btn-sm" onclick="renderDashboard(document.getElementById(\'content\'))" style="margin-right:6px">↻</button>' +
       '<button class="btn btn-red btn-sm" onclick="openProjectForm(null,null)">' + esc(t('btn.newProject')) + '</button></div>' +
       '<div class="content">' +
       '<div class="stats-grid">' +
@@ -835,7 +836,8 @@ function filterProjects() {
 
 function projectsTableHtml(projects) {
   if (!projects || projects.length === 0) {
-    return '<div class="empty-state"><div class="empty-icon">&#128193;</div><div class="empty-text">' + esc(t('proj.no_data')) + '</div></div>';
+    return '<div class="empty-state"><div class="empty-icon">&#128193;</div><div class="empty-text">' + esc(t('proj.no_data')) + '</div>' +
+      '<button class="btn btn-red btn-sm" style="margin-top:12px" onclick="openProjectForm(null,null)">' + esc(t('btn.newProject')) + '</button></div>';
   }
   let rows = '';
   projects.forEach(function(p) {
@@ -1042,7 +1044,8 @@ function filterClients() {
 
 function clientsTableHtml(clients) {
   if (!clients || clients.length === 0) {
-    return '<div class="empty-state"><div class="empty-icon">&#127970;</div><div class="empty-text">' + esc(t('client.no_data')) + '</div></div>';
+    return '<div class="empty-state"><div class="empty-icon">&#127970;</div><div class="empty-text">' + esc(t('client.no_data')) + '</div>' +
+      '<button class="btn btn-red btn-sm" style="margin-top:12px" onclick="openClientForm(null)">' + esc(t('btn.newClient')) + '</button></div>';
   }
   let rows = '';
   clients.forEach(function(c) {
@@ -1432,7 +1435,8 @@ function filterEquipment() {
 
 function equipmentTableHtml(items) {
   if (!items || items.length === 0) {
-    return '<div class="empty-state"><div class="empty-icon">&#128230;</div><div class="empty-text">' + esc(t('equip.no_data')) + '</div></div>';
+    return '<div class="empty-state"><div class="empty-icon">&#128230;</div><div class="empty-text">' + esc(t('equip.no_data')) + '</div>' +
+      '<button class="btn btn-red btn-sm" style="margin-top:12px" onclick="openEquipmentForm(null)">' + esc(t('btn.addAsset')) + '</button></div>';
   }
   let rows = '';
   items.forEach(function(e) {
@@ -1653,7 +1657,8 @@ function filterFleet() {
 
 function fleetTableHtml(items) {
   if (!items || items.length === 0) {
-    return '<div class="empty-state"><div class="empty-icon">&#128667;</div><div class="empty-text">' + esc(t('fleet.no_data')) + '</div></div>';
+    return '<div class="empty-state"><div class="empty-icon">&#128667;</div><div class="empty-text">' + esc(t('fleet.no_data')) + '</div>' +
+      '<button class="btn btn-red btn-sm" style="margin-top:12px" onclick="openFleetForm(null)">' + esc(t('btn.addVehicle')) + '</button></div>';
   }
   let rows = '';
   items.forEach(function(f) {
@@ -1799,7 +1804,9 @@ async function openFleetForm(id) {
       '<div class="form-row"><div class="form-group full"><label>' + esc(t('label.notes')) + '</label><textarea id="ff-notes">' + esc(f.notes || '') + '</textarea></div></div>' +
       '<div class="form-row">' +
       '<div class="form-group"><label>' + esc(t('fleet.unit_id')) + '</label><input type="number" id="fl-unit-id" value="' + esc(String(f.unit_id || '')) + '" placeholder="101"></div>' +
-      '<div class="form-group"><label>' + esc(t('fleet.power')) + '</label><input type="text" id="fl-power" value="' + esc(f.power_connection || '') + '" placeholder="63A"></div>' +
+      '<div class="form-group"><label>' + esc(t('fleet.power')) + '</label>' +
+      '<input type="text" id="fl-power" value="' + esc(f.power_connection || '') + '" placeholder="63A CEE" list="power-presets">' +
+      '<datalist id="power-presets"><option value="16A CEE"><option value="32A CEE"><option value="63A CEE"><option value="125A CEE"><option value="2× 63A CEE"><option value="Shore power"><option value="None"></datalist></div>' +
       '</div>' +
       '<div class="form-row">' +
       '<div class="form-group"><label>' + esc(t('fleet.length_m')) + '</label><input type="number" id="fl-length" value="' + esc(String(f.length_m || '')) + '" step="0.01" placeholder="11.5"></div>' +
@@ -1918,7 +1925,8 @@ function filterCrew() {
 
 function crewTableHtml(items) {
   if (!items || items.length === 0) {
-    return '<div class="empty-state"><div class="empty-icon">&#128101;</div><div class="empty-text">' + esc(t('crew.no_data')) + '</div></div>';
+    return '<div class="empty-state"><div class="empty-icon">&#128101;</div><div class="empty-text">' + esc(t('crew.no_data')) + '</div>' +
+      '<button class="btn btn-red btn-sm" style="margin-top:12px" onclick="openCrewForm(null)">' + esc(t('btn.addMember')) + '</button></div>';
   }
   let rows = '';
   items.forEach(function(c) {
@@ -2138,7 +2146,8 @@ function filterOffers() {
 
 function offersTableHtml(items) {
   if (!items || items.length === 0) {
-    return '<div class="empty-state"><div class="empty-icon">&#128176;</div><div class="empty-text">' + esc(t('offer.no_data')) + '</div></div>';
+    return '<div class="empty-state"><div class="empty-icon">&#128176;</div><div class="empty-text">' + esc(t('offer.no_data')) + '</div>' +
+      '<button class="btn btn-red btn-sm" style="margin-top:12px" onclick="openOfferForm(null)">' + esc(t('btn.newOffer')) + '</button></div>';
   }
   let rows = '';
   items.forEach(function(o) {
@@ -2656,6 +2665,7 @@ async function renderSettings(el) {
       ['company_vat_id', 'VAT ID (DI\u010c)'],
       ['company_vat_note', 'VAT Note'],
       ['offer_currency', 'Currency'],
+      ['offer_vat_rate', 'VAT Rate (e.g. 0.21)'],
       ['offer_footer', 'Offer Footer Text'],
     ];
     var fhtml = '';
@@ -2703,7 +2713,7 @@ async function previewImport() {
 
 async function saveCompanySettings() {
   var fields = ['company_name','company_address','company_city','company_country',
-    'company_reg_id','company_vat_id','company_vat_note','offer_currency','offer_footer'];
+    'company_reg_id','company_vat_id','company_vat_note','offer_currency','offer_vat_rate','offer_footer'];
   var body = {};
   fields.forEach(function(f) {
     var el = document.getElementById('cfg-' + f);
@@ -2922,9 +2932,16 @@ async function loadCalendarData(el) {
 }
 
 function renderCalendarMonth(year, month, eventMap, conflicts, allUnits) {
-  var monthNames = ['January','February','March','April','May','June',
-    'July','August','September','October','November','December'];
-  var dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  // Localized month/day names via Intl
+  var locale = S.lang || 'en';
+  var monthNames = Array.from({length:12}, function(_,i) {
+    return new Date(2000, i, 1).toLocaleDateString(locale, {month:'long'});
+  });
+  var dayNames = Array.from({length:7}, function(_,i) {
+    // Mon=1..Sun=7 → start from Monday
+    var d = new Date(2000, 0, 3 + i); // 2000-01-03 is Monday
+    return d.toLocaleDateString(locale, {weekday:'short'});
+  });
   var todayStr = new Date().toISOString().slice(0, 10);
 
   // First day of month (0=Sun, convert to Mon-based)
@@ -3021,8 +3038,14 @@ function renderCalendarMonth(year, month, eventMap, conflicts, allUnits) {
 
 function renderCalendarWeek(eventMap, conflicts, allUnits) {
   var todayStr = new Date().toISOString().slice(0, 10);
-  var dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var locale = S.lang || 'en';
+  var dayNames = Array.from({length:7}, function(_,i) {
+    var d = new Date(2000, 0, 3 + i);
+    return d.toLocaleDateString(locale, {weekday:'short'});
+  });
+  var monthNames = Array.from({length:12}, function(_,i) {
+    return new Date(2000, i, 1).toLocaleDateString(locale, {month:'short'});
+  });
 
   // Get week days (Mon–Sun)
   var weekDays = [];
