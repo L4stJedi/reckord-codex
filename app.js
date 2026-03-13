@@ -769,57 +769,87 @@ async function renderProject(el) {
     const pct = p.budget_total > 0 ? Math.min(100, Math.round((p.budget_spent / p.budget_total) * 100)) : 0;
     const fillCls = pct > 90 ? 'fill-red' : (pct > 70 ? 'fill-orange' : 'fill-green');
 
-    let crewHtml = '';
+    // Crew section — always shown with Add button
+    let crewRows = '';
     if (p.crew && p.crew.length > 0) {
-      let rows = '';
       p.crew.forEach(function(c) {
-        rows += '<tr><td>' + esc(c.first_name + ' ' + c.last_name) + '</td>' +
+        crewRows += '<tr>' +
+          '<td><strong>' + esc(c.first_name + ' ' + c.last_name) + '</strong></td>' +
           '<td>' + esc(c.position || '') + '</td>' +
           '<td>' + esc(c.role || '') + '</td>' +
           '<td style="font-size:12px;color:#888">' + fmtDate(c.date_from) + ' \u2013 ' + fmtDate(c.date_to) + '</td>' +
+          '<td onclick="event.stopPropagation()">' +
+          '<button class="btn btn-sm" style="background:#fde8e8;color:#E10B17;padding:3px 8px" ' +
+          'onclick="removeAssignment(' + p.id + ',\'crew\',' + c.id + ')" title="Remove">\u2715</button></td>' +
           '</tr>';
       });
-      crewHtml = '<div class="card"><div class="card-header"><div class="card-title">&#128101; ' + esc(t('ct.crewMembers')) + '</div></div>' +
-        '<div class="card-body"><table><thead><tr>' +
-        '<th>' + esc(t('th.name')) + '</th><th>' + esc(t('th.type')) + '</th>' +
-        '<th>' + esc(t('th.role')) + '</th><th>' + esc(t('th.dates')) + '</th>' +
-        '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
     }
+    const crewHtml = '<div class="card" style="margin-bottom:16px">' +
+      '<div class="card-header">' +
+      '<div class="card-title">&#128101; ' + esc(t('ct.crewMembers')) + '</div>' +
+      '<button class="btn btn-outline btn-sm" onclick="openAssignForm(' + p.id + ',\'crew\')">' + esc(t('btn.add')) + ' ' + esc(t('nav.crew')) + '</button>' +
+      '</div>' +
+      (crewRows ? '<div class="card-body"><table><thead><tr>' +
+      '<th>' + esc(t('th.name')) + '</th><th>' + esc(t('crew.position')) + '</th>' +
+      '<th>' + esc(t('th.role')) + '</th><th>' + esc(t('th.dates')) + '</th><th></th>' +
+      '</tr></thead><tbody>' + crewRows + '</tbody></table></div>' :
+      '<div class="empty-state" style="padding:20px"><div class="empty-text">' + esc(t('crew.no_data')) + '</div></div>') +
+      '</div>';
 
-    let equipHtml = '';
+    // Equipment section — always shown with Add button
+    let equipRows = '';
     if (p.equipment && p.equipment.length > 0) {
-      let rows = '';
       p.equipment.forEach(function(e) {
-        rows += '<tr><td><strong>' + esc(e.eq_code || '') + '</strong><br>' + esc(e.eq_name || '') + '</td>' +
+        equipRows += '<tr>' +
+          '<td><strong>' + esc(e.eq_code || '') + '</strong><br>' + esc(e.eq_name || '') + '</td>' +
           '<td>' + esc(e.category || '') + '</td>' +
           '<td>' + (e.quantity || 1) + '</td>' +
           '<td style="font-size:12px;color:#888">' + fmtDate(e.date_from) + ' \u2013 ' + fmtDate(e.date_to) + '</td>' +
+          '<td onclick="event.stopPropagation()">' +
+          '<button class="btn btn-sm" style="background:#fde8e8;color:#E10B17;padding:3px 8px" ' +
+          'onclick="removeAssignment(' + p.id + ',\'equipment\',' + e.id + ')" title="Remove">\u2715</button></td>' +
           '</tr>';
       });
-      equipHtml = '<div class="card"><div class="card-header"><div class="card-title">&#128230; ' + esc(t('nav.equipment')) + '</div></div>' +
-        '<div class="card-body"><table><thead><tr>' +
-        '<th>' + esc(t('th.item')) + '</th><th>' + esc(t('th.category')) + '</th>' +
-        '<th>' + esc(t('th.quantity')) + '</th><th>' + esc(t('th.dates')) + '</th>' +
-        '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
     }
+    const equipHtml = '<div class="card" style="margin-bottom:16px">' +
+      '<div class="card-header">' +
+      '<div class="card-title">&#128230; ' + esc(t('nav.equipment')) + '</div>' +
+      '<button class="btn btn-outline btn-sm" onclick="openAssignForm(' + p.id + ',\'equipment\')">' + esc(t('btn.add')) + ' ' + esc(t('nav.equipment')) + '</button>' +
+      '</div>' +
+      (equipRows ? '<div class="card-body"><table><thead><tr>' +
+      '<th>' + esc(t('th.item')) + '</th><th>' + esc(t('th.category')) + '</th>' +
+      '<th>Qty</th><th>' + esc(t('th.dates')) + '</th><th></th>' +
+      '</tr></thead><tbody>' + equipRows + '</tbody></table></div>' :
+      '<div class="empty-state" style="padding:20px"><div class="empty-text">' + esc(t('equip.no_data')) + '</div></div>') +
+      '</div>';
 
-    let fleetHtml = '';
+    // Fleet section — always shown with Add button
+    let fleetRows = '';
     if (p.fleet && p.fleet.length > 0) {
-      let rows = '';
       p.fleet.forEach(function(f) {
         const driver = f.driver_first ? f.driver_first + ' ' + f.driver_last : '\u2014';
-        rows += '<tr><td>' + esc(f.vehicle_name || '') + '<br><span style="font-size:11px;color:#888">' + esc((f.brand || '') + ' ' + (f.model || '')) + '</span></td>' +
+        fleetRows += '<tr>' +
+          '<td>' + esc(f.vehicle_name || '') + '<br><span style="font-size:11px;color:#888">' + esc((f.brand || '') + ' ' + (f.model || '')) + '</span></td>' +
           '<td>' + esc(f.registration || '') + '</td>' +
           '<td>' + esc(driver) + '</td>' +
           '<td style="font-size:12px;color:#888">' + fmtDate(f.date_from) + ' \u2013 ' + fmtDate(f.date_to) + '</td>' +
+          '<td onclick="event.stopPropagation()">' +
+          '<button class="btn btn-sm" style="background:#fde8e8;color:#E10B17;padding:3px 8px" ' +
+          'onclick="removeAssignment(' + p.id + ',\'fleet\',' + f.id + ')" title="Remove">\u2715</button></td>' +
           '</tr>';
       });
-      fleetHtml = '<div class="card"><div class="card-header"><div class="card-title">&#128667; ' + esc(t('nav.fleet')) + '</div></div>' +
-        '<div class="card-body"><table><thead><tr>' +
-        '<th>' + esc(t('th.vehicle')) + '</th><th>' + esc(t('th.registration')) + '</th>' +
-        '<th>' + esc(t('th.driver')) + '</th><th>' + esc(t('th.dates')) + '</th>' +
-        '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
     }
+    const fleetHtml = '<div class="card" style="margin-bottom:16px">' +
+      '<div class="card-header">' +
+      '<div class="card-title">&#128667; ' + esc(t('nav.fleet')) + '</div>' +
+      '<button class="btn btn-outline btn-sm" onclick="openAssignForm(' + p.id + ',\'fleet\')">' + esc(t('btn.add')) + ' ' + esc(t('nav.fleet')) + '</button>' +
+      '</div>' +
+      (fleetRows ? '<div class="card-body"><table><thead><tr>' +
+      '<th>' + esc(t('th.vehicle')) + '</th><th>' + esc(t('th.registration')) + '</th>' +
+      '<th>' + esc(t('th.driver')) + '</th><th>' + esc(t('th.dates')) + '</th><th></th>' +
+      '</tr></thead><tbody>' + fleetRows + '</tbody></table></div>' :
+      '<div class="empty-state" style="padding:20px"><div class="empty-text">' + esc(t('fleet.no_data')) + '</div></div>') +
+      '</div>';
 
     const html =
       '<div class="topbar">' +
@@ -2115,6 +2145,177 @@ async function deleteOffer(id) {
 }
 
 // ---------------------------------------------------------------------------
+// Project Assignment Modal
+// ---------------------------------------------------------------------------
+async function openAssignForm(projectId, type) {
+  var url = '/api/projects/' + projectId + '/available_' + type;
+  var items = await api('GET', url);
+  if (!items) return;
+  var title = type === 'crew' ? t('ct.crewMembers') : type === 'equipment' ? t('nav.equipment') : t('nav.fleet');
+  var optionsHtml = '';
+  items.forEach(function(item) {
+    var label = type === 'crew'
+      ? (item.first_name + ' ' + item.last_name + (item.position ? ' — ' + item.position : ''))
+      : type === 'equipment'
+      ? ((item.code ? item.code + ' ' : '') + item.name + (item.category ? ' [' + item.category + ']' : ''))
+      : (item.registration + ' — ' + (item.name || '') + ' ' + (item.brand || '') + ' ' + (item.model || ''));
+    optionsHtml += '<option value="' + item.id + '">' + esc(label) + '</option>';
+  });
+  if (!optionsHtml) {
+    toast(t('msg.no_data'), 'warn'); return;
+  }
+  var idField = type === 'crew' ? 'crew_id' : type === 'equipment' ? 'equipment_id' : 'vehicle_id';
+  var extraField = type === 'equipment'
+    ? '<div class="form-group"><label>Qty</label><input type="number" id="assign-qty" value="1" min="1" style="width:80px"></div>'
+    : type === 'fleet'
+    ? '<div class="form-group"><label>' + esc(t('th.driver')) + '</label><input type="text" id="assign-driver" placeholder="Driver name (optional)"></div>'
+    : '<div class="form-group"><label>' + esc(t('th.role')) + '</label><input type="text" id="assign-role" placeholder="e.g. Camera Operator"></div>';
+  var body =
+    '<div class="form-row">' +
+    '<div class="form-group full"><label>' + esc(title) + '</label>' +
+    '<select id="assign-item-id"><option value="">\u2014</option>' + optionsHtml + '</select></div></div>' +
+    '<div class="form-row">' + extraField + '</div>' +
+    '<div class="form-row">' +
+    '<div class="form-group"><label>' + esc(t('label.startDate')) + '</label><input type="date" id="assign-date-from"></div>' +
+    '<div class="form-group"><label>' + esc(t('label.endDate')) + '</label><input type="date" id="assign-date-to"></div>' +
+    '</div>' +
+    '<div class="form-actions">' +
+    '<button class="btn btn-outline btn-sm" onclick="closeModal(\'modal-assign\')">' + esc(t('btn.cancel')) + '</button>' +
+    '<button class="btn btn-red btn-sm" onclick="saveAssignment(' + projectId + ',\'' + type + '\',\'' + idField + '\')">' + esc(t('btn.add')) + '</button>' +
+    '</div>';
+  var modal = document.getElementById('modal-assign');
+  modal.querySelector('.modal-title').textContent = '\u2795 ' + title;
+  modal.querySelector('.modal-body').innerHTML = body;
+  openModal('modal-assign');
+}
+
+async function saveAssignment(projectId, type, idField) {
+  var itemId = parseInt(document.getElementById('assign-item-id').value);
+  if (!itemId) { toast(t('msg.error'), 'err'); return; }
+  var payload = {};
+  payload[idField] = itemId;
+  payload.date_from = document.getElementById('assign-date-from').value || null;
+  payload.date_to = document.getElementById('assign-date-to').value || null;
+  if (type === 'crew') payload.role = (document.getElementById('assign-role') || {}).value || '';
+  if (type === 'equipment') payload.quantity = parseInt((document.getElementById('assign-qty') || {}).value) || 1;
+  try {
+    await api('POST', '/api/projects/' + projectId + '/' + type, payload);
+    closeModal('modal-assign');
+    toast(t('msg.saved'));
+    navigate('project', projectId);
+  } catch(e) {
+    toast(t('msg.error') + ': ' + e.message, 'err');
+  }
+}
+
+async function removeAssignment(projectId, type, assignmentId) {
+  if (!confirm(t('btn.delete') + '?')) return;
+  try {
+    await api('DELETE', '/api/projects/' + projectId + '/' + type + '/' + assignmentId);
+    toast(t('msg.deleted'));
+    navigate('project', projectId);
+  } catch(e) {
+    toast(t('msg.error') + ': ' + e.message, 'err');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reports
+// ---------------------------------------------------------------------------
+async function renderReports(el) {
+  el.innerHTML = '<div class="topbar"><div class="topbar-title">' + esc(t('nav.overview')) + '</div></div><div class="content">' + loadingHtml() + '</div>';
+  try {
+    var d = await api('GET', '/api/reports');
+    if (!d) return;
+
+    function barChart(data, colors) {
+      var total = Object.values(data).reduce(function(a,b){return a+b;},0) || 1;
+      var bars = '';
+      Object.keys(data).forEach(function(k) {
+        var pct = Math.round(data[k]/total*100);
+        if (!data[k]) return;
+        bars += '<div style="margin-bottom:6px">' +
+          '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">' +
+          '<span>' + esc(t('status.'+k) || k) + '</span><span>' + data[k] + '</span></div>' +
+          '<div style="height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden">' +
+          '<div style="height:100%;border-radius:4px;background:' + (colors[k]||'#888') + ';width:' + pct + '%"></div></div></div>';
+      });
+      return bars || '<div style="color:#888;font-size:12px">' + t('msg.no_data') + '</div>';
+    }
+
+    var statusColors = {
+      planning:'#2980b9', confirmed:'#e67e22', in_progress:'#27ae60',
+      completed:'#888', cancelled:'#E10B17',
+      available:'#27ae60', on_project:'#e67e22', maintenance:'#f39c12', retired:'#888',
+      in_service:'#f39c12', leave:'#f39c12', inactive:'#888',
+      draft:'#888', sent:'#2980b9', negotiation:'#e67e22', won:'#27ae60', lost:'#E10B17'
+    };
+
+    var alertsHtml = '';
+    var alerts = d.maintenance_due.concat(d.fleet_maintenance_due).concat(d.insurance_due);
+    if (alerts.length) {
+      alertsHtml = '<div class="card" style="margin-bottom:16px">' +
+        '<div class="card-header"><div class="card-title">&#128276; ' + esc(t('ct.attention')) + '</div></div>' +
+        '<div class="card-body"><table><thead><tr><th>' + esc(t('th.item')) + '</th><th>' + esc(t('th.type')) + '</th><th>Due</th></tr></thead><tbody>';
+      d.maintenance_due.forEach(function(r) {
+        alertsHtml += '<tr><td>' + esc(r.name) + (r.code ? ' <span style="color:#888;font-size:11px">'+esc(r.code)+'</span>' : '') + '</td><td>' + esc(t('equip.maintenance_due')) + '</td><td style="color:#E10B17">' + fmtDate(r.maintenance_due) + '</td></tr>';
+      });
+      d.fleet_maintenance_due.forEach(function(r) {
+        alertsHtml += '<tr><td>' + esc(r.name||'') + ' ' + esc(r.registration) + '</td><td>' + esc(t('fleet.maintenance_due')) + '</td><td style="color:#E10B17">' + fmtDate(r.maintenance_due) + '</td></tr>';
+      });
+      d.insurance_due.forEach(function(r) {
+        alertsHtml += '<tr><td>' + esc(r.name||'') + ' ' + esc(r.registration) + '</td><td>' + esc(t('fleet.insurance_expiry')) + '</td><td style="color:#e67e22">' + fmtDate(r.insurance_expiry) + '</td></tr>';
+      });
+      alertsHtml += '</tbody></table></div></div>';
+    }
+
+    var activeProjectsHtml = '';
+    if (d.active_projects && d.active_projects.length) {
+      var rows = '';
+      d.active_projects.forEach(function(p) {
+        rows += '<tr onclick="navigate(\'project\',' + p.id + ')">' +
+          '<td><strong>' + esc(p.name) + '</strong><br><span style="font-size:11px;color:#888">' + esc(p.code||'') + '</span></td>' +
+          '<td>' + esc(p.client_name||'\u2014') + '</td>' +
+          '<td>' + pillHtml(p.status) + '</td>' +
+          '<td style="font-size:12px;color:#888">' + fmtDate(p.start_date) + ' \u2013 ' + fmtDate(p.end_date) + '</td>' +
+          '</tr>';
+      });
+      activeProjectsHtml = '<div class="card" style="margin-bottom:16px">' +
+        '<div class="card-header"><div class="card-title">&#128193; ' + esc(t('ct.activeProjects')) + '</div></div>' +
+        '<div class="card-body"><table><thead><tr>' +
+        '<th>' + esc(t('th.project')) + '</th><th>' + esc(t('th.client')) + '</th>' +
+        '<th>' + esc(t('th.status')) + '</th><th>' + esc(t('th.dates')) + '</th>' +
+        '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+    }
+
+    el.innerHTML =
+      '<div class="topbar"><div class="topbar-title">&#128202; ' + esc(t('nav.overview')) + '</div></div>' +
+      '<div class="content">' +
+      alertsHtml +
+      '<div class="stats-grid" style="margin-bottom:16px">' +
+      '<div class="stat-card blue"><div class="stat-num">' + (d.projects_by_status.in_progress||0) + '</div><div class="stat-label">' + esc(t('stat.activeProjects')) + '</div></div>' +
+      '<div class="stat-card green"><div class="stat-num">' + fmtMoney(d.pipeline_value) + '</div><div class="stat-label">' + esc(t('stat.revPipeline')) + '</div></div>' +
+      '<div class="stat-card orange"><div class="stat-num">' + (d.equipment_by_status.on_project||0) + '</div><div class="stat-label">' + esc(t('stat.onProject')) + '</div></div>' +
+      '<div class="stat-card"><div class="stat-num">' + (d.crew_by_status.available||0) + '</div><div class="stat-label">' + esc(t('stat.available')) + ' ' + esc(t('nav.crew')) + '</div></div>' +
+      '</div>' +
+      '<div class="three-col" style="margin-bottom:16px">' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128193; ' + esc(t('nav.projects')) + '</div></div><div class="card-body-pad">' + barChart(d.projects_by_status, statusColors) + '</div></div>' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128230; ' + esc(t('nav.equipment')) + '</div></div><div class="card-body-pad">' + barChart(d.equipment_by_status, statusColors) + '</div></div>' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128667; ' + esc(t('nav.fleet')) + '</div></div><div class="card-body-pad">' + barChart(d.fleet_by_status, statusColors) + '</div></div>' +
+      '</div>' +
+      '<div class="two-col" style="margin-bottom:16px">' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128101; ' + esc(t('nav.crew')) + '</div></div><div class="card-body-pad">' + barChart(d.crew_by_status, statusColors) + '</div></div>' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128176; ' + esc(t('nav.offers')) + '</div></div><div class="card-body-pad">' + barChart(d.offers_by_status, statusColors) + '</div></div>' +
+      '</div>' +
+      activeProjectsHtml +
+      '</div>';
+  } catch(e) {
+    el.innerHTML = '<div class="topbar"><div class="topbar-title">' + esc(t('nav.overview')) + '</div></div>' +
+      '<div class="content"><div class="alert alert-err"><div>' + esc(e.message) + '</div></div></div>';
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 21. render
 // ---------------------------------------------------------------------------
 function render() {
@@ -2164,7 +2365,7 @@ function render() {
       renderOfferItem(el);
       break;
     case 'reports':
-      renderComingSoon(el, t('screen.reports'));
+      renderReports(el);
       break;
     default:
       renderDashboard(el);
@@ -2208,6 +2409,21 @@ async function init() {
   S.viewId = h.id;
 
   render();
+
+  // Mobile sidebar toggle
+  var mobBtn = document.getElementById('mob-sidebar-btn');
+  var sidebar = document.getElementById('sidebar');
+  if (mobBtn && sidebar) {
+    mobBtn.addEventListener('click', function() {
+      sidebar.classList.toggle('mob-open');
+    });
+    // Close sidebar when nav item clicked on mobile
+    document.querySelectorAll('.nav-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        if (window.innerWidth <= 768) sidebar.classList.remove('mob-open');
+      });
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -2245,6 +2461,10 @@ window.openOfferForm = openOfferForm;
 window.saveOffer = saveOffer;
 window.deleteOffer = deleteOffer;
 window.filterOffers = filterOffers;
+window.openAssignForm = openAssignForm;
+window.saveAssignment = saveAssignment;
+window.removeAssignment = removeAssignment;
+window.renderReports = renderReports;
 
 // ---------------------------------------------------------------------------
 // Boot

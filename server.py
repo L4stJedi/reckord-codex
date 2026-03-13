@@ -645,6 +645,18 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if m:
             self._api_offer_get(int(m.group(1))); return
 
+        m = re.match(r"^/api/projects/(\d+)/available_crew$", path)
+        if m:
+            self._api_available_crew(int(m.group(1))); return
+        m = re.match(r"^/api/projects/(\d+)/available_equipment$", path)
+        if m:
+            self._api_available_equipment(int(m.group(1))); return
+        m = re.match(r"^/api/projects/(\d+)/available_fleet$", path)
+        if m:
+            self._api_available_fleet(int(m.group(1))); return
+        if path == "/api/reports":
+            self._api_reports(); return
+
         error_response(self, "Not found", 404)
 
     def _api_dashboard(self):
@@ -826,6 +838,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._api_crew_create(body); return
         if path == "/api/offers":
             self._api_offer_create(body); return
+
+        m = re.match(r"^/api/projects/(\d+)/crew$", path)
+        if m:
+            self._api_assign_crew(int(m.group(1)), body); return
+        m = re.match(r"^/api/projects/(\d+)/equipment$", path)
+        if m:
+            self._api_assign_equipment(int(m.group(1)), body); return
+        m = re.match(r"^/api/projects/(\d+)/fleet$", path)
+        if m:
+            self._api_assign_fleet(int(m.group(1)), body); return
 
         error_response(self, "Not found", 404)
 
@@ -1034,6 +1056,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
         m = re.match(r"^/api/offers/(\d+)$", path)
         if m:
             self._api_generic_delete("offers", int(m.group(1))); return
+
+        m = re.match(r"^/api/projects/(\d+)/crew/(\d+)$", path)
+        if m:
+            self._api_remove_crew_assignment(int(m.group(1)), int(m.group(2))); return
+        m = re.match(r"^/api/projects/(\d+)/equipment/(\d+)$", path)
+        if m:
+            self._api_remove_equipment_assignment(int(m.group(1)), int(m.group(2))); return
+        m = re.match(r"^/api/projects/(\d+)/fleet/(\d+)$", path)
+        if m:
+            self._api_remove_fleet_assignment(int(m.group(1)), int(m.group(2))); return
 
         error_response(self, "Not found", 404)
 
@@ -1429,6 +1461,222 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 json_response(self, dict(conn.execute("SELECT * FROM offers WHERE id=?", (oid,)).fetchone()))
             finally:
                 conn.close()
+
+
+# ── Project Assignments ────────────────────────────────────────────────────
+    def _api_available_crew(self, pid):
+        """Return crew members not already assigned to this project."""
+        conn = get_conn()
+        try:
+            assigned_ids = [r[0] for r in conn.execute(
+                "SELECT crew_id FROM project_crew WHERE project_id=?", (pid,)).fetchall()]
+            rows = conn.execute("SELECT * FROM crew WHERE status != 'inactive' ORDER BY last_name, first_name").fetchall()
+            result = [dict(r) for r in rows if r["id"] not in assigned_ids]
+            json_response(self, result)
+        finally:
+            conn.close()
+
+    def _api_available_equipment(self, pid):
+        """Return equipment not already assigned to this project."""
+        conn = get_conn()
+        try:
+            assigned_ids = [r[0] for r in conn.execute(
+                "SELECT equipment_id FROM project_equipment WHERE project_id=?", (pid,)).fetchall()]
+            rows = conn.execute("SELECT * FROM equipment WHERE status != 'retired' ORDER BY name").fetchall()
+            result = [dict(r) for r in rows if r["id"] not in assigned_ids]
+            json_response(self, result)
+        finally:
+            conn.close()
+
+    def _api_available_fleet(self, pid):
+        """Return fleet vehicles not already assigned to this project."""
+        conn = get_conn()
+        try:
+            assigned_ids = [r[0] for r in conn.execute(
+                "SELECT vehicle_id FROM project_fleet WHERE project_id=?", (pid,)).fetchall()]
+            rows = conn.execute("SELECT * FROM fleet WHERE status != 'retired' ORDER BY name").fetchall()
+            result = [dict(r) for r in rows if r["id"] not in assigned_ids]
+            json_response(self, result)
+        finally:
+            conn.close()
+
+    def _api_assign_crew(self, pid, body):
+        crew_id = body.get("crew_id")
+        if not crew_id:
+            error_response(self, "crew_id required"); return
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "INSERT INTO project_crew (project_id, crew_id, role, date_from, date_to) VALUES (?,?,?,?,?)",
+                    (pid, crew_id, body.get("role") or "",
+                     body.get("date_from") or None, body.get("date_to") or None)
+                )
+                conn.execute("UPDATE crew SET status='on_project', updated_at=? WHERE id=?", (now, crew_id))
+                conn.commit()
+                json_response(self, {"ok": True})
+            finally:
+                conn.close()
+
+    def _api_assign_equipment(self, pid, body):
+        equipment_id = body.get("equipment_id")
+        if not equipment_id:
+            error_response(self, "equipment_id required"); return
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "INSERT INTO project_equipment (project_id, equipment_id, quantity, date_from, date_to) VALUES (?,?,?,?,?)",
+                    (pid, equipment_id, int(body.get("quantity") or 1),
+                     body.get("date_from") or None, body.get("date_to") or None)
+                )
+                conn.execute("UPDATE equipment SET status='on_project', current_project_id=?, updated_at=? WHERE id=?",
+                             (pid, now, equipment_id))
+                conn.commit()
+                json_response(self, {"ok": True})
+            finally:
+                conn.close()
+
+    def _api_assign_fleet(self, pid, body):
+        vehicle_id = body.get("vehicle_id")
+        if not vehicle_id:
+            error_response(self, "vehicle_id required"); return
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "INSERT INTO project_fleet (project_id, vehicle_id, driver_id, date_from, date_to) VALUES (?,?,?,?,?)",
+                    (pid, vehicle_id, body.get("driver_id") or None,
+                     body.get("date_from") or None, body.get("date_to") or None)
+                )
+                conn.execute("UPDATE fleet SET status='on_project', current_project_id=?, updated_at=? WHERE id=?",
+                             (pid, now, vehicle_id))
+                conn.commit()
+                json_response(self, {"ok": True})
+            finally:
+                conn.close()
+
+    def _api_remove_crew_assignment(self, pid, assignment_id):
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                row = conn.execute("SELECT crew_id FROM project_crew WHERE id=? AND project_id=?",
+                                   (assignment_id, pid)).fetchone()
+                if row:
+                    crew_id = row["crew_id"]
+                    conn.execute("DELETE FROM project_crew WHERE id=?", (assignment_id,))
+                    # If no other active assignments, set back to available
+                    still_assigned = conn.execute(
+                        "SELECT COUNT(*) FROM project_crew WHERE crew_id=?", (crew_id,)).fetchone()[0]
+                    if not still_assigned:
+                        conn.execute("UPDATE crew SET status='available', updated_at=? WHERE id=?", (now, crew_id))
+                conn.commit()
+                json_response(self, {"ok": True})
+            finally:
+                conn.close()
+
+    def _api_remove_equipment_assignment(self, pid, assignment_id):
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                row = conn.execute("SELECT equipment_id FROM project_equipment WHERE id=? AND project_id=?",
+                                   (assignment_id, pid)).fetchone()
+                if row:
+                    eid = row["equipment_id"]
+                    conn.execute("DELETE FROM project_equipment WHERE id=?", (assignment_id,))
+                    still_assigned = conn.execute(
+                        "SELECT COUNT(*) FROM project_equipment WHERE equipment_id=?", (eid,)).fetchone()[0]
+                    if not still_assigned:
+                        conn.execute("UPDATE equipment SET status='available', current_project_id=NULL, updated_at=? WHERE id=?",
+                                     (now, eid))
+                conn.commit()
+                json_response(self, {"ok": True})
+            finally:
+                conn.close()
+
+    def _api_remove_fleet_assignment(self, pid, assignment_id):
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                row = conn.execute("SELECT vehicle_id FROM project_fleet WHERE id=? AND project_id=?",
+                                   (assignment_id, pid)).fetchone()
+                if row:
+                    vid = row["vehicle_id"]
+                    conn.execute("DELETE FROM project_fleet WHERE id=?", (assignment_id,))
+                    still_assigned = conn.execute(
+                        "SELECT COUNT(*) FROM project_fleet WHERE vehicle_id=?", (vid,)).fetchone()[0]
+                    if not still_assigned:
+                        conn.execute("UPDATE fleet SET status='available', current_project_id=NULL, updated_at=? WHERE id=?",
+                                     (now, vid))
+                conn.commit()
+                json_response(self, {"ok": True})
+            finally:
+                conn.close()
+
+# ── Reports ────────────────────────────────────────────────────────────────
+    def _api_reports(self):
+        conn = get_conn()
+        try:
+            def scalar(q, *p):
+                return conn.execute(q, p).fetchone()[0] or 0
+
+            projects_by_status = {r["status"]: r["cnt"] for r in conn.execute(
+                "SELECT status, COUNT(*) as cnt FROM projects GROUP BY status").fetchall()}
+
+            equipment_by_status = {r["status"]: r["cnt"] for r in conn.execute(
+                "SELECT status, COUNT(*) as cnt FROM equipment GROUP BY status").fetchall()}
+
+            fleet_by_status = {r["status"]: r["cnt"] for r in conn.execute(
+                "SELECT status, COUNT(*) as cnt FROM fleet GROUP BY status").fetchall()}
+
+            crew_by_status = {r["status"]: r["cnt"] for r in conn.execute(
+                "SELECT status, COUNT(*) as cnt FROM crew GROUP BY status").fetchall()}
+
+            offers_by_status = {r["status"]: r["cnt"] for r in conn.execute(
+                "SELECT status, COUNT(*) as cnt FROM offers GROUP BY status").fetchall()}
+
+            pipeline_value = scalar(
+                "SELECT COALESCE(SUM(total_value),0) FROM offers WHERE status IN ('sent','negotiation','won')")
+            won_value = scalar("SELECT COALESCE(SUM(total_value),0) FROM offers WHERE status='won'")
+
+            maintenance_due = [dict(r) for r in conn.execute(
+                "SELECT name, code, maintenance_due FROM equipment WHERE maintenance_due IS NOT NULL "
+                "AND maintenance_due <= date('now','+30 days') ORDER BY maintenance_due").fetchall()]
+
+            insurance_due = [dict(r) for r in conn.execute(
+                "SELECT name, registration, insurance_expiry FROM fleet WHERE insurance_expiry IS NOT NULL "
+                "AND insurance_expiry <= date('now','+30 days') ORDER BY insurance_expiry").fetchall()]
+
+            fleet_maintenance_due = [dict(r) for r in conn.execute(
+                "SELECT name, registration, maintenance_due FROM fleet WHERE maintenance_due IS NOT NULL "
+                "AND maintenance_due <= date('now','+30 days') ORDER BY maintenance_due").fetchall()]
+
+            recent_projects = [dict(r) for r in conn.execute(
+                "SELECT p.*, c.name as client_name FROM projects p "
+                "LEFT JOIN clients c ON c.id=p.client_id "
+                "WHERE p.status IN ('in_progress','confirmed') ORDER BY p.start_date LIMIT 10").fetchall()]
+
+            json_response(self, {
+                "projects_by_status": projects_by_status,
+                "equipment_by_status": equipment_by_status,
+                "fleet_by_status": fleet_by_status,
+                "crew_by_status": crew_by_status,
+                "offers_by_status": offers_by_status,
+                "pipeline_value": pipeline_value,
+                "won_value": won_value,
+                "maintenance_due": maintenance_due,
+                "insurance_due": insurance_due,
+                "fleet_maintenance_due": fleet_maintenance_due,
+                "active_projects": recent_projects,
+            })
+        finally:
+            conn.close()
 
 
 # ---------------------------------------------------------------------------
