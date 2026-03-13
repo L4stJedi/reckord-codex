@@ -157,6 +157,10 @@ const LANGS = {
     'offer.to_project': '\u2192 Convert to Project',
     'offer.convert_confirm': 'Create a project from this offer? The offer will be marked as Won.',
     'offer.converted': 'Project created from offer!',
+    'offer.items': 'Line Items', 'offer.add_item': '+ Add Line', 'offer.item_qty': 'Qty',
+    'offer.item_desc': 'Description', 'offer.item_price': 'Unit Price',
+    'offer.print': '\ud83d\uddb8 Print / PDF', 'offer.computed_total': 'Total computed from line items',
+    'settings.company': 'Company Settings', 'settings.save_company': 'Save Settings',
     'client.risk': 'Risk',
     // Messages
     'msg.coming_soon': 'This module is coming soon.', 'msg.loading': 'Loading...',
@@ -305,6 +309,10 @@ const LANGS = {
     'offer.to_project': '\u2192 P\u0159ev\u00e9st na projekt',
     'offer.convert_confirm': 'Vytvo\u0159it projekt z t\u00e9to nab\u00eddky? Nab\u00eddka bude ozna\u010dena jako vyhran\u00e1.',
     'offer.converted': 'Projekt vytvo\u0159en z nab\u00eddky!',
+    'offer.items': 'Polo\u017eky', 'offer.add_item': '+ P\u0159idat \u0159\u00e1dek', 'offer.item_qty': 'Mn.',
+    'offer.item_desc': 'Popis', 'offer.item_price': 'Jedn. cena',
+    'offer.print': '\ud83d\uddb8 Tisk / PDF', 'offer.computed_total': 'Celkem vypo\u010dteno z polo\u017eek',
+    'settings.company': 'Nastaven\u00ed firmy', 'settings.save_company': 'Ulo\u017eit nastaven\u00ed',
     'client.risk': 'Riziko',
     'msg.coming_soon': 'Tento modul bude brzy k dispozici.', 'msg.loading': 'Na\u010d\u00edt\u00e1m...',
     'msg.no_data': '\u017d\u00e1dn\u00e1 data', 'msg.saved': 'Ulo\u017eeno', 'msg.deleted': 'Smazano',
@@ -452,6 +460,10 @@ const LANGS = {
     'offer.to_project': '\u2192 Konwertuj na projekt',
     'offer.convert_confirm': 'Utworzy\u0107 projekt z tej oferty? Oferta zostanie oznaczona jako wygrana.',
     'offer.converted': 'Projekt utworzony z oferty!',
+    'offer.items': 'Pozycje', 'offer.add_item': '+ Dodaj pozycj\u0119', 'offer.item_qty': 'Ilo\u015b\u0107',
+    'offer.item_desc': 'Opis', 'offer.item_price': 'Cena jedn.',
+    'offer.print': '\ud83d\uddb8 Drukuj / PDF', 'offer.computed_total': 'Suma obliczona z pozycji',
+    'settings.company': 'Ustawienia firmy', 'settings.save_company': 'Zapisz ustawienia',
     'client.risk': 'Ryzyko',
     'msg.coming_soon': 'Ten modu\u0142 b\u0119dzie wkr\u00f3tce dost\u0119pny.',
     'msg.loading': '\u0141adowanie...', 'msg.no_data': 'Brak danych', 'msg.saved': 'Zapisano',
@@ -2162,6 +2174,7 @@ async function renderOfferItem(el) {
       '<button class="btn btn-outline btn-sm" onclick="navigate(\'offers\')">' + esc(t('btn.back')) + '</button>' +
       '<div class="topbar-title">' + esc(o.number) + ' ' + pillHtml(o.status) + '</div>' +
       (o.status !== 'lost' ? '<button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7" onclick="convertOfferToProject(' + o.id + ')">' + esc(t('offer.to_project')) + '</button>' : '') +
+      '<button class="btn btn-sm" style="background:#E10B17;color:white" onclick="window.open(\'/api/offers/' + o.id + '/print\', \'_blank\')">' + esc(t('offer.print')) + '</button>' +
       '<button class="btn btn-outline btn-sm" onclick="openOfferForm(' + o.id + ')">' + esc(t('offer.edit')) + '</button>' +
       '<button class="btn btn-danger btn-sm" onclick="deleteOffer(' + o.id + ')">' + esc(t('btn.delete')) + '</button>' +
       '</div>' +
@@ -2230,10 +2243,34 @@ async function openOfferForm(id) {
       '</div>' +
       '<div class="form-row"><div class="form-group"><label>' + esc(t('offer.valid_until')) + '</label><input type="date" id="of-valid" value="' + esc(o.valid_until || '') + '"></div></div>' +
       '<div class="form-row"><div class="form-group full"><label>' + esc(t('label.notes')) + '</label><textarea id="of-notes">' + esc(o.notes || '') + '</textarea></div></div>' +
+      '<div style="border-top:1px solid var(--light);margin:16px 0;padding-top:16px">' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+      '<label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#555">' + esc(t('offer.items')) + '</label>' +
+      '<button type="button" class="btn btn-outline btn-sm" onclick="addOfferItemRow()">' + esc(t('offer.add_item')) + '</button>' +
+      '</div>' +
+      '<div id="offer-items-wrap">' +
+      '<table style="width:100%;font-size:13px;border-collapse:collapse" id="offer-items-table">' +
+      '<thead><tr style="border-bottom:1px solid #eee">' +
+      '<th style="width:60px;text-align:left;padding:6px 8px;font-size:10px;color:#aaa;text-transform:uppercase">' + esc(t('offer.item_qty')) + '</th>' +
+      '<th style="text-align:left;padding:6px 8px;font-size:10px;color:#aaa;text-transform:uppercase">' + esc(t('offer.item_desc')) + '</th>' +
+      '<th style="width:120px;text-align:right;padding:6px 8px;font-size:10px;color:#aaa;text-transform:uppercase">' + esc(t('offer.item_price')) + '</th>' +
+      '<th style="width:32px"></th>' +
+      '</tr></thead>' +
+      '<tbody id="offer-items-body"></tbody>' +
+      '</table>' +
+      '<div style="font-size:11px;color:#aaa;margin-top:6px" id="offer-items-hint">' + esc(t('offer.computed_total')) + '</div>' +
+      '</div>' +
+      '</div>' +
       '<div class="form-actions">' +
       '<button class="btn btn-outline" onclick="closeModal(\'modal-offer\')">' + esc(t('btn.cancel')) + '</button>' +
       '<button class="btn btn-red" onclick="saveOffer(' + (id || 'null') + ')">' + esc(t('btn.save')) + '</button>' +
       '</div>';
+
+    if (id && o.items && o.items.length > 0) {
+      o.items.forEach(function(item) {
+        addOfferItemRow(item.qty, item.description, item.unit_price);
+      });
+    }
   } catch (err) {
     bodyEl.innerHTML = '<div class="alert alert-err">' + esc(t('msg.error') + ': ' + err.message) + '</div>';
   }
@@ -2254,14 +2291,78 @@ async function saveOffer(id) {
   if (!body.project_id) body.project_id = null;
   if (!body.valid_until) body.valid_until = null;
   try {
-    if (id) { await api('PUT', '/api/offers/' + id, body); }
-    else { await api('POST', '/api/offers', body); }
+    var savedResult;
+    if (id) { savedResult = await api('PUT', '/api/offers/' + id, body); }
+    else { savedResult = await api('POST', '/api/offers', body); }
+    // Save line items if any were entered
+    var itemRows = getOfferItemRows();
+    var offerId = id;
+    if (!offerId && savedResult && savedResult.id) {
+      offerId = savedResult.id;
+    }
+    if (!offerId) {
+      try {
+        var allOffers = await api('GET', '/api/offers');
+        if (allOffers && allOffers.length > 0) {
+          offerId = allOffers[allOffers.length - 1].id;
+        }
+      } catch(e2) {}
+    }
+    if (offerId) {
+      try {
+        await api('POST', '/api/offers/' + offerId + '/items/bulk', { items: itemRows });
+      } catch(e2) { console.warn('items save failed', e2); }
+    }
     closeModal('modal-offer');
     toast(t('msg.saved'), 'ok');
     _offersData = null;
     if (id && S.view === 'offer-item') { navigate('offer-item', id); }
     else { navigate('offers'); }
   } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+function addOfferItemRow(qty, desc, price) {
+  var tbody = document.getElementById('offer-items-body');
+  if (!tbody) return;
+  var tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid #f5f5f5';
+  tr.innerHTML =
+    '<td style="padding:4px 8px"><input type="number" step="0.01" min="0.01" value="' + (qty || 1) + '" style="width:52px;border:1px solid #e8e8e8;border-radius:3px;padding:4px;font-family:inherit;font-size:13px" onchange="recalcOfferTotal()" class="item-qty"></td>' +
+    '<td style="padding:4px 8px"><input type="text" value="' + esc(desc || '') + '" style="width:100%;border:1px solid #e8e8e8;border-radius:3px;padding:4px;font-family:inherit;font-size:13px" class="item-desc" placeholder="Description"></td>' +
+    '<td style="padding:4px 8px"><input type="number" step="0.01" min="0" value="' + (price || 0) + '" style="width:110px;border:1px solid #e8e8e8;border-radius:3px;padding:4px;font-family:inherit;font-size:13px;text-align:right" onchange="recalcOfferTotal()" class="item-price" placeholder="0"></td>' +
+    '<td style="padding:4px 4px;text-align:center"><button type="button" style="background:#fde8e8;color:#E10B17;border:none;border-radius:3px;cursor:pointer;padding:3px 7px;font-size:13px" onclick="this.closest(\'tr\').remove();recalcOfferTotal()">×</button></td>';
+  tbody.appendChild(tr);
+  recalcOfferTotal();
+}
+
+function recalcOfferTotal() {
+  var tbody = document.getElementById('offer-items-body');
+  if (!tbody) return;
+  var total = 0;
+  Array.from(tbody.rows).forEach(function(tr) {
+    var qty = parseFloat((tr.querySelector('.item-qty') || {}).value) || 0;
+    var price = parseFloat((tr.querySelector('.item-price') || {}).value) || 0;
+    total += qty * price;
+  });
+  if (total > 0) {
+    var totalEl = document.getElementById('of-total');
+    if (totalEl) totalEl.value = total.toFixed(2);
+  }
+}
+
+function getOfferItemRows() {
+  var tbody = document.getElementById('offer-items-body');
+  if (!tbody) return [];
+  var rows = [];
+  Array.from(tbody.rows).forEach(function(tr, i) {
+    var qty = parseFloat((tr.querySelector('.item-qty') || {}).value) || 1;
+    var desc = (tr.querySelector('.item-desc') || {}).value || '';
+    var price = parseFloat((tr.querySelector('.item-price') || {}).value) || 0;
+    if (desc.trim()) {
+      rows.push({ sort_order: i, qty: qty, description: desc, unit_price: price });
+    }
+  });
+  return rows;
 }
 
 async function deleteOffer(id) {
@@ -2483,6 +2584,13 @@ async function renderSettings(el) {
     '<div class="topbar"><div class="topbar-title">&#9881; ' + esc(t('settings.title')) + '</div></div>' +
     '<div class="content">' +
 
+    // Company settings card
+    '<div class="card" style="margin-bottom:20px">' +
+    '<div class="card-header"><div class="card-title">&#127970; ' + esc(t('settings.company')) + '</div></div>' +
+    '<div class="card-body-pad" id="company-settings-wrap">' +
+    '<div style="text-align:center;padding:20px;color:#aaa">Loading...</div>' +
+    '</div></div>' +
+
     // CAFLOU Import card
     '<div class="card" style="margin-bottom:20px">' +
     '<div class="card-header"><div class="card-title">&#128190; ' + esc(t('settings.import_title')) + '</div></div>' +
@@ -2529,6 +2637,34 @@ async function renderSettings(el) {
     '</div></div>' +
 
     '</div>';
+
+  // Load company settings
+  api('GET', '/api/app_settings').then(function(cfg) {
+    if (!cfg) return;
+    var wrap = document.getElementById('company-settings-wrap');
+    if (!wrap) return;
+    var fields = [
+      ['company_name', 'Company Name'],
+      ['company_address', 'Address'],
+      ['company_city', 'City / ZIP'],
+      ['company_country', 'Country'],
+      ['company_reg_id', 'Reg. ID (I\u010cO)'],
+      ['company_vat_id', 'VAT ID (DI\u010c)'],
+      ['company_vat_note', 'VAT Note'],
+      ['offer_currency', 'Currency'],
+      ['offer_footer', 'Offer Footer Text'],
+    ];
+    var fhtml = '';
+    fields.forEach(function(f) {
+      var val = esc(cfg[f[0]] || '');
+      fhtml += '<div class="form-row" style="margin-bottom:10px"><div class="form-group full">' +
+        '<label>' + esc(f[1]) + '</label>' +
+        '<input type="text" id="cfg-' + f[0] + '" value="' + val + '">' +
+        '</div></div>';
+    });
+    fhtml += '<div class="form-actions" style="margin-top:0;padding-top:12px"><button class="btn btn-red btn-sm" onclick="saveCompanySettings()">' + esc(t('settings.save_company')) + '</button></div>';
+    wrap.innerHTML = fhtml;
+  }).catch(function() {});
 }
 
 function updateImportHint(hints) {
@@ -2559,6 +2695,20 @@ async function previewImport() {
   prevEl.innerHTML =
     '<p style="font-size:12px;color:#888;margin-bottom:8px">' + totalLines + ' rows detected \u2014 showing first 3:</p>' +
     '<div style="overflow-x:auto"><table style="font-size:12px"><thead><tr>' + headers + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+}
+
+async function saveCompanySettings() {
+  var fields = ['company_name','company_address','company_city','company_country',
+    'company_reg_id','company_vat_id','company_vat_note','offer_currency','offer_footer'];
+  var body = {};
+  fields.forEach(function(f) {
+    var el = document.getElementById('cfg-' + f);
+    if (el) body[f] = el.value;
+  });
+  try {
+    await api('POST', '/api/app_settings', body);
+    toast(t('msg.saved'), 'ok');
+  } catch(e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
 }
 
 async function runImport() {
@@ -2749,6 +2899,9 @@ window.renderSettings = renderSettings;
 window.updateImportHint = updateImportHint;
 window.previewImport = previewImport;
 window.runImport = runImport;
+window.addOfferItemRow = addOfferItemRow;
+window.recalcOfferTotal = recalcOfferTotal;
+window.saveCompanySettings = saveCompanySettings;
 
 // ---------------------------------------------------------------------------
 // Boot

@@ -189,6 +189,21 @@ CREATE TABLE IF NOT EXISTS offers (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS offer_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    offer_id INTEGER NOT NULL REFERENCES offers(id) ON DELETE CASCADE,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    qty REAL NOT NULL DEFAULT 1,
+    description TEXT NOT NULL DEFAULT '',
+    unit_price REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL DEFAULT ''
+);
         """)
         conn.commit()
         c.executescript("""
@@ -215,6 +230,24 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
                 conn.commit()
             except Exception:
                 pass
+        # Seed default company settings if not present
+        defaults = {
+            "company_name": "Reckord - outside broadcasting s.r.o.",
+            "company_address": "Dukelská 1272/41",
+            "company_city": "Chomutov, 43001",
+            "company_country": "Czechia",
+            "company_reg_id": "25486420",
+            "company_vat_id": "CZ25486420",
+            "company_vat_note": "VAT payer. Official ID on file: C 20436 vedená u KSUL",
+            "offer_currency": "Kč",
+            "offer_footer": "",
+        }
+        for k, v in defaults.items():
+            try:
+                conn.execute("INSERT OR IGNORE INTO app_settings (key, value) VALUES (?, ?)", (k, v))
+            except Exception:
+                pass
+        conn.commit()
         conn.close()
 
 
@@ -713,6 +746,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path == "/api/reports":
             self._api_reports(); return
 
+        if path == "/api/app_settings":
+            self._api_settings_get(); return
+
+        m = re.match(r"^/api/offers/(\d+)/items$", path)
+        if m:
+            self._api_offer_items_list(int(m.group(1))); return
+
+        m = re.match(r"^/api/offers/(\d+)/print$", path)
+        if m:
+            self._api_offer_print(int(m.group(1))); return
+
         error_response(self, "Not found", 404)
 
     def _api_dashboard(self):
@@ -914,6 +958,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
         if path == "/api/import":
             self._api_import(body); return
+
+        m = re.match(r"^/api/offers/(\d+)/items$", path)
+        if m:
+            self._api_offer_item_create(int(m.group(1)), body); return
+
+        m = re.match(r"^/api/offers/(\d+)/items/bulk$", path)
+        if m:
+            self._api_offer_items_bulk(int(m.group(1)), body); return
+
+        if path == "/api/app_settings":
+            self._api_settings_update(body); return
 
         error_response(self, "Not found", 404)
 
@@ -1132,6 +1187,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
         m = re.match(r"^/api/projects/(\d+)/fleet/(\d+)$", path)
         if m:
             self._api_remove_fleet_assignment(int(m.group(1)), int(m.group(2))); return
+
+        m = re.match(r"^/api/offer_items/(\d+)$", path)
+        if m:
+            self._api_generic_delete("offer_items", int(m.group(1))); return
 
         error_response(self, "Not found", 404)
 
@@ -1498,7 +1557,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
             """, (oid,)).fetchone()
             if not row:
                 error_response(self, "Not found", 404); return
-            json_response(self, dict(row))
+            item = dict(row)
+            item["items"] = [dict(r) for r in conn.execute(
+                "SELECT * FROM offer_items WHERE offer_id=? ORDER BY sort_order, id",
+                (oid,)).fetchall()]
+            json_response(self, item)
         finally:
             conn.close()
 
@@ -1585,6 +1648,379 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 json_response(self, {"project_id": pid, "project_code": code}, 201)
             finally:
                 conn.close()
+
+    def _api_settings_get(self):
+        conn = get_conn()
+        try:
+            rows = conn.execute("SELECT key, value FROM app_settings").fetchall()
+            json_response(self, {r["key"]: r["value"] for r in rows})
+        finally:
+            conn.close()
+
+    def _api_settings_update(self, body):
+        with _db_lock:
+            conn = get_conn()
+            try:
+                for k, v in body.items():
+                    conn.execute("INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)",
+                                 (str(k), str(v)))
+                conn.commit()
+                json_response(self, {"ok": True})
+            finally:
+                conn.close()
+
+    def _api_offer_items_list(self, oid):
+        conn = get_conn()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM offer_items WHERE offer_id=? ORDER BY sort_order, id", (oid,)
+            ).fetchall()
+            json_response(self, [dict(r) for r in rows])
+        finally:
+            conn.close()
+
+    def _api_offer_item_create(self, oid, body):
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "INSERT INTO offer_items (offer_id,sort_order,qty,description,unit_price,created_at) "
+                    "VALUES (?,?,?,?,?,?)",
+                    (oid,
+                     int(body.get("sort_order") or 0),
+                     float(body.get("qty") or 1),
+                     body.get("description") or "",
+                     float(body.get("unit_price") or 0),
+                     now)
+                )
+                conn.commit()
+                rid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+                json_response(self,
+                    dict(conn.execute("SELECT * FROM offer_items WHERE id=?", (rid,)).fetchone()),
+                    201)
+            finally:
+                conn.close()
+
+    def _api_offer_items_bulk(self, oid, body):
+        items = body.get("items") or []
+        with _db_lock:
+            conn = get_conn()
+            try:
+                conn.execute("DELETE FROM offer_items WHERE offer_id=?", (oid,))
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                for it in items:
+                    conn.execute(
+                        "INSERT INTO offer_items (offer_id,sort_order,qty,description,unit_price,created_at) "
+                        "VALUES (?,?,?,?,?,?)",
+                        (oid, int(it.get("sort_order") or 0),
+                         float(it.get("qty") or 1),
+                         it.get("description") or "",
+                         float(it.get("unit_price") or 0),
+                         now)
+                    )
+                conn.commit()
+                json_response(self, {"ok": True, "count": len(items)})
+            finally:
+                conn.close()
+
+    def _api_offer_print(self, oid):
+        conn = get_conn()
+        try:
+            row = conn.execute("""
+                SELECT o.*, c.name as client_name, c.address as client_address,
+                       c.email as client_email, c.phone as client_phone,
+                       c.country as client_country, c.ico as client_ico,
+                       c.vat_number as client_vat, c.contact_person as client_contact,
+                       p.name as project_name, p.code as project_code,
+                       p.location as project_location
+                FROM offers o
+                LEFT JOIN clients c ON o.client_id = c.id
+                LEFT JOIN projects p ON o.project_id = p.id
+                WHERE o.id=?
+            """, (oid,)).fetchone()
+            if not row:
+                error_response(self, "Not found", 404); return
+            o = dict(row)
+            items = [dict(r) for r in conn.execute(
+                "SELECT * FROM offer_items WHERE offer_id=? ORDER BY sort_order, id", (oid,)
+            ).fetchall()]
+            settings = {r["key"]: r["value"] for r in
+                        conn.execute("SELECT key, value FROM app_settings").fetchall()}
+            # Get fleet assignments if linked to project
+            fleet = []
+            if o.get("project_id"):
+                fleet = [dict(r) for r in conn.execute("""
+                    SELECT f.name as vehicle_name, f.type, f.registration,
+                           f.specs_video, f.unit_id
+                    FROM project_fleet pf
+                    JOIN fleet f ON pf.vehicle_id = f.id
+                    WHERE pf.project_id=?
+                """, (o["project_id"],)).fetchall()]
+            html = self._render_offer_html(o, items, fleet, settings)
+            body = html.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        finally:
+            conn.close()
+
+    def _render_offer_html(self, o, items, fleet, settings):
+        def esc(s):
+            return str(s or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+        def money(v):
+            try:
+                n = float(v or 0)
+                return f"{n:,.0f}".replace(",", "\u00a0") + " " + settings.get("offer_currency", "Kč")
+            except Exception:
+                return str(v or "0")
+        def fmt_date(d):
+            return str(d or "")[:10] if d else "—"
+
+        sup = settings
+        vat_rate = 0.21
+        total = float(o.get("total_value") or 0)
+        # If line items exist, compute total from items
+        if items:
+            total = sum(float(it.get("qty", 1)) * float(it.get("unit_price", 0)) for it in items)
+        vat = total * vat_rate
+        total_with_vat = total + vat
+
+        # Line items rows
+        items_html = ""
+        if items:
+            rows_html = ""
+            for it in items:
+                qty = float(it.get("qty", 1))
+                up = float(it.get("unit_price", 0))
+                line_total = qty * up
+                qty_str = str(int(qty)) if qty == int(qty) else str(qty)
+                rows_html += f"""
+            <tr>
+              <td class="qty">{esc(qty_str)}</td>
+              <td class="desc">{esc(it.get('description',''))}</td>
+              <td class="price">{money(up)}</td>
+              <td class="price">{money(line_total)}</td>
+            </tr>"""
+            items_html = f"""
+        <table class="items-table">
+          <thead><tr>
+            <th class="qty">Qty</th>
+            <th class="desc">Description</th>
+            <th class="price">Unit price</th>
+            <th class="price">Total</th>
+          </tr></thead>
+          <tbody>{rows_html}</tbody>
+        </table>"""
+        else:
+            items_html = f"""
+        <div class="no-items-note">
+          <p style="color:#555;font-size:13px">Total value: <strong>{money(total)}</strong></p>
+          {('<p style="color:#888;font-size:12px;white-space:pre-wrap">' + esc(o.get('notes','')) + '</p>') if o.get('notes') else ''}
+        </div>"""
+
+        # Fleet units
+        fleet_html = ""
+        for f in fleet:
+            fleet_html += f"""
+        <tr>
+          <td class="qty">1 unit</td>
+          <td class="desc"><strong>{esc(f.get('vehicle_name',''))}</strong>
+            {('<br><span style="font-size:11px;color:#666">' + esc(f.get('specs_video','')) + '</span>') if f.get('specs_video') else ''}
+          </td>
+          <td class="price">—</td>
+          <td class="price">—</td>
+        </tr>"""
+        if fleet_html:
+            items_html = items_html.replace("</tbody>", fleet_html + "</tbody>") if "</tbody>" in items_html else items_html + f"""
+        <table class="items-table">
+          <thead><tr>
+            <th class="qty">Qty</th><th class="desc">Unit</th>
+            <th class="price">Unit price</th><th class="price">Total</th>
+          </tr></thead>
+          <tbody>{fleet_html}</tbody>
+        </table>"""
+
+        # Client address block
+        client_lines = []
+        if o.get("client_name"): client_lines.append(f'<div class="party-name">{esc(o["client_name"])}</div>')
+        if o.get("client_address"): client_lines.append(f'<div>{esc(o["client_address"])}</div>')
+        if o.get("project_location"): client_lines.append(f'<div>{esc(o["project_location"])}</div>')
+        if o.get("client_country"): client_lines.append(f'<div>{esc(o["client_country"])}</div>')
+        if o.get("client_ico"): client_lines.append(f'<div class="reg-row"><span class="reg-label">Reg. ID</span><span>{esc(o["client_ico"])}</span></div>')
+        if o.get("client_vat"): client_lines.append(f'<div class="reg-row"><span class="reg-label">VAT ID</span><span>{esc(o["client_vat"])}</span></div>')
+
+        # Project name
+        project_line = ""
+        if o.get("project_name"):
+            project_line = f'<div class="project-ref">Project: <strong>{esc(o["project_name"])}</strong>{(" — " + esc(o["project_location"])) if o.get("project_location") else ""}</div>'
+
+        return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Offer {esc(o.get('number',''))}</title>
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{ font-family: Arial, Helvetica, sans-serif; color: #111; font-size: 13px; background: white; }}
+  .page {{ max-width: 900px; margin: 0 auto; padding: 40px 50px; }}
+
+  /* Header */
+  .header {{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 36px; }}
+  .logo-block {{ display: flex; align-items: center; gap: 12px; }}
+  .logo-r {{ width: 44px; height: 44px; background: #E10B17; border-radius: 50%; color: white;
+    font-weight: 900; font-size: 22px; display: flex; align-items: center; justify-content: center; }}
+  .logo-text {{ font-size: 15px; font-weight: 800; letter-spacing: 2px; }}
+  .logo-sub {{ font-size: 9px; color: #888; letter-spacing: 1px; text-transform: uppercase; }}
+  .offer-title {{ text-align: right; }}
+  .offer-title span {{ font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #999; }}
+  .offer-title strong {{ display: block; font-size: 26px; font-weight: 800; color: #111; letter-spacing: 1px; margin-top: 2px; }}
+
+  /* Parties */
+  .parties {{ display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid #eee; }}
+  .party-label {{ font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #aaa; margin-bottom: 8px; }}
+  .party-name {{ font-size: 15px; font-weight: 700; margin-bottom: 4px; }}
+  .party-block div {{ line-height: 1.7; color: #333; }}
+  .reg-row {{ display: flex; gap: 16px; margin-top: 2px; }}
+  .reg-label {{ color: #aaa; font-size: 11px; width: 44px; }}
+  .vat-note {{ font-size: 11px; color: #999; margin-top: 6px; font-style: italic; }}
+
+  /* Red bar */
+  .offer-bar {{ background: #E10B17; color: white; padding: 14px 24px; border-radius: 4px;
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }}
+  .offer-bar-item {{ font-size: 12px; letter-spacing: 0.5px; opacity: 0.9; }}
+  .offer-bar-item strong {{ font-size: 16px; font-weight: 800; margin-left: 8px; }}
+
+  /* Project ref */
+  .project-ref {{ font-size: 12px; color: #666; margin-bottom: 20px; padding: 8px 12px;
+    background: #f9f9f9; border-left: 3px solid #E10B17; border-radius: 2px; }}
+
+  /* Items table */
+  .items-table {{ width: 100%; border-collapse: collapse; margin-bottom: 0; }}
+  .items-table thead th {{ font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: #999; padding: 10px 12px; border-bottom: 2px solid #eee; font-weight: 600; }}
+  .items-table tbody tr {{ border-bottom: 1px solid #f0f0f0; }}
+  .items-table tbody tr:last-child {{ border-bottom: none; }}
+  .items-table tbody td {{ padding: 11px 12px; }}
+  .qty {{ width: 60px; color: #333; font-weight: 600; }}
+  .price {{ width: 130px; text-align: right; color: #333; }}
+  .desc {{ color: #111; }}
+
+  /* Totals */
+  .totals {{ border-top: 2px solid #eee; margin-top: 8px; padding-top: 16px; }}
+  .total-row {{ display: flex; justify-content: flex-end; gap: 40px; margin-bottom: 6px; font-size: 13px; color: #555; }}
+  .total-row.main {{ font-size: 16px; font-weight: 800; color: #111; margin-top: 8px; }}
+  .total-label {{ }}
+  .total-value {{ min-width: 140px; text-align: right; }}
+
+  /* Notes */
+  .notes-section {{ margin-top: 24px; padding-top: 16px; border-top: 1px solid #eee; font-size: 12px; color: #666; }}
+
+  /* Footer */
+  .footer {{ margin-top: 48px; padding-top: 16px; border-top: 1px solid #eee;
+    display: flex; justify-content: space-between; font-size: 11px; color: #bbb; }}
+
+  /* Print button */
+  .print-bar {{ background: #f4f4f4; padding: 12px 50px; display: flex; gap: 12px; align-items: center;
+    border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 10; }}
+  .print-bar button {{ padding: 8px 20px; border: none; border-radius: 4px; cursor: pointer;
+    font-size: 13px; font-weight: 600; font-family: inherit; }}
+  .btn-print {{ background: #E10B17; color: white; }}
+  .btn-close {{ background: white; border: 1.5px solid #ddd !important; color: #333; }}
+
+  @media print {{
+    .print-bar {{ display: none !important; }}
+    body {{ padding: 0; }}
+    .page {{ padding: 24px 32px; }}
+  }}
+</style>
+</head>
+<body>
+<div class="print-bar">
+  <button class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button>
+  <button class="btn-close" onclick="window.close()">✕ Close</button>
+  <span style="margin-left:auto;font-size:12px;color:#999">Use browser Print → Save as PDF for best results</span>
+</div>
+<div class="page">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-block">
+      <div class="logo-r">R</div>
+      <div>
+        <div class="logo-text">RECKORD</div>
+        <div class="logo-sub">Outside Broadcasting</div>
+      </div>
+    </div>
+    <div class="offer-title">
+      <span>Offer</span>
+      <strong>{esc(o.get('number',''))}</strong>
+    </div>
+  </div>
+
+  <!-- Parties -->
+  <div class="parties">
+    <div class="party-block">
+      <div class="party-label">Supplier</div>
+      <div class="party-name">{esc(sup.get('company_name',''))}</div>
+      <div>{esc(sup.get('company_address',''))}</div>
+      <div>{esc(sup.get('company_city',''))}</div>
+      <div>{esc(sup.get('company_country',''))}</div>
+      <div style="margin-top:8px">
+        <div class="reg-row"><span class="reg-label">Reg. ID</span><span>{esc(sup.get('company_reg_id',''))}</span></div>
+        <div class="reg-row"><span class="reg-label">VAT ID</span><span>{esc(sup.get('company_vat_id',''))}</span></div>
+      </div>
+      {('<div class="vat-note">' + esc(sup.get('company_vat_note','')) + '</div>') if sup.get('company_vat_note') else ''}
+    </div>
+    <div class="party-block" style="background:#f9f9f9;padding:16px;border-radius:4px">
+      <div class="party-label">Purchaser</div>
+      {''.join(client_lines) if client_lines else '<div style="color:#aaa">—</div>'}
+    </div>
+  </div>
+
+  <!-- Red bar -->
+  <div class="offer-bar">
+    <div class="offer-bar-item">Price Offer No.<strong>{esc(o.get('number',''))}</strong></div>
+    <div class="offer-bar-item">Date of issue<strong>{fmt_date(o.get('valid_until') or o.get('created_at','')[:10])}</strong></div>
+    {('<div class="offer-bar-item">Valid until<strong>' + fmt_date(o.get('valid_until')) + '</strong></div>') if o.get('valid_until') else ''}
+  </div>
+
+  {project_line}
+
+  <!-- Line items -->
+  <div style="margin-bottom:24px">
+    {items_html}
+  </div>
+
+  <!-- Totals -->
+  <div class="totals">
+    <div class="total-row main">
+      <span class="total-label">Total without VAT</span>
+      <span class="total-value">{money(total)}</span>
+    </div>
+    <div class="total-row" style="color:#999;font-size:12px">
+      <span class="total-label">VAT 21%</span>
+      <span class="total-value">{money(vat)}</span>
+    </div>
+    <div class="total-row" style="font-size:14px;font-weight:700;color:#E10B17">
+      <span class="total-label">Total with VAT</span>
+      <span class="total-value">{money(total_with_vat)}</span>
+    </div>
+    {('<div class="total-row" style="font-size:11px;color:#aaa"><span>Margin</span><span class="total-value">' + str(o.get("margin_pct") or 0) + '%</span></div>') if o.get("margin_pct") else ''}
+  </div>
+
+  {('<div class="notes-section"><strong>Notes:</strong><br>' + esc(o.get("notes","")) + '</div>') if o.get("notes") and items else ''}
+  {('<div class="notes-section">' + esc(sup.get('offer_footer','')) + '</div>') if sup.get('offer_footer') else ''}
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>{esc(sup.get('company_name',''))}</span>
+    <span>{esc(o.get('number',''))}</span>
+  </div>
+</div>
+</body>
+</html>"""
 
 
 # ── Project Assignments ────────────────────────────────────────────────────
