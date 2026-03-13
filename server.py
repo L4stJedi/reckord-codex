@@ -675,6 +675,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             fleet_total = scalar("SELECT COUNT(*) FROM fleet")
             crew_total = scalar("SELECT COUNT(*) FROM crew")
             crew_available = scalar("SELECT COUNT(*) FROM crew WHERE status='available'")
+            offers_pipeline = scalar(
+                "SELECT COALESCE(SUM(total_value),0) FROM offers WHERE status IN ('sent','negotiation','won')")
 
             rows = conn.execute(
                 "SELECT p.id, p.code, p.name, p.status, p.start_date, p.end_date, "
@@ -696,6 +698,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "fleet_total": fleet_total,
                     "crew_total": crew_total,
                     "crew_available": crew_available,
+                    "offers_pipeline": offers_pipeline,
                 },
                 "recent_projects": [dict(r) for r in rows]
             })
@@ -838,6 +841,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._api_crew_create(body); return
         if path == "/api/offers":
             self._api_offer_create(body); return
+
+        m = re.match(r"^/api/offers/(\d+)/to_project$", path)
+        if m:
+            self._api_offer_to_project(int(m.group(1))); return
 
         m = re.match(r"^/api/projects/(\d+)/crew$", path)
         if m:
@@ -1459,6 +1466,42 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 )
                 conn.commit()
                 json_response(self, dict(conn.execute("SELECT * FROM offers WHERE id=?", (oid,)).fetchone()))
+            finally:
+                conn.close()
+
+    def _api_offer_to_project(self, oid):
+        with _db_lock:
+            conn = get_conn()
+            try:
+                offer = conn.execute("SELECT * FROM offers WHERE id=?", (oid,)).fetchone()
+                if not offer:
+                    error_response(self, "Offer not found", 404); return
+                offer = dict(offer)
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                year = datetime.now(timezone.utc).year
+                count = conn.execute("SELECT COUNT(*) FROM projects WHERE code LIKE ?",
+                                     (f"PRJ-{year}-%",)).fetchone()[0]
+                code = f"PRJ-{year}-{count+1:03d}"
+                # Build project name from client name + offer number
+                client_row = conn.execute("SELECT name FROM clients WHERE id=?",
+                                          (offer["client_id"],)).fetchone() if offer["client_id"] else None
+                client_name = client_row[0] if client_row else "Project"
+                name = f"{client_name} \u2013 {offer['number']}"
+                conn.execute(
+                    "INSERT INTO projects (code,name,client_id,status,budget_total,"
+                    "description,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)",
+                    (code, name, offer["client_id"], "planning",
+                     offer["total_value"] or 0,
+                     f"Created from offer {offer['number']}", now, now)
+                )
+                conn.commit()
+                pid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+                conn.execute(
+                    "UPDATE offers SET project_id=?, status='won', updated_at=? WHERE id=?",
+                    (pid, now, oid)
+                )
+                conn.commit()
+                json_response(self, {"project_id": pid, "project_code": code}, 201)
             finally:
                 conn.close()
 

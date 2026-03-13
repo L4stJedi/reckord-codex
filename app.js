@@ -129,7 +129,11 @@ const LANGS = {
     'dash.no_projects': 'No projects yet. Create your first project.',
     'dash.active_projects': 'Active Projects', 'dash.crew_available': 'Crew Available',
     'dash.total_equipment': 'Total Equipment', 'dash.total_fleet': 'Total Fleet',
-    'dash.recent_projects': 'Recent Projects',
+    'dash.recent_projects': 'Recent Projects', 'dash.pipeline': 'Offer Pipeline',
+    'offer.to_project': '\u2192 Convert to Project',
+    'offer.convert_confirm': 'Create a project from this offer? The offer will be marked as Won.',
+    'offer.converted': 'Project created from offer!',
+    'client.risk': 'Risk',
     // Messages
     'msg.coming_soon': 'This module is coming soon.', 'msg.loading': 'Loading...',
     'msg.no_data': 'No data', 'msg.saved': 'Saved successfully', 'msg.deleted': 'Deleted',
@@ -249,7 +253,11 @@ const LANGS = {
     'dash.no_projects': 'Zat\u00edm \u017e\u00e1dn\u00e9 projekty.',
     'dash.active_projects': 'Aktivn\u00ed projekty', 'dash.crew_available': 'Dostupn\u00fd \u0161t\u00e1b',
     'dash.total_equipment': 'Celkem techniky', 'dash.total_fleet': 'Celkem vozidel',
-    'dash.recent_projects': 'Posledn\u00ed projekty',
+    'dash.recent_projects': 'Posledn\u00ed projekty', 'dash.pipeline': 'Pipeline nab\u00eddek',
+    'offer.to_project': '\u2192 P\u0159ev\u00e9st na projekt',
+    'offer.convert_confirm': 'Vytvo\u0159it projekt z t\u00e9to nab\u00eddky? Nab\u00eddka bude ozna\u010dena jako vyhran\u00e1.',
+    'offer.converted': 'Projekt vytvo\u0159en z nab\u00eddky!',
+    'client.risk': 'Riziko',
     'msg.coming_soon': 'Tento modul bude brzy k dispozici.', 'msg.loading': 'Na\u010d\u00edt\u00e1m...',
     'msg.no_data': '\u017d\u00e1dn\u00e1 data', 'msg.saved': 'Ulo\u017eeno', 'msg.deleted': 'Smazano',
     'msg.error': 'Nastala chyba',
@@ -368,7 +376,11 @@ const LANGS = {
     'dash.no_projects': 'Brak projekt\u00f3w.',
     'dash.active_projects': 'Aktywne projekty', 'dash.crew_available': 'Dost\u0119pna ekipa',
     'dash.total_equipment': 'Ca\u0142kowity sprz\u0119t', 'dash.total_fleet': 'Ca\u0142kowita flota',
-    'dash.recent_projects': 'Ostatnie projekty',
+    'dash.recent_projects': 'Ostatnie projekty', 'dash.pipeline': 'Pipeline ofert',
+    'offer.to_project': '\u2192 Konwertuj na projekt',
+    'offer.convert_confirm': 'Utworzy\u0107 projekt z tej oferty? Oferta zostanie oznaczona jako wygrana.',
+    'offer.converted': 'Projekt utworzony z oferty!',
+    'client.risk': 'Ryzyko',
     'msg.coming_soon': 'Ten modu\u0142 b\u0119dzie wkr\u00f3tce dost\u0119pny.',
     'msg.loading': '\u0141adowanie...', 'msg.no_data': 'Brak danych', 'msg.saved': 'Zapisano',
     'msg.deleted': 'Usuni\u0119to', 'msg.error': 'Wyst\u0105pi\u0142 b\u0142\u0105d',
@@ -565,6 +577,13 @@ function pillHtml(status) {
   return '<span class="pill ' + cls + '">' + esc(statusLabel(status)) + '</span>';
 }
 
+function riskPillHtml(flag) {
+  if (!flag || flag === 'normal') return '';
+  const map = { watch: 'pill-orange', critical: 'pill-red' };
+  const cls = map[flag] || 'pill-gray';
+  return '<span class="pill ' + cls + '">' + esc(t('pill.' + flag)) + '</span>';
+}
+
 function dotHtml(status) {
   const cls = STATUS_DOT[status] || 'list-dot-gray';
   return '<div class="list-dot ' + cls + '"></div>';
@@ -630,6 +649,7 @@ async function renderDashboard(el) {
       statCard(s.crew_available, t('dash.crew_available'), 'green') +
       statCard(s.equipment_total, t('dash.total_equipment'), 'orange') +
       statCard(s.fleet_total, t('dash.total_fleet'), '') +
+      statCard(fmtMoney(s.offers_pipeline || 0), t('dash.pipeline'), '') +
       '</div>' +
       '<div class="card">' +
       '<div class="card-header"><div class="card-title">' + esc(t('dash.recent_projects')) + '</div>' +
@@ -939,7 +959,7 @@ function clientsTableHtml(clients) {
   let rows = '';
   clients.forEach(function(c) {
     rows += '<tr onclick="navigate(\'client\',' + c.id + ')">' +
-      '<td><strong>' + esc(c.name) + '</strong></td>' +
+      '<td><strong>' + esc(c.name) + '</strong>' + (c.risk_flag && c.risk_flag !== 'normal' ? ' ' + riskPillHtml(c.risk_flag) : '') + '</td>' +
       '<td>' + esc(c.contact_person || '\u2014') + '</td>' +
       '<td>' + (c.email ? '<a href="mailto:' + esc(c.email) + '" onclick="event.stopPropagation()">' + esc(c.email) + '</a>' : '\u2014') + '</td>' +
       '<td>' + esc(c.phone || '\u2014') + '</td>' +
@@ -2032,6 +2052,7 @@ async function renderOfferItem(el) {
       '<div class="topbar">' +
       '<button class="btn btn-outline btn-sm" onclick="navigate(\'offers\')">' + esc(t('btn.back')) + '</button>' +
       '<div class="topbar-title">' + esc(o.number) + ' ' + pillHtml(o.status) + '</div>' +
+      (o.status !== 'lost' ? '<button class="btn btn-sm" style="background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7" onclick="convertOfferToProject(' + o.id + ')">' + esc(t('offer.to_project')) + '</button>' : '') +
       '<button class="btn btn-outline btn-sm" onclick="openOfferForm(' + o.id + ')">' + esc(t('offer.edit')) + '</button>' +
       '<button class="btn btn-danger btn-sm" onclick="deleteOffer(' + o.id + ')">' + esc(t('btn.delete')) + '</button>' +
       '</div>' +
@@ -2141,6 +2162,16 @@ async function deleteOffer(id) {
     toast(t('msg.deleted'), 'ok');
     _offersData = null;
     navigate('offers');
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+async function convertOfferToProject(id) {
+  if (!confirm(t('offer.convert_confirm'))) return;
+  try {
+    const res = await api('POST', '/api/offers/' + id + '/to_project', {});
+    toast(t('offer.converted'), 'ok');
+    _offersData = null;
+    navigate('project', res.project_id);
   } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
 }
 
@@ -2464,6 +2495,7 @@ window.filterOffers = filterOffers;
 window.openAssignForm = openAssignForm;
 window.saveAssignment = saveAssignment;
 window.removeAssignment = removeAssignment;
+window.convertOfferToProject = convertOfferToProject;
 window.renderReports = renderReports;
 
 // ---------------------------------------------------------------------------
