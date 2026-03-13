@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.pyo
+reckord.db
+.env
+.DS_Store
