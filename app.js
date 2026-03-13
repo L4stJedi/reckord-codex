@@ -108,6 +108,17 @@ const LANGS = {
     'equip.delete_confirm': 'Delete this item?', 'equip.code': 'Asset Code',
     'equip.serial': 'Serial No.', 'equip.purchase_date': 'Purchase Date',
     'equip.purchase_price': 'Purchase Price', 'equip.maintenance_due': 'Maintenance Due',
+    'equip.condition': 'Condition', 'equip.location': 'Warehouse Location',
+    'equip.cond_new': 'New', 'equip.cond_good': 'Good', 'equip.cond_fair': 'Fair',
+    'equip.cond_poor': 'Poor', 'equip.cond_repair': 'Needs Repair',
+    'equip.qr_code': 'QR Code & Label', 'equip.print_label': 'Print Label',
+    'equip.lifecycle': 'Lifecycle / History',
+    'equip.check_in': 'Check In', 'equip.check_out': 'Check Out',
+    'equip.checkin_confirm': 'Mark as returned to warehouse?',
+    'equip.checked_in': 'Returned to warehouse', 'equip.checked_out': 'Checked out to project',
+    'equip.checkout_project': 'Assign to Project', 'equip.returned': 'Returned',
+    'equip.out': 'Out on project', 'equip.no_history': 'No project history yet',
+    'equip.code_auto': 'auto-generated if blank',
     'fleet.no_data': 'No vehicles', 'fleet.registration': 'Registration', 'fleet.type': 'Type',
     'fleet.year': 'Year', 'fleet.mileage': 'Mileage (km)', 'fleet.maintenance_due': 'Service Due',
     'fleet.insurance_expiry': 'Insurance Expiry', 'fleet.edit': 'Edit Vehicle',
@@ -259,9 +270,20 @@ const LANGS = {
     'cat.transport': 'P\u0159epravn\u00ed boxy', 'cat.other': 'Ostatn\u00ed',
     'type.truck': 'Truck', 'type.van': 'Dod\u00e1vka', 'type.car': 'Auto', 'type.trailer': 'P\u0159\u00edv\u011bs',
     'equip.no_data': '\u017d\u00e1dn\u00e1 technika', 'equip.edit': 'Upravit techniku',
-    'equip.delete_confirm': 'Smazat tuto polo\u017eku?', 'equip.code': 'K\u00f3d',
+    'equip.delete_confirm': 'Smazat tuto polo\u017eku?', 'equip.code': 'K\u00f3d techniky',
     'equip.serial': 'S\u00e9riov\u00e9 \u010d.', 'equip.purchase_date': 'Datum n\u00e1kupu',
     'equip.purchase_price': 'Po\u0159izovac\u00ed cena', 'equip.maintenance_due': 'Datum servisu',
+    'equip.condition': 'Stav', 'equip.location': 'Um\u00edst\u011bn\u00ed ve skladu',
+    'equip.cond_new': 'Nov\u00fd', 'equip.cond_good': 'Dobr\u00fd', 'equip.cond_fair': 'U\u017eivateln\u00fd',
+    'equip.cond_poor': '\u0160patn\u00fd', 'equip.cond_repair': 'Vy\u017eaduje opravu',
+    'equip.qr_code': 'QR k\u00f3d a \u0161t\u00edtek', 'equip.print_label': 'Tisknout \u0161t\u00edtek',
+    'equip.lifecycle': '\u017divotnost / Historie',
+    'equip.check_in': 'Vr\u00e1tit do skladu', 'equip.check_out': 'Vydat na projekt',
+    'equip.checkin_confirm': 'Ozna\u010dit jako vr\u00e1ceno do skladu?',
+    'equip.checked_in': 'Vr\u00e1ceno do skladu', 'equip.checked_out': 'Vyd\u00e1no na projekt',
+    'equip.checkout_project': 'P\u0159i\u0159adit k projektu', 'equip.returned': 'Vr\u00e1ceno',
+    'equip.out': 'Na projektu', 'equip.no_history': 'Zat\u00edm \u017e\u00e1dn\u00e1 historie',
+    'equip.code_auto': 'automaticky generov\u00e1no',
     'fleet.no_data': '\u017d\u00e1dn\u00e1 vozidla', 'fleet.registration': 'SPZ', 'fleet.type': 'Typ',
     'fleet.year': 'Rok', 'fleet.mileage': 'Km', 'fleet.maintenance_due': 'Datum servisu',
     'fleet.insurance_expiry': 'Platnost poji\u0161t\u011bn\u00ed', 'fleet.edit': 'Upravit vozidlo',
@@ -411,9 +433,20 @@ const LANGS = {
     'cat.transport': 'Skrzynie transportowe', 'cat.other': 'Inne',
     'type.truck': 'Truck', 'type.van': 'Van', 'type.car': 'Samoch\u00f3d', 'type.trailer': 'Przyczepa',
     'equip.no_data': 'Brak sprz\u0119tu', 'equip.edit': 'Edytuj sprz\u0119t',
-    'equip.delete_confirm': 'Usun\u0105\u0107 t\u0119 pozycj\u0119?', 'equip.code': 'Kod',
+    'equip.delete_confirm': 'Usun\u0105\u0107 t\u0119 pozycj\u0119?', 'equip.code': 'Kod sprz\u0119tu',
     'equip.serial': 'Nr seryjny', 'equip.purchase_date': 'Data zakupu',
     'equip.purchase_price': 'Cena zakupu', 'equip.maintenance_due': 'Termin serwisu',
+    'equip.condition': 'Stan', 'equip.location': 'Lokalizacja w magazynie',
+    'equip.cond_new': 'Nowy', 'equip.cond_good': 'Dobry', 'equip.cond_fair': 'U\u017cywalny',
+    'equip.cond_poor': 'Z\u0142y', 'equip.cond_repair': 'Wymaga naprawy',
+    'equip.qr_code': 'Kod QR i etykieta', 'equip.print_label': 'Drukuj etykiet\u0119',
+    'equip.lifecycle': '\u017cyciorys / Historia',
+    'equip.check_in': 'Zwr\u00f3\u0107 do magazynu', 'equip.check_out': 'Wydaj na projekt',
+    'equip.checkin_confirm': 'Oznaczy\u0107 jako zwr\u00f3cone do magazynu?',
+    'equip.checked_in': 'Zwr\u00f3cone do magazynu', 'equip.checked_out': 'Wydano na projekt',
+    'equip.checkout_project': 'Przypisz do projektu', 'equip.returned': 'Zwr\u00f3cone',
+    'equip.out': 'Na projekcie', 'equip.no_history': 'Brak historii',
+    'equip.code_auto': 'generowany automatycznie',
     'fleet.no_data': 'Brak pojazd\u00f3w', 'fleet.registration': 'Rejestracja', 'fleet.type': 'Typ',
     'fleet.year': 'Rok', 'fleet.mileage': 'Km', 'fleet.maintenance_due': 'Termin serwisu',
     'fleet.insurance_expiry': 'Wa\u017cno\u015b\u0107 ubezpieczenia', 'fleet.edit': 'Edytuj pojazd',
@@ -1441,12 +1474,13 @@ function equipmentTableHtml(items) {
   let rows = '';
   items.forEach(function(e) {
     rows += '<tr onclick="navigate(\'equipment-item\',' + e.id + ')">' +
-      '<td><strong>' + esc(e.code || '') + '</strong></td>' +
+      '<td><strong style="font-family:monospace;letter-spacing:0.5px">' + esc(e.code || '') + '</strong>' +
+      (e.warehouse_location ? '<br><span style="font-size:10px;color:#aaa">\ud83d\udccd ' + esc(e.warehouse_location) + '</span>' : '') + '</td>' +
       '<td>' + esc(e.name) + '</td>' +
-      '<td>' + esc(e.category || '\u2014') + '</td>' +
+      '<td>' + esc(e.category ? t('cat.' + e.category) : '\u2014') + '</td>' +
       '<td>' + esc((e.brand || '') + (e.model ? ' ' + e.model : '') || '\u2014') + '</td>' +
-      '<td>' + pillHtml(e.status) + '</td>' +
-      '<td>' + esc(e.project_name || '\u2014') + '</td>' +
+      '<td>' + conditionPill(e.condition) + '</td>' +
+      '<td>' + pillHtml(e.status) + (e.project_name ? '<br><span style="font-size:10px;color:#888">' + esc(e.project_name) + '</span>' : '') + '</td>' +
       '<td style="font-size:12px;color:#888">' + fmtDate(e.maintenance_due) + '</td>' +
       '<td onclick="event.stopPropagation()">' +
       '<button class="btn btn-outline btn-sm" onclick="openEquipmentForm(' + e.id + ')">' + esc(t('btn.edit')) + '</button>' +
@@ -1458,11 +1492,17 @@ function equipmentTableHtml(items) {
     '<th>' + esc(t('th.name')) + '</th>' +
     '<th>' + esc(t('th.category')) + '</th>' +
     '<th>Brand / Model</th>' +
+    '<th>' + esc(t('equip.condition')) + '</th>' +
     '<th>' + esc(t('th.status')) + '</th>' +
-    '<th>Current Project</th>' +
     '<th>' + esc(t('equip.maintenance_due')) + '</th>' +
     '<th></th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+function conditionPill(c) {
+  var map = { new: '#27ae60', good: '#2980b9', fair: '#f39c12', poor: '#e67e22', repair: '#E10B17' };
+  var color = map[c] || '#aaa';
+  return '<span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:' + color + ';color:white">' + esc(t('equip.cond_' + (c||'good'))) + '</span>';
 }
 
 async function renderEquipmentItem(el) {
@@ -1471,47 +1511,129 @@ async function renderEquipmentItem(el) {
     const e = await api('GET', '/api/equipment/' + S.viewId);
     if (!e) return;
 
+    const qrUrl = window.location.origin + '/#equipment-item/' + e.id;
+    const qrImg = 'https://api.qrserver.com/v1/create-qr-code/?data=' + encodeURIComponent(qrUrl) + '&size=200x200&margin=6';
+    const isOut = e.status === 'on_project';
+
+    // Lifecycle history table
     let assignHtml = '';
     if (e.assignments && e.assignments.length > 0) {
       let rows = '';
       e.assignments.forEach(function(a) {
-        rows += '<tr><td>' + esc(a.project_name || '') + '<br><span style="font-size:11px;color:#888">' + esc(a.project_code || '') + '</span></td>' +
+        var returned = a.checked_in_at ? '<span style="color:#27ae60;font-size:11px">\u2713 ' + esc(t('equip.returned')) + ' ' + fmtDate(a.checked_in_at) + '</span>' : '<span style="color:#f39c12;font-size:11px">\u25cf ' + esc(t('equip.out')) + '</span>';
+        rows += '<tr>' +
+          '<td><strong>' + esc(a.project_name || '') + '</strong><br><span style="font-size:11px;color:#888">' + esc(a.project_code || '') + '</span></td>' +
           '<td>' + pillHtml(a.project_status) + '</td>' +
-          '<td style="font-size:12px;color:#888">' + fmtDate(a.date_from) + ' \u2013 ' + fmtDate(a.date_to) + '</td>' +
+          '<td style="font-size:12px;color:#888">' + fmtDate(a.date_from) + (a.date_to ? ' \u2013 ' + fmtDate(a.date_to) : '') + '</td>' +
+          '<td>' + returned + '</td>' +
           '</tr>';
       });
-      assignHtml = '<table><thead><tr><th>Project</th><th>Status</th><th>' + esc(t('th.dates')) + '</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      assignHtml = '<table><thead><tr><th>' + esc(t('th.project')) + '</th><th>' + esc(t('th.status')) + '</th><th>' + esc(t('th.dates')) + '</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
     } else {
-      assignHtml = '<div class="empty-state" style="padding:24px"><div class="empty-text">' + esc(t('msg.no_data')) + '</div></div>';
+      assignHtml = '<div class="empty-state" style="padding:24px"><div class="empty-text">' + esc(t('equip.no_history')) + '</div></div>';
     }
 
     el.innerHTML =
       '<div class="topbar">' +
       '<button class="btn btn-outline btn-sm" onclick="navigate(\'equipment\')">' + esc(t('btn.back')) + '</button>' +
       '<div class="topbar-title">' + esc(e.name) + ' ' + pillHtml(e.status) + '</div>' +
+      '<button class="btn btn-outline btn-sm" onclick="window.open(\'/api/equipment/' + e.id + '/label\',\'_blank\')" title="' + esc(t('equip.print_label')) + '">&#127991; ' + esc(t('equip.print_label')) + '</button>' +
+      (isOut
+        ? '<button class="btn btn-outline btn-sm" style="border-color:#27ae60;color:#27ae60" onclick="checkInEquipment(' + e.id + ')">&#8617; ' + esc(t('equip.check_in')) + '</button>'
+        : '<button class="btn btn-red btn-sm" onclick="checkOutEquipment(' + e.id + ')">&#8618; ' + esc(t('equip.check_out')) + '</button>') +
       '<button class="btn btn-outline btn-sm" onclick="openEquipmentForm(' + e.id + ')">' + esc(t('equip.edit')) + '</button>' +
       '<button class="btn btn-danger btn-sm" onclick="deleteEquipment(' + e.id + ')">' + esc(t('btn.delete')) + '</button>' +
       '</div>' +
-      '<div class="content"><div class="two-col">' +
+      '<div class="content"><div style="display:grid;grid-template-columns:1fr 1fr 220px;gap:20px;align-items:start">' +
+
+      // Info card
       '<div class="card"><div class="card-header"><div class="card-title">&#128196; ' + esc(t('tab.overview')) + '</div></div>' +
       '<div class="card-body"><table class="info-table">' +
-      infoRow(t('equip.code'), esc(e.code || '\u2014')) +
-      infoRow(t('th.category'), esc(e.category || '\u2014')) +
-      infoRow('Brand', esc(e.brand || '\u2014')) +
-      infoRow('Model', esc(e.model || '\u2014')) +
+      infoRow(t('equip.code'), '<strong style="font-size:15px;letter-spacing:1px">' + esc(e.code || '\u2014') + '</strong>') +
+      infoRow(t('equip.condition'), conditionPill(e.condition)) +
+      (e.warehouse_location ? infoRow(t('equip.location'), '\ud83d\udccd ' + esc(e.warehouse_location)) : '') +
+      infoRow(t('th.category'), esc(e.category ? t('cat.' + e.category) : '\u2014')) +
+      infoRow(t('th.name') + ' / Brand', esc([e.brand, e.model].filter(Boolean).join(' ') || '\u2014')) +
       infoRow(t('equip.serial'), esc(e.serial_number || '\u2014')) +
       infoRow(t('equip.purchase_date'), fmtDate(e.purchase_date)) +
       infoRow(t('equip.purchase_price'), e.purchase_price ? fmtMoney(e.purchase_price) : '\u2014') +
       infoRow(t('equip.maintenance_due'), fmtDate(e.maintenance_due)) +
       (e.notes ? infoRow(t('label.notes'), esc(e.notes)) : '') +
       '</table></div></div>' +
-      '<div class="card"><div class="card-header"><div class="card-title">&#128193; Assignments</div></div>' +
+
+      // History card
+      '<div class="card"><div class="card-header"><div class="card-title">&#128203; ' + esc(t('equip.lifecycle')) + '</div></div>' +
       '<div class="card-body">' + assignHtml + '</div></div>' +
+
+      // QR card
+      '<div class="card"><div class="card-header"><div class="card-title">&#128247; ' + esc(t('equip.qr_code')) + '</div></div>' +
+      '<div class="card-body" style="text-align:center">' +
+      '<img src="' + esc(qrImg) + '" alt="QR" style="width:160px;height:160px;display:block;margin:0 auto 12px">' +
+      '<div style="font-size:11px;color:#aaa;margin-bottom:12px">' + esc(qrUrl) + '</div>' +
+      '<button class="btn btn-outline btn-sm" style="width:100%" onclick="window.open(\'/api/equipment/' + e.id + '/label\',\'_blank\')">' +
+      '&#127991; ' + esc(t('equip.print_label')) + '</button>' +
+      '</div></div>' +
+
       '</div></div>';
   } catch (e2) {
     el.innerHTML = '<div class="topbar"><button class="btn btn-outline btn-sm" onclick="navigate(\'equipment\')">' + esc(t('btn.back')) + '</button><div class="topbar-title">Error</div></div>' +
       '<div class="content"><div class="alert alert-err"><div>' + esc(t('msg.error') + ': ' + e2.message) + '</div></div></div>';
   }
+}
+
+async function checkInEquipment(id) {
+  if (!confirm(t('equip.checkin_confirm'))) return;
+  try {
+    await api('POST', '/api/equipment/' + id + '/checkin', {});
+    toast(t('equip.checked_in'), 'ok');
+    navigate('equipment-item', id);
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+async function checkOutEquipment(id) {
+  // Load active/confirmed projects for picker
+  try {
+    const projects = await api('GET', '/api/projects');
+    if (!projects) return;
+    const active = projects.filter(function(p) {
+      return ['planning','confirmed','in_progress'].includes(p.status);
+    });
+    const opts = active.map(function(p) {
+      return '<option value="' + p.id + '">' + esc(p.name) + (p.code ? ' [' + p.code + ']' : '') + '</option>';
+    }).join('');
+
+    const modal = document.getElementById('modal-equipment');
+    if (!modal) return;
+    modal.querySelector('.modal-title').textContent = t('equip.check_out');
+    modal.querySelector('.modal-body').innerHTML =
+      '<div class="form-row"><div class="form-group full"><label>' + esc(t('equip.checkout_project')) + '</label>' +
+      '<select id="co-project">' + (opts || '<option value="">— ' + esc(t('proj.no_data')) + ' —</option>') + '</select></div></div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('label.startDate')) + '</label><input type="date" id="co-from" value="' + new Date().toISOString().slice(0,10) + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('label.endDate')) + '</label><input type="date" id="co-to"></div>' +
+      '</div>' +
+      '<div class="form-actions">' +
+      '<button class="btn btn-outline" onclick="closeModal(\'modal-equipment\')">' + esc(t('btn.cancel')) + '</button>' +
+      '<button class="btn btn-red" onclick="doCheckOut(' + id + ')">' + esc(t('equip.check_out')) + '</button>' +
+      '</div>';
+    openModal('modal-equipment');
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+async function doCheckOut(equipmentId) {
+  var pid = parseInt((document.getElementById('co-project') || {}).value);
+  if (!pid) { toast(t('equip.checkout_project') + ' required', 'err'); return; }
+  try {
+    await api('POST', '/api/projects/' + pid + '/equipment', {
+      equipment_id: equipmentId,
+      date_from: (document.getElementById('co-from') || {}).value || null,
+      date_to: (document.getElementById('co-to') || {}).value || null,
+    });
+    closeModal('modal-equipment');
+    toast(t('equip.checked_out'), 'ok');
+    _equipmentData = null;
+    navigate('equipment-item', equipmentId);
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
 }
 
 async function openEquipmentForm(id) {
@@ -1540,12 +1662,23 @@ async function openEquipmentForm(id) {
       return '<option value="' + s + '"' + (s === (e.status || 'available') ? ' selected' : '') + '>' + esc(t('status.' + s)) + '</option>';
     }).join('');
 
+    const conditions = ['new', 'good', 'fair', 'poor', 'repair'];
+    const condOpts = conditions.map(function(c) {
+      return '<option value="' + c + '"' + (c === (e.condition || 'good') ? ' selected' : '') + '>' + esc(t('equip.cond_' + c)) + '</option>';
+    }).join('');
+
+    const codeHint = id ? '' : ' <span style="font-size:11px;color:#aaa">(' + esc(t('equip.code_auto')) + ')</span>';
+
     bodyEl.innerHTML =
+      '<div class="form-row"><div class="form-group full"><label>' + esc(t('th.name')) + ' *</label><input type="text" id="ef-name" value="' + esc(e.name || '') + '" placeholder="e.g. Sony PXW-Z280"></div></div>' +
       '<div class="form-row">' +
-      '<div class="form-group"><label>' + esc(t('equip.code')) + '</label><input type="text" id="ef-code" value="' + esc(e.code || '') + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('equip.code')) + codeHint + '</label><input type="text" id="ef-code" value="' + esc(e.code || '') + '" placeholder="EQ-2024-001"></div>' +
       '<div class="form-group"><label>' + esc(t('th.status')) + '</label><select id="ef-status">' + statusOpts + '</select></div>' +
       '</div>' +
-      '<div class="form-row"><div class="form-group full"><label>' + esc(t('th.name')) + ' *</label><input type="text" id="ef-name" value="' + esc(e.name || '') + '"></div></div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('equip.condition')) + '</label><select id="ef-condition">' + condOpts + '</select></div>' +
+      '<div class="form-group"><label>' + esc(t('equip.location')) + '</label><input type="text" id="ef-location" value="' + esc(e.warehouse_location || '') + '" placeholder="e.g. Shelf A3, Rack 2"></div>' +
+      '</div>' +
       '<div class="form-row">' +
       '<div class="form-group"><label>' + esc(t('th.category')) + '</label><select id="ef-category">' + catOpts + '</select></div>' +
       '<div class="form-group"><label>Brand</label><input type="text" id="ef-brand" value="' + esc(e.brand || '') + '"></div>' +
@@ -1580,19 +1713,22 @@ async function saveEquipment(id) {
     model: (document.getElementById('ef-model') || {}).value || '',
     serial_number: (document.getElementById('ef-serial') || {}).value || '',
     status: (document.getElementById('ef-status') || {}).value || 'available',
+    condition: (document.getElementById('ef-condition') || {}).value || 'good',
+    warehouse_location: (document.getElementById('ef-location') || {}).value || '',
     purchase_date: (document.getElementById('ef-purchase-date') || {}).value || null,
     purchase_price: parseFloat((document.getElementById('ef-purchase-price') || {}).value) || 0,
     maintenance_due: (document.getElementById('ef-maintenance') || {}).value || null,
     notes: (document.getElementById('ef-notes') || {}).value || '',
   };
   try {
-    if (id) { await api('PUT', '/api/equipment/' + id, body); }
-    else { await api('POST', '/api/equipment', body); }
+    let res;
+    if (id) { res = await api('PUT', '/api/equipment/' + id, body); }
+    else { res = await api('POST', '/api/equipment', body); }
     closeModal('modal-equipment');
     toast(t('msg.saved'), 'ok');
     _equipmentData = null;
-    if (id && S.view === 'equipment-item') { navigate('equipment-item', id); }
-    else { navigate('equipment'); }
+    // Always go to detail view so user sees the generated QR + asset code
+    navigate('equipment-item', res.id || id);
   } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
 }
 
@@ -3269,6 +3405,9 @@ window.openEquipmentForm = openEquipmentForm;
 window.saveEquipment = saveEquipment;
 window.deleteEquipment = deleteEquipment;
 window.filterEquipment = filterEquipment;
+window.checkInEquipment = checkInEquipment;
+window.checkOutEquipment = checkOutEquipment;
+window.doCheckOut = doCheckOut;
 window.openFleetForm = openFleetForm;
 window.saveFleet = saveFleet;
 window.deleteFleet = deleteFleet;

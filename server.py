@@ -224,6 +224,9 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
             "ALTER TABLE fleet ADD COLUMN specs_support TEXT DEFAULT ''",
             "ALTER TABLE fleet ADD COLUMN specs_video TEXT DEFAULT ''",
             "ALTER TABLE fleet ADD COLUMN specs_audio TEXT DEFAULT ''",
+            "ALTER TABLE equipment ADD COLUMN condition TEXT NOT NULL DEFAULT 'good'",
+            "ALTER TABLE equipment ADD COLUMN warehouse_location TEXT NOT NULL DEFAULT ''",
+            "ALTER TABLE project_equipment ADD COLUMN checked_in_at TEXT DEFAULT NULL",
         ]:
             try:
                 conn.execute(col_sql)
@@ -716,6 +719,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         m = re.match(r"^/api/equipment/(\d+)$", path)
         if m:
             self._api_equipment_get(int(m.group(1))); return
+        m = re.match(r"^/api/equipment/(\d+)/label$", path)
+        if m:
+            self._api_equipment_label(int(m.group(1))); return
 
         if path == "/api/fleet":
             self._api_fleet_list(qs); return
@@ -1017,6 +1023,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
         if path == "/api/equipment":
             self._api_equipment_create(body); return
+        m = re.match(r"^/api/equipment/(\d+)/checkin$", path)
+        if m:
+            self._api_equipment_checkin(int(m.group(1))); return
+
         if path == "/api/fleet":
             self._api_fleet_create(body); return
         if path == "/api/crew":
@@ -1360,14 +1370,29 @@ class Handler(http.server.BaseHTTPRequestHandler):
             conn = get_conn()
             try:
                 now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                year = datetime.now(timezone.utc).year
+                # Auto-generate asset code if not provided
+                code = (body.get("code") or "").strip()
+                if not code:
+                    n = conn.execute(
+                        "SELECT COUNT(*) FROM equipment WHERE code LIKE ?",
+                        (f"EQ-{year}-%",)).fetchone()[0]
+                    code = f"EQ-{year}-{n+1:03d}"
+                    # ensure uniqueness
+                    while conn.execute("SELECT 1 FROM equipment WHERE code=?", (code,)).fetchone():
+                        n += 1
+                        code = f"EQ-{year}-{n:03d}"
                 conn.execute(
                     "INSERT INTO equipment (code,name,category,brand,model,serial_number,status,"
-                    "purchase_date,purchase_price,maintenance_due,notes,created_at,updated_at) "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (body.get("code") or "", name,
+                    "condition,warehouse_location,purchase_date,purchase_price,maintenance_due,"
+                    "notes,created_at,updated_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (code, name,
                      body.get("category") or "", body.get("brand") or "",
                      body.get("model") or "", body.get("serial_number") or "",
                      body.get("status") or "available",
+                     body.get("condition") or "good",
+                     body.get("warehouse_location") or "",
                      body.get("purchase_date") or None,
                      float(body.get("purchase_price") or 0) or None,
                      body.get("maintenance_due") or None,
@@ -1389,11 +1414,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
                 conn.execute(
                     "UPDATE equipment SET code=?,name=?,category=?,brand=?,model=?,serial_number=?,"
-                    "status=?,purchase_date=?,purchase_price=?,maintenance_due=?,notes=?,updated_at=? WHERE id=?",
+                    "status=?,condition=?,warehouse_location=?,purchase_date=?,purchase_price=?,"
+                    "maintenance_due=?,notes=?,updated_at=? WHERE id=?",
                     (body.get("code") or "", name,
                      body.get("category") or "", body.get("brand") or "",
                      body.get("model") or "", body.get("serial_number") or "",
                      body.get("status") or "available",
+                     body.get("condition") or "good",
+                     body.get("warehouse_location") or "",
                      body.get("purchase_date") or None,
                      float(body.get("purchase_price") or 0) or None,
                      body.get("maintenance_due") or None,
@@ -1401,6 +1429,144 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 )
                 conn.commit()
                 json_response(self, dict(conn.execute("SELECT * FROM equipment WHERE id=?", (eid,)).fetchone()))
+            finally:
+                conn.close()
+
+    def _api_equipment_label(self, eid):
+        """Return a print-ready label HTML page for a label printer."""
+        conn = get_conn()
+        try:
+            row = conn.execute("SELECT * FROM equipment WHERE id=?", (eid,)).fetchone()
+            if not row:
+                error_response(self, "Not found", 404); return
+            e = dict(row)
+        finally:
+            conn.close()
+
+        def esc(s):
+            return str(s or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+
+        # QR encodes the equipment detail URL (absolute so phone can open it)
+        base_url = self._get_base_url()
+        qr_url = f"{base_url}/#equipment-item/{eid}"
+        qr_img = f"https://api.qrserver.com/v1/create-qr-code/?data={urllib.parse.quote(qr_url)}&size=200x200&margin=4"
+
+        cat_label = esc(e.get("category") or "")
+        brand_model = " ".join(filter(None, [e.get("brand"), e.get("model")])).strip()
+
+        html = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Label {esc(e.get('code',''))}</title>
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{ font-family: Arial, Helvetica, sans-serif; background: #f0f0f0; }}
+  .print-bar {{ background: #f4f4f4; padding: 10px 20px; display: flex; gap: 12px; align-items: center;
+    border-bottom: 1px solid #ddd; }}
+  .print-bar button {{ padding: 7px 18px; border: none; border-radius: 4px; cursor: pointer;
+    font-size: 13px; font-weight: 600; font-family: inherit; }}
+  .btn-print {{ background: #E10B17; color: white; }}
+  .btn-close {{ background: white; border: 1.5px solid #ddd !important; color: #333; }}
+  .label-wrap {{ display: flex; gap: 20px; flex-wrap: wrap; padding: 20px; }}
+
+  /* Label: 89mm × 36mm — standard Dymo / Brother small label */
+  .label {{
+    width: 89mm; height: 36mm;
+    background: white; border: 1px solid #ccc; border-radius: 2mm;
+    display: flex; align-items: stretch; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    page-break-inside: avoid;
+  }}
+  .label-qr {{
+    width: 36mm; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2mm; border-right: 0.5pt solid #ddd;
+    background: white;
+  }}
+  .label-qr img {{ width: 32mm; height: 32mm; display: block; }}
+  .label-body {{
+    flex: 1; padding: 2.5mm 3mm; display: flex; flex-direction: column; justify-content: space-between;
+  }}
+  .label-code {{
+    font-size: 16pt; font-weight: 900; letter-spacing: 0.5pt; color: #111; line-height: 1;
+  }}
+  .label-name {{
+    font-size: 8pt; font-weight: 700; color: #222; line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }}
+  .label-sub {{
+    font-size: 6.5pt; color: #666; line-height: 1.3;
+  }}
+  .label-brand {{ font-size: 6pt; color: #999; }}
+  .label-bar {{
+    height: 3mm; background: #E10B17; margin: 0 -3mm; margin-top: 1mm;
+    display: flex; align-items: center; padding: 0 3mm;
+  }}
+  .label-bar span {{ font-size: 5pt; color: white; font-weight: 700; letter-spacing: 0.5pt; }}
+
+  @page {{ size: 89mm 36mm; margin: 0; }}
+  @media print {{
+    body {{ background: white; }}
+    .print-bar {{ display: none !important; }}
+    .label-wrap {{ padding: 0; }}
+    .label {{ border: none; box-shadow: none; }}
+  }}
+</style>
+</head>
+<body>
+<div class="print-bar">
+  <button class="btn-print" onclick="window.print()">🖨 Print Label</button>
+  <button class="btn-close" onclick="window.close()">✕ Close</button>
+  <span style="margin-left:auto;font-size:12px;color:#999">Set printer to 89×36mm label</span>
+</div>
+<div class="label-wrap">
+  <div class="label">
+    <div class="label-qr"><img src="{qr_img}" alt="QR"></div>
+    <div class="label-body">
+      <div>
+        <div class="label-code">{esc(e.get('code',''))}</div>
+        <div class="label-name">{esc(e.get('name',''))}</div>
+        {(f'<div class="label-sub">{esc(brand_model)}</div>') if brand_model else ''}
+        {(f'<div class="label-sub">{esc(cat_label)}</div>') if cat_label else ''}
+      </div>
+      <div>
+        {(f'<div class="label-brand">S/N: {esc(e.get("serial_number",""))}</div>') if e.get("serial_number") else ''}
+        <div class="label-bar"><span>RECKORD OB</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>"""
+        body = html.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _api_equipment_checkin(self, eid):
+        """Return equipment to warehouse: mark available, clear project, record return timestamp."""
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                row = conn.execute("SELECT current_project_id FROM equipment WHERE id=?", (eid,)).fetchone()
+                if not row:
+                    error_response(self, "Not found", 404); return
+                # Record return date on the open project_equipment assignment
+                conn.execute(
+                    "UPDATE project_equipment SET checked_in_at=?, date_to=COALESCE(date_to,?) "
+                    "WHERE equipment_id=? AND checked_in_at IS NULL",
+                    (now, now[:10], eid)
+                )
+                conn.execute(
+                    "UPDATE equipment SET status='available', current_project_id=NULL, updated_at=? WHERE id=?",
+                    (now, eid)
+                )
+                conn.commit()
+                json_response(self, {"ok": True})
             finally:
                 conn.close()
 
