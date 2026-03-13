@@ -2,9 +2,11 @@
 """Reckord Codex – Operations Platform server (stdlib only)."""
 
 import argparse
+import csv
 import hashlib
 import hmac
 import http.server
+import io
 import json
 import mimetypes
 import os
@@ -13,6 +15,7 @@ import socket
 import sqlite3
 import threading
 import time
+import unicodedata
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -188,6 +191,13 @@ CREATE TABLE IF NOT EXISTS offers (
 );
         """)
         conn.commit()
+        c.executescript("""
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    version INTEGER PRIMARY KEY,
+    applied_at TEXT NOT NULL DEFAULT (datetime('now')),
+    description TEXT DEFAULT ''
+);
+""")
         # Migrations for existing databases
         for col_sql in [
             "ALTER TABLE clients ADD COLUMN ico TEXT DEFAULT ''",
@@ -327,6 +337,44 @@ def parse_qs(path):
         qs = path.split("?", 1)[1]
         return dict(urllib.parse.parse_qsl(qs))
     return {}
+
+
+def _normalize_col(name):
+    """Lowercase, strip whitespace, remove diacritics for fuzzy column matching."""
+    s = name.strip().lower()
+    return ''.join(c for c in unicodedata.normalize('NFD', s)
+                   if unicodedata.category(c) != 'Mn')
+
+
+def _parse_caflou_date(s):
+    """Parse Czech/ISO date string to ISO YYYY-MM-DD or None."""
+    if not s:
+        return None
+    s = s.strip()
+    for fmt in ['%d.%m.%Y', '%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y']:
+        try:
+            return datetime.strptime(s, fmt).strftime('%Y-%m-%d')
+        except ValueError:
+            pass
+    return None
+
+
+def _map_caflou_project_status(raw):
+    """Map CAFLOU project status string to Reckord status key."""
+    if not raw:
+        return 'planning'
+    s = _normalize_col(raw)
+    if any(x in s for x in ['plan', 'priprav', 'novy', 'new', 'draft', 'navrh', 'concept']):
+        return 'planning'
+    if any(x in s for x in ['potvrzen', 'schvalen', 'confirm', 'approved']):
+        return 'confirmed'
+    if any(x in s for x in ['aktivn', 'probiha', 'progress', 'running', 'active', 'open']):
+        return 'in_progress'
+    if any(x in s for x in ['dokoncen', 'hotov', 'uzavren', 'complet', 'closed', 'done', 'finish']):
+        return 'completed'
+    if any(x in s for x in ['zrusen', 'cancel', 'pozastav', 'archiv', 'lost', 'rejected']):
+        return 'cancelled'
+    return 'planning'
 
 
 # ---------------------------------------------------------------------------
@@ -855,6 +903,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
         m = re.match(r"^/api/projects/(\d+)/fleet$", path)
         if m:
             self._api_assign_fleet(int(m.group(1)), body); return
+
+        if path == "/api/import":
+            self._api_import(body); return
 
         error_response(self, "Not found", 404)
 
@@ -1720,6 +1771,244 @@ class Handler(http.server.BaseHTTPRequestHandler):
             })
         finally:
             conn.close()
+
+# ── CAFLOU Import ───────────────────────────────────────────────────────────
+    def _api_import(self, body):
+        entity_type = (body.get("entity_type") or "").strip()
+        csv_text = body.get("csv_text") or ""
+        delimiter = body.get("delimiter") or ";"
+        if not entity_type or not csv_text.strip():
+            error_response(self, "entity_type and csv_text required"); return
+        try:
+            if entity_type == "clients":
+                result = self._import_clients_csv(csv_text, delimiter)
+            elif entity_type == "projects":
+                result = self._import_projects_csv(csv_text, delimiter)
+            elif entity_type == "crew":
+                result = self._import_crew_csv(csv_text, delimiter)
+            else:
+                error_response(self, "Unknown entity_type"); return
+            json_response(self, result)
+        except Exception as e:
+            error_response(self, f"Import error: {e}")
+
+    def _import_clients_csv(self, csv_text, delimiter):
+        # Column aliases: normalized header → field name
+        COL_MAP = {
+            'nazev': 'name', 'jmeno firmy': 'name', 'company': 'name', 'name': 'name',
+            'firma': 'name', 'spolecnost': 'name',
+            'ico': 'ico', 'ic': 'ico',
+            'dic': 'vat_number', 'vat': 'vat_number', 'vat number': 'vat_number',
+            'email': 'email', 'e-mail': 'email', 'mail': 'email',
+            'telefon': 'phone', 'phone': 'phone', 'tel': 'phone', 'mobil': 'phone',
+            'adresa': 'address', 'address': 'address', 'ulice': 'address', 'sidlo': 'address',
+            'stat': 'country', 'zeme': 'country', 'country': 'country',
+            'kontaktni osoba': 'contact_person', 'kontakt': 'contact_person',
+            'contact': 'contact_person', 'contact person': 'contact_person',
+            'poznamky': 'notes', 'notes': 'notes', 'poznamka': 'notes',
+        }
+        reader = csv.DictReader(csv_text.splitlines(), delimiter=delimiter)
+        # Build header mapping: original col name → field name
+        hdr_map = {}
+        for col in (reader.fieldnames or []):
+            norm = _normalize_col(col)
+            if norm in COL_MAP:
+                hdr_map[col] = COL_MAP[norm]
+            else:
+                # Try partial match for multi-word keys
+                for alias, field in COL_MAP.items():
+                    if alias in norm or norm in alias:
+                        hdr_map[col] = field
+                        break
+        created = skipped = 0
+        errors = []
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+        with _db_lock:
+            conn = get_conn()
+            try:
+                for i, row in enumerate(reader):
+                    mapped = {}
+                    for col, val in row.items():
+                        if col in hdr_map:
+                            mapped[hdr_map[col]] = (val or "").strip()
+                    name = mapped.get('name', '').strip()
+                    if not name:
+                        continue
+                    # Skip if client with same name already exists
+                    exists = conn.execute("SELECT id FROM clients WHERE name=?", (name,)).fetchone()
+                    if exists:
+                        skipped += 1
+                        continue
+                    conn.execute(
+                        "INSERT INTO clients (name,contact_person,email,phone,address,country,"
+                        "ico,vat_number,notes,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                        (name, mapped.get('contact_person',''), mapped.get('email',''),
+                         mapped.get('phone',''), mapped.get('address',''),
+                         mapped.get('country','CZ') or 'CZ',
+                         mapped.get('ico',''), mapped.get('vat_number',''),
+                         mapped.get('notes',''), now, now)
+                    )
+                    created += 1
+                conn.commit()
+            except Exception as e:
+                errors.append(str(e))
+            finally:
+                conn.close()
+        return {"created": created, "skipped": skipped, "errors": errors}
+
+    def _import_projects_csv(self, csv_text, delimiter):
+        COL_MAP = {
+            'nazev': 'name', 'name': 'name', 'projekt': 'name', 'project': 'name',
+            'nazev projektu': 'name',
+            'klient': 'client_name', 'client': 'client_name', 'zakaznik': 'client_name',
+            'customer': 'client_name',
+            'stav': 'status', 'status': 'status', 'stav projektu': 'status',
+            'zacatek': 'start_date', 'datum zahajeni': 'start_date', 'start': 'start_date',
+            'start date': 'start_date', 'od': 'start_date',
+            'konec': 'end_date', 'datum ukonceni': 'end_date', 'end': 'end_date',
+            'end date': 'end_date', 'do': 'end_date',
+            'rozpocet': 'budget_total', 'budget': 'budget_total', 'celkem': 'budget_total',
+            'hodnota': 'budget_total', 'cena': 'budget_total',
+            'misto': 'location', 'location': 'location', 'lokalita': 'location',
+            'popis': 'description', 'description': 'description',
+            'poznamky': 'notes', 'notes': 'notes',
+        }
+        reader = csv.DictReader(csv_text.splitlines(), delimiter=delimiter)
+        hdr_map = {}
+        for col in (reader.fieldnames or []):
+            norm = _normalize_col(col)
+            if norm in COL_MAP:
+                hdr_map[col] = COL_MAP[norm]
+            else:
+                for alias, field in COL_MAP.items():
+                    if alias in norm or norm in alias:
+                        hdr_map[col] = field
+                        break
+        created = skipped = 0
+        errors = []
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+        year = datetime.now(timezone.utc).year
+        with _db_lock:
+            conn = get_conn()
+            try:
+                for row in reader:
+                    mapped = {}
+                    for col, val in row.items():
+                        if col in hdr_map:
+                            mapped[hdr_map[col]] = (val or "").strip()
+                    name = mapped.get('name', '').strip()
+                    if not name:
+                        continue
+                    exists = conn.execute("SELECT id FROM projects WHERE name=?", (name,)).fetchone()
+                    if exists:
+                        skipped += 1
+                        continue
+                    # Look up client
+                    client_id = None
+                    client_name = mapped.get('client_name', '')
+                    if client_name:
+                        cr = conn.execute("SELECT id FROM clients WHERE name=?", (client_name,)).fetchone()
+                        if cr:
+                            client_id = cr[0]
+                    # Auto-code
+                    count = conn.execute("SELECT COUNT(*) FROM projects WHERE code LIKE ?",
+                                        (f"PRJ-{year}-%",)).fetchone()[0]
+                    code = f"PRJ-{year}-{count+1:03d}"
+                    status = _map_caflou_project_status(mapped.get('status', ''))
+                    start_date = _parse_caflou_date(mapped.get('start_date'))
+                    end_date = _parse_caflou_date(mapped.get('end_date'))
+                    budget = 0.0
+                    try:
+                        raw_budget = mapped.get('budget_total', '0').replace(',', '.').replace(' ', '').replace('\xa0', '')
+                        budget = float(raw_budget) if raw_budget else 0.0
+                    except Exception:
+                        pass
+                    conn.execute(
+                        "INSERT INTO projects (code,name,client_id,status,start_date,end_date,"
+                        "location,budget_total,description,notes,created_at,updated_at) "
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (code, name, client_id, status, start_date, end_date,
+                         mapped.get('location',''), budget,
+                         mapped.get('description',''), mapped.get('notes',''), now, now)
+                    )
+                    created += 1
+                conn.commit()
+            except Exception as e:
+                errors.append(str(e))
+            finally:
+                conn.close()
+        return {"created": created, "skipped": skipped, "errors": errors}
+
+    def _import_crew_csv(self, csv_text, delimiter):
+        COL_MAP = {
+            'jmeno': 'first_name', 'krestni jmeno': 'first_name', 'first name': 'first_name',
+            'firstname': 'first_name', 'first': 'first_name',
+            'prijmeni': 'last_name', 'last name': 'last_name', 'lastname': 'last_name',
+            'last': 'last_name', 'surname': 'last_name',
+            # Handle "Celé jméno" / "Full name" → split on space
+            'cele jmeno': 'full_name', 'full name': 'full_name', 'fullname': 'full_name',
+            'name': 'full_name', 'jmeno prijmeni': 'full_name',
+            'email': 'email', 'e-mail': 'email', 'mail': 'email',
+            'telefon': 'phone', 'phone': 'phone', 'tel': 'phone', 'mobil': 'phone',
+            'pozice': 'position', 'funkce': 'position', 'position': 'position',
+            'role': 'position', 'pracovni pozice': 'position', 'job title': 'position',
+            'poznamky': 'notes', 'notes': 'notes',
+        }
+        reader = csv.DictReader(csv_text.splitlines(), delimiter=delimiter)
+        hdr_map = {}
+        for col in (reader.fieldnames or []):
+            norm = _normalize_col(col)
+            if norm in COL_MAP:
+                hdr_map[col] = COL_MAP[norm]
+            else:
+                for alias, field in COL_MAP.items():
+                    if alias in norm or norm in alias:
+                        hdr_map[col] = field
+                        break
+        created = skipped = 0
+        errors = []
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+        with _db_lock:
+            conn = get_conn()
+            try:
+                for row in reader:
+                    mapped = {}
+                    for col, val in row.items():
+                        if col in hdr_map:
+                            mapped[hdr_map[col]] = (val or "").strip()
+                    # Resolve first/last name
+                    first = mapped.get('first_name', '')
+                    last = mapped.get('last_name', '')
+                    if not first and not last and mapped.get('full_name'):
+                        parts = mapped['full_name'].split(None, 1)
+                        first = parts[0] if parts else ''
+                        last = parts[1] if len(parts) > 1 else ''
+                    if not first and not last:
+                        continue
+                    email = mapped.get('email', '')
+                    # Skip if email matches existing crew member
+                    if email:
+                        exists = conn.execute("SELECT id FROM crew WHERE email=?", (email,)).fetchone()
+                    else:
+                        exists = conn.execute("SELECT id FROM crew WHERE first_name=? AND last_name=?",
+                                              (first, last)).fetchone()
+                    if exists:
+                        skipped += 1
+                        continue
+                    conn.execute(
+                        "INSERT INTO crew (first_name,last_name,email,phone,position,status,notes,created_at,updated_at) "
+                        "VALUES (?,?,?,?,?,?,?,?,?)",
+                        (first, last, email, mapped.get('phone',''),
+                         mapped.get('position',''), 'available',
+                         mapped.get('notes',''), now, now)
+                    )
+                    created += 1
+                conn.commit()
+            except Exception as e:
+                errors.append(str(e))
+            finally:
+                conn.close()
+        return {"created": created, "skipped": skipped, "errors": errors}
 
 
 # ---------------------------------------------------------------------------

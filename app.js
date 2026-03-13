@@ -130,6 +130,23 @@ const LANGS = {
     'dash.active_projects': 'Active Projects', 'dash.crew_available': 'Crew Available',
     'dash.total_equipment': 'Total Equipment', 'dash.total_fleet': 'Total Fleet',
     'dash.recent_projects': 'Recent Projects', 'dash.pipeline': 'Offer Pipeline',
+    'nav.settings': 'Settings',
+    'settings.title': 'Settings & Import',
+    'settings.import_title': 'Import from CAFLOU',
+    'settings.import_desc': 'Import your existing data from a CAFLOU CSV export. Download your data from CAFLOU \u2192 Export, then upload here.',
+    'settings.entity': 'Data Type',
+    'settings.delimiter': 'CSV Delimiter',
+    'settings.file': 'CSV File',
+    'settings.preview': 'Preview',
+    'settings.import_btn': 'Import',
+    'settings.importing': 'Importing...',
+    'settings.result_created': 'records created',
+    'settings.result_skipped': 'duplicates skipped',
+    'settings.db_title': 'Database',
+    'settings.db_desc': 'SQLite with WAL \u2014 single-file, zero-ops, offline-ready. Backup by copying reckord.db.',
+    'settings.caflou_hint_clients': 'Export: CRM \u2192 Contacts \u2192 Companies \u2192 Export to CSV',
+    'settings.caflou_hint_projects': 'Export: Projects \u2192 All projects \u2192 Export to CSV',
+    'settings.caflou_hint_crew': 'Export: CRM \u2192 Contacts \u2192 People \u2192 Export to CSV',
     'offer.to_project': '\u2192 Convert to Project',
     'offer.convert_confirm': 'Create a project from this offer? The offer will be marked as Won.',
     'offer.converted': 'Project created from offer!',
@@ -254,6 +271,23 @@ const LANGS = {
     'dash.active_projects': 'Aktivn\u00ed projekty', 'dash.crew_available': 'Dostupn\u00fd \u0161t\u00e1b',
     'dash.total_equipment': 'Celkem techniky', 'dash.total_fleet': 'Celkem vozidel',
     'dash.recent_projects': 'Posledn\u00ed projekty', 'dash.pipeline': 'Pipeline nab\u00eddek',
+    'nav.settings': 'Nastaven\u00ed',
+    'settings.title': 'Nastaven\u00ed a import',
+    'settings.import_title': 'Import z CAFLOU',
+    'settings.import_desc': 'Importujte data z CAFLOU CSV exportu. Stahujte data z CAFLOU \u2192 Export, pak nahrajte zde.',
+    'settings.entity': 'Typ dat',
+    'settings.delimiter': 'Odd\u011blova\u010d CSV',
+    'settings.file': 'CSV soubor',
+    'settings.preview': 'N\u00e1hled',
+    'settings.import_btn': 'Importovat',
+    'settings.importing': 'Importuji...',
+    'settings.result_created': 'z\u00e1znam\u016f vytvo\u0159eno',
+    'settings.result_skipped': 'duplik\u00e1t\u016f p\u0159esko\u010deno',
+    'settings.db_title': 'Datab\u00e1ze',
+    'settings.db_desc': 'SQLite s WAL \u2014 jeden soubor, \u017e\u00e1dn\u00e1 spr\u00e1va, offline. Z\u00e1loha = kop\u00edrova\u00e1n\u00ed reckord.db.',
+    'settings.caflou_hint_clients': 'Export: CRM \u2192 Kontakty \u2192 Firmy \u2192 Exportovat do CSV',
+    'settings.caflou_hint_projects': 'Export: Projekty \u2192 V\u0161echny projekty \u2192 Exportovat do CSV',
+    'settings.caflou_hint_crew': 'Export: CRM \u2192 Kontakty \u2192 Osoby \u2192 Exportovat do CSV',
     'offer.to_project': '\u2192 P\u0159ev\u00e9st na projekt',
     'offer.convert_confirm': 'Vytvo\u0159it projekt z t\u00e9to nab\u00eddky? Nab\u00eddka bude ozna\u010dena jako vyhran\u00e1.',
     'offer.converted': 'Projekt vytvo\u0159en z nab\u00eddky!',
@@ -377,6 +411,23 @@ const LANGS = {
     'dash.active_projects': 'Aktywne projekty', 'dash.crew_available': 'Dost\u0119pna ekipa',
     'dash.total_equipment': 'Ca\u0142kowity sprz\u0119t', 'dash.total_fleet': 'Ca\u0142kowita flota',
     'dash.recent_projects': 'Ostatnie projekty', 'dash.pipeline': 'Pipeline ofert',
+    'nav.settings': 'Ustawienia',
+    'settings.title': 'Ustawienia i import',
+    'settings.import_title': 'Import z CAFLOU',
+    'settings.import_desc': 'Importuj dane z eksportu CSV z CAFLOU. Pobierz dane z CAFLOU \u2192 Eksport, nast\u0119pnie wgraj tutaj.',
+    'settings.entity': 'Typ danych',
+    'settings.delimiter': 'Separator CSV',
+    'settings.file': 'Plik CSV',
+    'settings.preview': 'Podgl\u0105d',
+    'settings.import_btn': 'Importuj',
+    'settings.importing': 'Importowanie...',
+    'settings.result_created': 'rekord\u00f3w utworzono',
+    'settings.result_skipped': 'duplikat\u00f3w pomini\u0119to',
+    'settings.db_title': 'Baza danych',
+    'settings.db_desc': 'SQLite z WAL \u2014 jeden plik, zero obs\u0142ugi, offline. Kopia zapasowa = skopiuj reckord.db.',
+    'settings.caflou_hint_clients': 'Eksport: CRM \u2192 Kontakty \u2192 Firmy \u2192 Eksportuj do CSV',
+    'settings.caflou_hint_projects': 'Eksport: Projekty \u2192 Wszystkie projekty \u2192 Eksportuj do CSV',
+    'settings.caflou_hint_crew': 'Eksport: CRM \u2192 Kontakty \u2192 Os\u00f3b \u2192 Eksportuj do CSV',
     'offer.to_project': '\u2192 Konwertuj na projekt',
     'offer.convert_confirm': 'Utworzy\u0107 projekt z tej oferty? Oferta zostanie oznaczona jako wygrana.',
     'offer.converted': 'Projekt utworzony z oferty!',
@@ -2347,6 +2398,140 @@ async function renderReports(el) {
 }
 
 // ---------------------------------------------------------------------------
+// renderSettings
+// ---------------------------------------------------------------------------
+async function renderSettings(el) {
+  const entityOptions = [
+    { value: 'clients', label: t('nav.clients') },
+    { value: 'projects', label: t('nav.projects') },
+    { value: 'crew', label: t('nav.crew') },
+  ];
+  const entityOpts = entityOptions.map(function(o) {
+    return '<option value="' + o.value + '">' + esc(o.label) + '</option>';
+  }).join('');
+
+  const hints = {
+    clients: t('settings.caflou_hint_clients'),
+    projects: t('settings.caflou_hint_projects'),
+    crew: t('settings.caflou_hint_crew'),
+  };
+  const hintsJson = JSON.stringify(hints).replace(/</g, '\\u003c');
+
+  el.innerHTML =
+    '<div class="topbar"><div class="topbar-title">&#9881; ' + esc(t('settings.title')) + '</div></div>' +
+    '<div class="content">' +
+
+    // CAFLOU Import card
+    '<div class="card" style="margin-bottom:20px">' +
+    '<div class="card-header"><div class="card-title">&#128190; ' + esc(t('settings.import_title')) + '</div></div>' +
+    '<div class="card-body-pad">' +
+    '<p style="color:#555;font-size:13px;margin-bottom:20px">' + esc(t('settings.import_desc')) + '</p>' +
+    '<div class="form-row">' +
+    '<div class="form-group">' +
+    '<label>' + esc(t('settings.entity')) + '</label>' +
+    '<select id="imp-entity" onchange="updateImportHint(' + hintsJson + ')">' + entityOpts + '</select>' +
+    '</div>' +
+    '<div class="form-group">' +
+    '<label>' + esc(t('settings.delimiter')) + '</label>' +
+    '<select id="imp-delim">' +
+    '<option value=";">' + esc('; (semicolon \u2013 CAFLOU default)') + '</option>' +
+    '<option value=",">' + esc(', (comma)') + '</option>' +
+    '<option value="\t">' + esc('Tab') + '</option>' +
+    '</select>' +
+    '</div>' +
+    '</div>' +
+    '<div class="form-group" style="margin-bottom:16px">' +
+    '<div id="imp-hint" class="alert alert-warn" style="margin-bottom:12px"><div class="alert-icon">&#8505;</div><div>' + esc(hints.clients) + '</div></div>' +
+    '<label>' + esc(t('settings.file')) + '</label>' +
+    '<input type="file" id="imp-file" accept=".csv,.txt" style="border:1.5px solid #e8e8e8;border-radius:4px;padding:8px 12px;width:100%;font-family:inherit;font-size:13px;background:white">' +
+    '</div>' +
+    '<div id="imp-preview" style="margin-bottom:16px"></div>' +
+    '<div class="form-actions" style="margin-top:0;padding-top:0;border-top:none;justify-content:flex-start">' +
+    '<button class="btn btn-outline btn-sm" onclick="previewImport()">' + esc(t('settings.preview')) + '</button>' +
+    '<button class="btn btn-red btn-sm" id="imp-btn" onclick="runImport()">' + esc(t('settings.import_btn')) + '</button>' +
+    '</div>' +
+    '<div id="imp-result" style="margin-top:16px"></div>' +
+    '</div></div>' +
+
+    // Database info card
+    '<div class="card">' +
+    '<div class="card-header"><div class="card-title">&#128196; ' + esc(t('settings.db_title')) + '</div></div>' +
+    '<div class="card-body-pad">' +
+    '<table class="info-table">' +
+    '<tr><td>Engine</td><td><strong>SQLite 3 + WAL</strong></td></tr>' +
+    '<tr><td>File</td><td><code style="font-family:monospace;background:#f4f4f4;padding:2px 6px;border-radius:3px">reckord.db</code></td></tr>' +
+    '<tr><td>Backup</td><td>' + esc('cp reckord.db reckord.db.backup') + '</td></tr>' +
+    '<tr><td>Migrations</td><td>' + esc('schema_migrations table \u2014 version-tracked') + '</td></tr>' +
+    '</table>' +
+    '<p style="color:#888;font-size:12px;margin-top:12px">' + esc(t('settings.db_desc')) + '</p>' +
+    '</div></div>' +
+
+    '</div>';
+}
+
+function updateImportHint(hints) {
+  var sel = (document.getElementById('imp-entity') || {}).value || 'clients';
+  var el = document.getElementById('imp-hint');
+  if (el) el.querySelector('div:last-child').textContent = hints[sel] || '';
+}
+
+async function previewImport() {
+  var fileInput = document.getElementById('imp-file');
+  var prevEl = document.getElementById('imp-preview');
+  if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+    if (prevEl) prevEl.innerHTML = '<div class="alert alert-warn"><div class="alert-icon">&#9888;</div><div>Please select a CSV file first.</div></div>';
+    return;
+  }
+  var file = fileInput.files[0];
+  var text = await file.text();
+  var delim = (document.getElementById('imp-delim') || {}).value || ';';
+  // Show first 3 rows
+  var lines = text.trim().split('\n').slice(0, 4); // header + 3 rows
+  if (!lines.length) { prevEl.innerHTML = ''; return; }
+  var headers = lines[0].split(delim).map(function(h) { return '<th>' + esc(h.trim()) + '</th>'; }).join('');
+  var rows = lines.slice(1).map(function(line) {
+    var cells = line.split(delim).map(function(c) { return '<td>' + esc(c.trim()) + '</td>'; }).join('');
+    return '<tr>' + cells + '</tr>';
+  }).join('');
+  var totalLines = text.trim().split('\n').length - 1;
+  prevEl.innerHTML =
+    '<p style="font-size:12px;color:#888;margin-bottom:8px">' + totalLines + ' rows detected \u2014 showing first 3:</p>' +
+    '<div style="overflow-x:auto"><table style="font-size:12px"><thead><tr>' + headers + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+}
+
+async function runImport() {
+  var fileInput = document.getElementById('imp-file');
+  var btn = document.getElementById('imp-btn');
+  var resultEl = document.getElementById('imp-result');
+  if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+    toast('Please select a CSV file', 'err');
+    return;
+  }
+  var file = fileInput.files[0];
+  var csvText = await file.text();
+  var entityType = (document.getElementById('imp-entity') || {}).value || 'clients';
+  var delimiter = (document.getElementById('imp-delim') || {}).value || ';';
+  if (btn) { btn.disabled = true; btn.textContent = t('settings.importing'); }
+  resultEl.innerHTML = '';
+  try {
+    var res = await api('POST', '/api/import', { entity_type: entityType, csv_text: csvText, delimiter: delimiter });
+    var html = '<div class="alert alert-ok"><div class="alert-icon">&#10003;</div><div>' +
+      '<strong>' + res.created + '</strong> ' + esc(t('settings.result_created')) + ' &nbsp;|&nbsp; ' +
+      '<strong>' + res.skipped + '</strong> ' + esc(t('settings.result_skipped'));
+    if (res.errors && res.errors.length) {
+      html += '<br><span style="color:#b71c1c">Errors: ' + esc(res.errors.join('; ')) + '</span>';
+    }
+    html += '</div></div>';
+    resultEl.innerHTML = html;
+    toast(res.created + ' ' + t('settings.result_created'), 'ok');
+  } catch(e) {
+    resultEl.innerHTML = '<div class="alert alert-err"><div>' + esc(t('msg.error') + ': ' + e.message) + '</div></div>';
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = t('settings.import_btn'); }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 21. render
 // ---------------------------------------------------------------------------
 function render() {
@@ -2398,6 +2583,7 @@ function render() {
     case 'reports':
       renderReports(el);
       break;
+    case 'settings': renderSettings(el); break;
     default:
       renderDashboard(el);
   }
@@ -2497,6 +2683,10 @@ window.saveAssignment = saveAssignment;
 window.removeAssignment = removeAssignment;
 window.convertOfferToProject = convertOfferToProject;
 window.renderReports = renderReports;
+window.renderSettings = renderSettings;
+window.updateImportHint = updateImportHint;
+window.previewImport = previewImport;
+window.runImport = runImport;
 
 // ---------------------------------------------------------------------------
 // Boot
