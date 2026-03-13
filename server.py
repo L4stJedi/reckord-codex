@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS clients (
     country TEXT NOT NULL DEFAULT 'CZ',
     notes TEXT DEFAULT '',
     vat_number TEXT DEFAULT '',
+    ico TEXT DEFAULT '',
     risk_flag TEXT NOT NULL DEFAULT 'normal',
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -187,6 +188,15 @@ CREATE TABLE IF NOT EXISTS offers (
 );
         """)
         conn.commit()
+        # Migrations for existing databases
+        for col_sql in [
+            "ALTER TABLE clients ADD COLUMN ico TEXT DEFAULT ''",
+        ]:
+            try:
+                conn.execute(col_sql)
+                conn.commit()
+            except Exception:
+                pass
         conn.close()
 
 
@@ -611,6 +621,30 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._api_users_list()
             return
 
+        if path == "/api/equipment":
+            self._api_equipment_list(qs); return
+        m = re.match(r"^/api/equipment/(\d+)$", path)
+        if m:
+            self._api_equipment_get(int(m.group(1))); return
+
+        if path == "/api/fleet":
+            self._api_fleet_list(qs); return
+        m = re.match(r"^/api/fleet/(\d+)$", path)
+        if m:
+            self._api_fleet_get(int(m.group(1))); return
+
+        if path == "/api/crew":
+            self._api_crew_list(qs); return
+        m = re.match(r"^/api/crew/(\d+)$", path)
+        if m:
+            self._api_crew_get(int(m.group(1))); return
+
+        if path == "/api/offers":
+            self._api_offers_list(qs); return
+        m = re.match(r"^/api/offers/(\d+)$", path)
+        if m:
+            self._api_offer_get(int(m.group(1))); return
+
         error_response(self, "Not found", 404)
 
     def _api_dashboard(self):
@@ -784,6 +818,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._api_client_create(body)
             return
 
+        if path == "/api/equipment":
+            self._api_equipment_create(body); return
+        if path == "/api/fleet":
+            self._api_fleet_create(body); return
+        if path == "/api/crew":
+            self._api_crew_create(body); return
+        if path == "/api/offers":
+            self._api_offer_create(body); return
+
         error_response(self, "Not found", 404)
 
     def _api_project_create(self, body, user):
@@ -836,7 +879,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
                 conn.execute(
                     "INSERT INTO clients (name, contact_person, email, phone, address, country, "
-                    "notes, vat_number, risk_flag, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                    "notes, vat_number, ico, risk_flag, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
                         name,
                         body.get("contact_person") or "",
@@ -846,6 +889,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         body.get("country") or "CZ",
                         body.get("notes") or "",
                         body.get("vat_number") or "",
+                        body.get("ico") or "",
                         body.get("risk_flag") or "normal",
                         now, now
                     )
@@ -872,6 +916,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if m:
             self._api_client_update(int(m.group(1)), body)
             return
+
+        m = re.match(r"^/api/equipment/(\d+)$", path)
+        if m:
+            self._api_equipment_update(int(m.group(1)), body); return
+        m = re.match(r"^/api/fleet/(\d+)$", path)
+        if m:
+            self._api_fleet_update(int(m.group(1)), body); return
+        m = re.match(r"^/api/crew/(\d+)$", path)
+        if m:
+            self._api_crew_update(int(m.group(1)), body); return
+        m = re.match(r"^/api/offers/(\d+)$", path)
+        if m:
+            self._api_offer_update(int(m.group(1)), body); return
 
         error_response(self, "Not found", 404)
 
@@ -927,7 +984,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
                 conn.execute(
                     "UPDATE clients SET name=?, contact_person=?, email=?, phone=?, address=?, "
-                    "country=?, notes=?, vat_number=?, risk_flag=?, updated_at=? WHERE id=?",
+                    "country=?, notes=?, vat_number=?, ico=?, risk_flag=?, updated_at=? WHERE id=?",
                     (
                         name,
                         body.get("contact_person") or "",
@@ -937,6 +994,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         body.get("country") or "CZ",
                         body.get("notes") or "",
                         body.get("vat_number") or "",
+                        body.get("ico") or "",
                         body.get("risk_flag") or "normal",
                         now, cid
                     )
@@ -964,6 +1022,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._api_client_delete(int(m.group(1)))
             return
 
+        m = re.match(r"^/api/equipment/(\d+)$", path)
+        if m:
+            self._api_generic_delete("equipment", int(m.group(1))); return
+        m = re.match(r"^/api/fleet/(\d+)$", path)
+        if m:
+            self._api_generic_delete("fleet", int(m.group(1))); return
+        m = re.match(r"^/api/crew/(\d+)$", path)
+        if m:
+            self._api_generic_delete("crew", int(m.group(1))); return
+        m = re.match(r"^/api/offers/(\d+)$", path)
+        if m:
+            self._api_generic_delete("offers", int(m.group(1))); return
+
         error_response(self, "Not found", 404)
 
     def _api_project_delete(self, pid):
@@ -983,6 +1054,379 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 conn.execute("DELETE FROM clients WHERE id=?", (cid,))
                 conn.commit()
                 json_response(self, {"ok": True})
+            finally:
+                conn.close()
+
+    def _api_generic_delete(self, table, rid):
+        with _db_lock:
+            conn = get_conn()
+            try:
+                conn.execute(f"DELETE FROM {table} WHERE id=?", (rid,))
+                conn.commit()
+                json_response(self, {"ok": True})
+            finally:
+                conn.close()
+
+    # ── Equipment ──────────────────────────────────────────────────────────────
+    def _api_equipment_list(self, qs):
+        conn = get_conn()
+        try:
+            search = qs.get("search", "").strip().lower()
+            status = qs.get("status", "").strip()
+            rows = conn.execute("""
+                SELECT e.*, p.name as project_name
+                FROM equipment e
+                LEFT JOIN projects p ON e.current_project_id = p.id
+                ORDER BY e.name
+            """).fetchall()
+            result = [dict(r) for r in rows]
+            if search:
+                result = [r for r in result if search in r["name"].lower()
+                          or search in (r["code"] or "").lower()
+                          or search in (r["category"] or "").lower()
+                          or search in (r["brand"] or "").lower()]
+            if status:
+                result = [r for r in result if r["status"] == status]
+            json_response(self, result)
+        finally:
+            conn.close()
+
+    def _api_equipment_get(self, eid):
+        conn = get_conn()
+        try:
+            row = conn.execute("""
+                SELECT e.*, p.name as project_name
+                FROM equipment e
+                LEFT JOIN projects p ON e.current_project_id = p.id
+                WHERE e.id=?
+            """, (eid,)).fetchone()
+            if not row:
+                error_response(self, "Not found", 404); return
+            item = dict(row)
+            item["assignments"] = [dict(r) for r in conn.execute("""
+                SELECT pe.*, p.name as project_name, p.code as project_code, p.status as project_status
+                FROM project_equipment pe
+                JOIN projects p ON pe.project_id = p.id
+                WHERE pe.equipment_id=? ORDER BY pe.date_from DESC
+            """, (eid,)).fetchall()]
+            json_response(self, item)
+        finally:
+            conn.close()
+
+    def _api_equipment_create(self, body):
+        name = (body.get("name") or "").strip()
+        if not name:
+            error_response(self, "name required"); return
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "INSERT INTO equipment (code,name,category,brand,model,serial_number,status,"
+                    "purchase_date,purchase_price,maintenance_due,notes,created_at,updated_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (body.get("code") or "", name,
+                     body.get("category") or "", body.get("brand") or "",
+                     body.get("model") or "", body.get("serial_number") or "",
+                     body.get("status") or "available",
+                     body.get("purchase_date") or None,
+                     float(body.get("purchase_price") or 0) or None,
+                     body.get("maintenance_due") or None,
+                     body.get("notes") or "", now, now)
+                )
+                conn.commit()
+                rid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+                json_response(self, dict(conn.execute("SELECT * FROM equipment WHERE id=?", (rid,)).fetchone()), 201)
+            finally:
+                conn.close()
+
+    def _api_equipment_update(self, eid, body):
+        name = (body.get("name") or "").strip()
+        if not name:
+            error_response(self, "name required"); return
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "UPDATE equipment SET code=?,name=?,category=?,brand=?,model=?,serial_number=?,"
+                    "status=?,purchase_date=?,purchase_price=?,maintenance_due=?,notes=?,updated_at=? WHERE id=?",
+                    (body.get("code") or "", name,
+                     body.get("category") or "", body.get("brand") or "",
+                     body.get("model") or "", body.get("serial_number") or "",
+                     body.get("status") or "available",
+                     body.get("purchase_date") or None,
+                     float(body.get("purchase_price") or 0) or None,
+                     body.get("maintenance_due") or None,
+                     body.get("notes") or "", now, eid)
+                )
+                conn.commit()
+                json_response(self, dict(conn.execute("SELECT * FROM equipment WHERE id=?", (eid,)).fetchone()))
+            finally:
+                conn.close()
+
+    # ── Fleet ──────────────────────────────────────────────────────────────────
+    def _api_fleet_list(self, qs):
+        conn = get_conn()
+        try:
+            search = qs.get("search", "").strip().lower()
+            status = qs.get("status", "").strip()
+            rows = conn.execute("""
+                SELECT f.*, p.name as project_name
+                FROM fleet f
+                LEFT JOIN projects p ON f.current_project_id = p.id
+                ORDER BY f.name
+            """).fetchall()
+            result = [dict(r) for r in rows]
+            if search:
+                result = [r for r in result if search in (r["name"] or "").lower()
+                          or search in r["registration"].lower()
+                          or search in (r["brand"] or "").lower()]
+            if status:
+                result = [r for r in result if r["status"] == status]
+            json_response(self, result)
+        finally:
+            conn.close()
+
+    def _api_fleet_get(self, fid):
+        conn = get_conn()
+        try:
+            row = conn.execute("""
+                SELECT f.*, p.name as project_name
+                FROM fleet f
+                LEFT JOIN projects p ON f.current_project_id = p.id
+                WHERE f.id=?
+            """, (fid,)).fetchone()
+            if not row:
+                error_response(self, "Not found", 404); return
+            item = dict(row)
+            item["assignments"] = [dict(r) for r in conn.execute("""
+                SELECT pf.*, p.name as project_name, p.code as project_code,
+                       cr.first_name as driver_first, cr.last_name as driver_last
+                FROM project_fleet pf
+                JOIN projects p ON pf.project_id = p.id
+                LEFT JOIN crew cr ON pf.driver_id = cr.id
+                WHERE pf.vehicle_id=? ORDER BY pf.date_from DESC
+            """, (fid,)).fetchall()]
+            json_response(self, item)
+        finally:
+            conn.close()
+
+    def _api_fleet_create(self, body):
+        reg = (body.get("registration") or "").strip()
+        if not reg:
+            error_response(self, "registration required"); return
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "INSERT INTO fleet (registration,name,type,brand,model,year,status,"
+                    "mileage,maintenance_due,insurance_expiry,notes,created_at,updated_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (reg, body.get("name") or "", body.get("type") or "",
+                     body.get("brand") or "", body.get("model") or "",
+                     int(body.get("year") or 0) or None,
+                     body.get("status") or "available",
+                     int(body.get("mileage") or 0),
+                     body.get("maintenance_due") or None,
+                     body.get("insurance_expiry") or None,
+                     body.get("notes") or "", now, now)
+                )
+                conn.commit()
+                rid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+                json_response(self, dict(conn.execute("SELECT * FROM fleet WHERE id=?", (rid,)).fetchone()), 201)
+            finally:
+                conn.close()
+
+    def _api_fleet_update(self, fid, body):
+        reg = (body.get("registration") or "").strip()
+        if not reg:
+            error_response(self, "registration required"); return
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "UPDATE fleet SET registration=?,name=?,type=?,brand=?,model=?,year=?,"
+                    "status=?,mileage=?,maintenance_due=?,insurance_expiry=?,notes=?,updated_at=? WHERE id=?",
+                    (reg, body.get("name") or "", body.get("type") or "",
+                     body.get("brand") or "", body.get("model") or "",
+                     int(body.get("year") or 0) or None,
+                     body.get("status") or "available",
+                     int(body.get("mileage") or 0),
+                     body.get("maintenance_due") or None,
+                     body.get("insurance_expiry") or None,
+                     body.get("notes") or "", now, fid)
+                )
+                conn.commit()
+                json_response(self, dict(conn.execute("SELECT * FROM fleet WHERE id=?", (fid,)).fetchone()))
+            finally:
+                conn.close()
+
+    # ── Crew ──────────────────────────────────────────────────────────────────
+    def _api_crew_list(self, qs):
+        conn = get_conn()
+        try:
+            search = qs.get("search", "").strip().lower()
+            status = qs.get("status", "").strip()
+            rows = conn.execute("SELECT * FROM crew ORDER BY last_name, first_name").fetchall()
+            result = [dict(r) for r in rows]
+            if search:
+                result = [r for r in result if
+                          search in r["first_name"].lower() or search in r["last_name"].lower()
+                          or search in (r["position"] or "").lower()
+                          or search in (r["email"] or "").lower()]
+            if status:
+                result = [r for r in result if r["status"] == status]
+            json_response(self, result)
+        finally:
+            conn.close()
+
+    def _api_crew_get(self, cid):
+        conn = get_conn()
+        try:
+            row = conn.execute("SELECT * FROM crew WHERE id=?", (cid,)).fetchone()
+            if not row:
+                error_response(self, "Not found", 404); return
+            item = dict(row)
+            item["assignments"] = [dict(r) for r in conn.execute("""
+                SELECT pc.*, p.name as project_name, p.code as project_code, p.status as project_status
+                FROM project_crew pc
+                JOIN projects p ON pc.project_id = p.id
+                WHERE pc.crew_id=? ORDER BY pc.date_from DESC
+            """, (cid,)).fetchall()]
+            json_response(self, item)
+        finally:
+            conn.close()
+
+    def _api_crew_create(self, body):
+        first = (body.get("first_name") or "").strip()
+        last = (body.get("last_name") or "").strip()
+        if not first or not last:
+            error_response(self, "first_name and last_name required"); return
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "INSERT INTO crew (first_name,last_name,position,phone,email,status,notes,created_at,updated_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?)",
+                    (first, last, body.get("position") or "", body.get("phone") or "",
+                     body.get("email") or "", body.get("status") or "available",
+                     body.get("notes") or "", now, now)
+                )
+                conn.commit()
+                rid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+                json_response(self, dict(conn.execute("SELECT * FROM crew WHERE id=?", (rid,)).fetchone()), 201)
+            finally:
+                conn.close()
+
+    def _api_crew_update(self, cid, body):
+        first = (body.get("first_name") or "").strip()
+        last = (body.get("last_name") or "").strip()
+        if not first or not last:
+            error_response(self, "first_name and last_name required"); return
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "UPDATE crew SET first_name=?,last_name=?,position=?,phone=?,email=?,status=?,notes=?,updated_at=? WHERE id=?",
+                    (first, last, body.get("position") or "", body.get("phone") or "",
+                     body.get("email") or "", body.get("status") or "available",
+                     body.get("notes") or "", now, cid)
+                )
+                conn.commit()
+                json_response(self, dict(conn.execute("SELECT * FROM crew WHERE id=?", (cid,)).fetchone()))
+            finally:
+                conn.close()
+
+    # ── Offers ──────────────────────────────────────────────────────────────────
+    def _api_offers_list(self, qs):
+        conn = get_conn()
+        try:
+            search = qs.get("search", "").strip().lower()
+            status = qs.get("status", "").strip()
+            rows = conn.execute("""
+                SELECT o.*, c.name as client_name, p.name as project_name, p.code as project_code
+                FROM offers o
+                LEFT JOIN clients c ON o.client_id = c.id
+                LEFT JOIN projects p ON o.project_id = p.id
+                ORDER BY o.created_at DESC
+            """).fetchall()
+            result = [dict(r) for r in rows]
+            if search:
+                result = [r for r in result if
+                          search in (r["number"] or "").lower()
+                          or search in (r["client_name"] or "").lower()]
+            if status:
+                result = [r for r in result if r["status"] == status]
+            json_response(self, result)
+        finally:
+            conn.close()
+
+    def _api_offer_get(self, oid):
+        conn = get_conn()
+        try:
+            row = conn.execute("""
+                SELECT o.*, c.name as client_name, p.name as project_name, p.code as project_code
+                FROM offers o
+                LEFT JOIN clients c ON o.client_id = c.id
+                LEFT JOIN projects p ON o.project_id = p.id
+                WHERE o.id=?
+            """, (oid,)).fetchone()
+            if not row:
+                error_response(self, "Not found", 404); return
+            json_response(self, dict(row))
+        finally:
+            conn.close()
+
+    def _api_offer_create(self, body):
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                # Auto-generate number if empty
+                number = (body.get("number") or "").strip()
+                if not number:
+                    year = datetime.now(timezone.utc).year
+                    count = conn.execute("SELECT COUNT(*) FROM offers WHERE number LIKE ?", (f"OFR-{year}-%",)).fetchone()[0]
+                    number = f"OFR-{year}-{count+1:03d}"
+                conn.execute(
+                    "INSERT INTO offers (number,client_id,project_id,status,total_value,margin_pct,valid_until,notes,created_at,updated_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                    (number,
+                     body.get("client_id") or None, body.get("project_id") or None,
+                     body.get("status") or "draft",
+                     float(body.get("total_value") or 0),
+                     float(body.get("margin_pct") or 0),
+                     body.get("valid_until") or None,
+                     body.get("notes") or "", now, now)
+                )
+                conn.commit()
+                rid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+                json_response(self, dict(conn.execute("SELECT * FROM offers WHERE id=?", (rid,)).fetchone()), 201)
+            finally:
+                conn.close()
+
+    def _api_offer_update(self, oid, body):
+        with _db_lock:
+            conn = get_conn()
+            try:
+                now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                conn.execute(
+                    "UPDATE offers SET number=?,client_id=?,project_id=?,status=?,total_value=?,margin_pct=?,valid_until=?,notes=?,updated_at=? WHERE id=?",
+                    ((body.get("number") or "").strip(),
+                     body.get("client_id") or None, body.get("project_id") or None,
+                     body.get("status") or "draft",
+                     float(body.get("total_value") or 0),
+                     float(body.get("margin_pct") or 0),
+                     body.get("valid_until") or None,
+                     body.get("notes") or "", now, oid)
+                )
+                conn.commit()
+                json_response(self, dict(conn.execute("SELECT * FROM offers WHERE id=?", (oid,)).fetchone()))
             finally:
                 conn.close()
 

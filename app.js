@@ -86,7 +86,7 @@ const LANGS = {
     'label.endDate': 'End Date', 'label.location': 'Location', 'label.notes': 'Notes',
     'label.companyName': 'Company Name', 'label.contactPerson': 'Contact Person',
     'label.email': 'Email', 'label.phone': 'Phone', 'label.country': 'Country',
-    'label.vatNumber': 'VAT Number', 'label.riskFlag': 'Risk Flag',
+    'label.vatNumber': 'DIČ / VAT', 'label.ico': 'IČO', 'label.riskFlag': 'Risk Flag',
     'label.billingAddress': 'Billing Address', 'label.address': 'Address',
     // Modals
     'modal.newProject': '\ud83d\udcc1 New Project', 'modal.newClient': '\ud83c\udfe2 New Client',
@@ -94,6 +94,29 @@ const LANGS = {
     'status.planning': 'Planning', 'status.confirmed': 'Confirmed',
     'status.in_progress': 'In Progress', 'status.completed': 'Completed',
     'status.cancelled': 'Cancelled',
+    'status.available': 'Available', 'status.on_project': 'On Project',
+    'status.maintenance': 'Maintenance', 'status.retired': 'Retired',
+    'status.in_service': 'In Service', 'status.leave': 'On Leave', 'status.inactive': 'Inactive',
+    'status.draft': 'Draft', 'status.sent': 'Sent', 'status.negotiation': 'Negotiation',
+    'status.won': 'Won', 'status.lost': 'Lost',
+    'cat.camera': 'Camera', 'cat.audio': 'Audio', 'cat.cables': 'Cables',
+    'cat.monitors': 'Monitors', 'cat.lighting': 'Lighting',
+    'cat.transport': 'Transport cases', 'cat.other': 'Other',
+    'type.truck': 'Truck', 'type.van': 'Van', 'type.car': 'Car', 'type.trailer': 'Trailer',
+    'equip.no_data': 'No equipment', 'equip.edit': 'Edit Equipment',
+    'equip.delete_confirm': 'Delete this item?', 'equip.code': 'Asset Code',
+    'equip.serial': 'Serial No.', 'equip.purchase_date': 'Purchase Date',
+    'equip.purchase_price': 'Purchase Price', 'equip.maintenance_due': 'Maintenance Due',
+    'fleet.no_data': 'No vehicles', 'fleet.registration': 'Registration', 'fleet.type': 'Type',
+    'fleet.year': 'Year', 'fleet.mileage': 'Mileage (km)', 'fleet.maintenance_due': 'Service Due',
+    'fleet.insurance_expiry': 'Insurance Expiry', 'fleet.edit': 'Edit Vehicle',
+    'fleet.delete_confirm': 'Delete this vehicle?',
+    'crew.no_data': 'No crew members', 'crew.first_name': 'First Name',
+    'crew.last_name': 'Last Name', 'crew.position': 'Position',
+    'crew.edit': 'Edit Member', 'crew.delete_confirm': 'Delete this crew member?',
+    'offer.no_data': 'No offers', 'offer.number': 'Offer No.', 'offer.total': 'Total Value',
+    'offer.margin': 'Margin %', 'offer.valid_until': 'Valid Until',
+    'offer.edit': 'Edit Offer', 'offer.delete_confirm': 'Delete this offer?',
     // Project detail
     'proj.code': 'Code', 'proj.location': 'Location', 'proj.venue': 'Venue',
     'proj.budget': 'Budget', 'proj.budget_total': 'Total Budget', 'proj.budget_spent': 'Spent',
@@ -185,12 +208,37 @@ const LANGS = {
     'label.endDate': 'Datum ukon\u010den\u00ed', 'label.location': 'M\u00edsto kon\u00e1n\u00ed',
     'label.notes': 'Pozn\u00e1mky', 'label.companyName': 'N\u00e1zev firmy',
     'label.contactPerson': 'Kontaktn\u00ed osoba', 'label.email': 'E-mail', 'label.phone': 'Telefon',
-    'label.country': 'Zem\u011b', 'label.vatNumber': 'DI\u010c', 'label.riskFlag': 'Rizikov\u00fd p\u0159\u00edznak',
+    'label.country': 'Zem\u011b', 'label.vatNumber': 'DI\u010c', 'label.ico': 'I\u010cO',
+    'label.riskFlag': 'Rizikov\u00fd p\u0159\u00edznak',
     'label.billingAddress': 'Faktura\u010dn\u00ed adresa', 'label.address': 'Adresa',
     'modal.newProject': '\ud83d\udcc1 Nov\u00fd projekt', 'modal.newClient': '\ud83c\udfe2 Nov\u00fd klient',
     'status.planning': 'Pl\u00e1nov\u00e1n\u00ed', 'status.confirmed': 'Potvrzeno',
     'status.in_progress': 'Prob\u00edh\u00e1', 'status.completed': 'Dokon\u010deno',
     'status.cancelled': 'Zru\u0161eno',
+    'status.available': 'Dostupn\u00fd', 'status.on_project': 'Na projektu',
+    'status.maintenance': 'Servis', 'status.retired': 'Vy\u0159azeno',
+    'status.in_service': 'V servisu', 'status.leave': 'Na dovolen\u00e9', 'status.inactive': 'Neaktivn\u00ed',
+    'status.draft': 'N\u00e1vrh', 'status.sent': 'Odesl\u00e1no', 'status.negotiation': 'Jedn\u00e1n\u00ed',
+    'status.won': 'Vyhr\u00e1no', 'status.lost': 'Proh\u00e1no',
+    'cat.camera': 'Kamera', 'cat.audio': 'Audio', 'cat.cables': 'Kabely',
+    'cat.monitors': 'Monitory', 'cat.lighting': 'Osv\u011btlen\u00ed',
+    'cat.transport': 'P\u0159epravn\u00ed boxy', 'cat.other': 'Ostatn\u00ed',
+    'type.truck': 'Truck', 'type.van': 'Dod\u00e1vka', 'type.car': 'Auto', 'type.trailer': 'P\u0159\u00edv\u011bs',
+    'equip.no_data': '\u017d\u00e1dn\u00e1 technika', 'equip.edit': 'Upravit techniku',
+    'equip.delete_confirm': 'Smazat tuto polo\u017eku?', 'equip.code': 'K\u00f3d',
+    'equip.serial': 'S\u00e9riov\u00e9 \u010d.', 'equip.purchase_date': 'Datum n\u00e1kupu',
+    'equip.purchase_price': 'Po\u0159izovac\u00ed cena', 'equip.maintenance_due': 'Datum servisu',
+    'fleet.no_data': '\u017d\u00e1dn\u00e1 vozidla', 'fleet.registration': 'SPZ', 'fleet.type': 'Typ',
+    'fleet.year': 'Rok', 'fleet.mileage': 'Km', 'fleet.maintenance_due': 'Datum servisu',
+    'fleet.insurance_expiry': 'Platnost poji\u0161t\u011bn\u00ed', 'fleet.edit': 'Upravit vozidlo',
+    'fleet.delete_confirm': 'Smazat toto vozidlo?',
+    'crew.no_data': '\u017d\u00e1dn\u00ed \u010dlenov\u00e9 \u0161t\u00e1bu', 'crew.first_name': 'Jm\u00e9no',
+    'crew.last_name': 'P\u0159\u00edjmen\u00ed', 'crew.position': 'Pozice',
+    'crew.edit': 'Upravit \u010dlena', 'crew.delete_confirm': 'Smazat tohoto \u010dlena?',
+    'offer.no_data': '\u017d\u00e1dn\u00e9 nab\u00eddky', 'offer.number': '\u010c\u00edslo nab\u00eddky',
+    'offer.total': 'Celkov\u00e1 hodnota', 'offer.margin': 'Mar\u017ee %',
+    'offer.valid_until': 'Platnost do', 'offer.edit': 'Upravit nab\u00eddku',
+    'offer.delete_confirm': 'Smazat tuto nab\u00eddku?',
     'proj.code': 'K\u00f3d', 'proj.location': 'M\u00edsto', 'proj.venue': 'Venue',
     'proj.budget': 'Rozpo\u010det', 'proj.budget_total': 'Celkov\u00fd rozpo\u010det',
     'proj.budget_spent': 'Vy\u010derpano', 'proj.description': 'Popis',
@@ -279,12 +327,37 @@ const LANGS = {
     'label.endDate': 'Data zako\u0144czenia', 'label.location': 'Lokalizacja',
     'label.notes': 'Uwagi', 'label.companyName': 'Nazwa firmy',
     'label.contactPerson': 'Osoba kontaktowa', 'label.email': 'E-mail', 'label.phone': 'Telefon',
-    'label.country': 'Kraj', 'label.vatNumber': 'NIP', 'label.riskFlag': 'Flaga ryzyka',
+    'label.country': 'Kraj', 'label.vatNumber': 'NIP VAT', 'label.ico': 'NIP / REGON',
+    'label.riskFlag': 'Flaga ryzyka',
     'label.billingAddress': 'Adres rozliczeniowy', 'label.address': 'Adres',
     'modal.newProject': '\ud83d\udcc1 Nowy projekt', 'modal.newClient': '\ud83c\udfe2 Nowy klient',
     'status.planning': 'Planowanie', 'status.confirmed': 'Potwierdzony',
     'status.in_progress': 'W trakcie', 'status.completed': 'Zako\u0144czony',
     'status.cancelled': 'Anulowany',
+    'status.available': 'Dost\u0119pny', 'status.on_project': 'Na projekcie',
+    'status.maintenance': 'Serwis', 'status.retired': 'Wycofany',
+    'status.in_service': 'W serwisie', 'status.leave': 'Na urlopie', 'status.inactive': 'Nieaktywny',
+    'status.draft': 'Szkic', 'status.sent': 'Wys\u0142ano', 'status.negotiation': 'Negocjacje',
+    'status.won': 'Wygrany', 'status.lost': 'Przegrany',
+    'cat.camera': 'Kamera', 'cat.audio': 'Audio', 'cat.cables': 'Kable',
+    'cat.monitors': 'Monitory', 'cat.lighting': 'O\u015bwietlenie',
+    'cat.transport': 'Skrzynie transportowe', 'cat.other': 'Inne',
+    'type.truck': 'Truck', 'type.van': 'Van', 'type.car': 'Samoch\u00f3d', 'type.trailer': 'Przyczepa',
+    'equip.no_data': 'Brak sprz\u0119tu', 'equip.edit': 'Edytuj sprz\u0119t',
+    'equip.delete_confirm': 'Usun\u0105\u0107 t\u0119 pozycj\u0119?', 'equip.code': 'Kod',
+    'equip.serial': 'Nr seryjny', 'equip.purchase_date': 'Data zakupu',
+    'equip.purchase_price': 'Cena zakupu', 'equip.maintenance_due': 'Termin serwisu',
+    'fleet.no_data': 'Brak pojazd\u00f3w', 'fleet.registration': 'Rejestracja', 'fleet.type': 'Typ',
+    'fleet.year': 'Rok', 'fleet.mileage': 'Km', 'fleet.maintenance_due': 'Termin serwisu',
+    'fleet.insurance_expiry': 'Wa\u017cno\u015b\u0107 ubezpieczenia', 'fleet.edit': 'Edytuj pojazd',
+    'fleet.delete_confirm': 'Usun\u0105\u0107 ten pojazd?',
+    'crew.no_data': 'Brak cz\u0142onk\u00f3w ekipy', 'crew.first_name': 'Imi\u0119',
+    'crew.last_name': 'Nazwisko', 'crew.position': 'Stanowisko',
+    'crew.edit': 'Edytuj cz\u0142onka', 'crew.delete_confirm': 'Usun\u0105\u0107 tego cz\u0142onka?',
+    'offer.no_data': 'Brak ofert', 'offer.number': 'Numer oferty',
+    'offer.total': 'Warto\u015b\u0107 ca\u0142kowita', 'offer.margin': 'Mar\u017ca %',
+    'offer.valid_until': 'Wa\u017cna do', 'offer.edit': 'Edytuj ofert\u0119',
+    'offer.delete_confirm': 'Usun\u0105\u0107 t\u0119 ofert\u0119?',
     'proj.code': 'Kod', 'proj.location': 'Lokalizacja', 'proj.venue': 'Venue',
     'proj.budget': 'Bud\u017cet', 'proj.budget_total': 'Ca\u0142kowity bud\u017cet',
     'proj.budget_spent': 'Wydano', 'proj.description': 'Opis',
@@ -432,9 +505,13 @@ const VIEW_NAV_MAP = {
   clients: 'nav-clients',
   client: 'nav-clients',
   equipment: 'nav-equipment',
+  'equipment-item': 'nav-equipment',
   fleet: 'nav-fleet',
+  'fleet-item': 'nav-fleet',
   crew: 'nav-crew',
+  'crew-member': 'nav-crew',
   offers: 'nav-offers',
+  'offer-item': 'nav-offers',
   reports: 'nav-reports',
 };
 
@@ -462,6 +539,17 @@ const STATUS_PILL = {
   in_progress: 'pill-green',
   completed: 'pill-gray',
   cancelled: 'pill-red',
+  on_project: 'pill-orange',
+  maintenance: 'pill-yellow',
+  retired: 'pill-gray',
+  in_service: 'pill-yellow',
+  leave: 'pill-yellow',
+  inactive: 'pill-gray',
+  draft: 'pill-gray',
+  sent: 'pill-blue',
+  negotiation: 'pill-orange',
+  won: 'pill-green',
+  lost: 'pill-red',
 };
 
 const STATUS_DOT = {
@@ -881,6 +969,7 @@ async function renderClient(el) {
       infoRow(t('label.phone'), esc(c.phone || '\u2014')) +
       infoRow(t('label.country'), esc(c.country || '\u2014')) +
       infoRow(t('label.address'), esc(c.address || '\u2014')) +
+      (c.ico ? infoRow(t('label.ico'), esc(c.ico)) : '') +
       infoRow(t('label.vatNumber'), esc(c.vat_number || '\u2014')) +
       (c.notes ? infoRow(t('label.notes'), esc(c.notes)) : '') +
       '</table></div></div>' +
@@ -1078,6 +1167,10 @@ async function openClientForm(id) {
       countryOpts += '<option value="' + co + '"' + sel + '>' + co + '</option>';
     });
 
+    const riskOpts = ['normal', 'watch', 'blocked'].map(function(r) {
+      return '<option value="' + r + '"' + (r === (c.risk_flag || 'normal') ? ' selected' : '') + '>' + esc(r.charAt(0).toUpperCase() + r.slice(1)) + '</option>';
+    }).join('');
+
     bodyEl.innerHTML =
       '<div class="form-row"><div class="form-group full"><label>' + esc(t('label.companyName')) + ' *</label>' +
       '<input type="text" id="cf-name" value="' + esc(c.name || '') + '"></div></div>' +
@@ -1089,10 +1182,16 @@ async function openClientForm(id) {
       '<div class="form-group"><label>' + esc(t('label.phone')) + '</label><input type="text" id="cf-phone" value="' + esc(c.phone || '') + '"></div>' +
       '<div class="form-group"><label>' + esc(t('label.country')) + '</label><select id="cf-country">' + countryOpts + '</select></div>' +
       '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('label.ico')) + '</label><input type="text" id="cf-ico" value="' + esc(c.ico || '') + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('label.vatNumber')) + '</label><input type="text" id="cf-vat" value="' + esc(c.vat_number || '') + '"></div>' +
+      '</div>' +
       '<div class="form-row"><div class="form-group full"><label>' + esc(t('label.address')) + '</label>' +
       '<textarea id="cf-address">' + esc(c.address || '') + '</textarea></div></div>' +
-      '<div class="form-row"><div class="form-group full"><label>' + esc(t('label.notes')) + '</label>' +
-      '<textarea id="cf-notes">' + esc(c.notes || '') + '</textarea></div></div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('label.riskFlag')) + '</label><select id="cf-risk">' + riskOpts + '</select></div>' +
+      '<div class="form-group"><label>' + esc(t('label.notes')) + '</label><input type="text" id="cf-notes" value="' + esc(c.notes || '') + '"></div>' +
+      '</div>' +
       '<div class="form-actions">' +
       '<button class="btn btn-outline" onclick="closeModal(\'modal-client\')">' + esc(t('btn.cancel')) + '</button>' +
       '<button class="btn btn-red" onclick="saveClient(' + (id || 'null') + ')">' + esc(id ? t('btn.save') : t('btn.saveClient')) + '</button>' +
@@ -1119,6 +1218,9 @@ async function saveClient(id) {
     country: (document.getElementById('cf-country') || {}).value || 'CZ',
     address: (document.getElementById('cf-address') || {}).value || '',
     notes: (document.getElementById('cf-notes') || {}).value || '',
+    ico: (document.getElementById('cf-ico') || {}).value || '',
+    vat_number: (document.getElementById('cf-vat') || {}).value || '',
+    risk_flag: (document.getElementById('cf-risk') || {}).value || 'normal',
   };
   try {
     if (id) {
@@ -1138,6 +1240,878 @@ async function saveClient(id) {
   } catch (e) {
     toast(t('msg.error') + ': ' + e.message, 'err');
   }
+}
+
+// ---------------------------------------------------------------------------
+// Equipment module
+// ---------------------------------------------------------------------------
+let _equipmentData = null;
+
+async function renderEquipment(el) {
+  el.innerHTML = '<div class="topbar"><div class="topbar-title">' + esc(t('screen.equipment')) + '</div></div><div class="content">' + loadingHtml() + '</div>';
+  try {
+    const items = await api('GET', '/api/equipment');
+    if (!items) return;
+    _equipmentData = items;
+    const topbar = '<div class="topbar">' +
+      '<div class="topbar-title">' + esc(t('screen.equipment')) + '</div>' +
+      '<div class="topbar-search"><span>&#128269;</span>' +
+      '<input type="text" id="equip-search" placeholder="' + esc(t('ph.searchAsset')) + '" oninput="filterEquipment()">' +
+      '</div>' +
+      '<select id="equip-status-filter" onchange="filterEquipment()" style="border:1.5px solid #e8e8e8;border-radius:4px;padding:6px 10px;font-family:inherit;font-size:13px;outline:none;background:white;cursor:pointer;">' +
+      '<option value="">' + esc(t('chip.all')) + '</option>' +
+      '<option value="available">' + esc(t('status.available')) + '</option>' +
+      '<option value="on_project">' + esc(t('status.on_project')) + '</option>' +
+      '<option value="maintenance">' + esc(t('status.maintenance')) + '</option>' +
+      '<option value="retired">' + esc(t('status.retired')) + '</option>' +
+      '</select>' +
+      '<button class="btn btn-red btn-sm" onclick="openEquipmentForm(null)">' + esc(t('btn.addAsset')) + '</button>' +
+      '</div>';
+    el.innerHTML = topbar + '<div class="content"><div class="card"><div class="card-body"><div id="equip-table-wrap">' + equipmentTableHtml(items) + '</div></div></div></div>';
+  } catch (e) {
+    el.innerHTML = '<div class="topbar"><div class="topbar-title">' + esc(t('screen.equipment')) + '</div></div>' +
+      '<div class="content"><div class="alert alert-err"><div>' + esc(t('msg.error') + ': ' + e.message) + '</div></div></div>';
+  }
+}
+
+function filterEquipment() {
+  if (!_equipmentData) return;
+  const search = (document.getElementById('equip-search') || {}).value || '';
+  const status = (document.getElementById('equip-status-filter') || {}).value || '';
+  const sl = search.toLowerCase();
+  const filtered = _equipmentData.filter(function(r) {
+    const matchSearch = !sl ||
+      (r.name && r.name.toLowerCase().includes(sl)) ||
+      (r.code && r.code.toLowerCase().includes(sl)) ||
+      (r.category && r.category.toLowerCase().includes(sl)) ||
+      (r.brand && r.brand.toLowerCase().includes(sl));
+    const matchStatus = !status || r.status === status;
+    return matchSearch && matchStatus;
+  });
+  const wrap = document.getElementById('equip-table-wrap');
+  if (wrap) wrap.innerHTML = equipmentTableHtml(filtered);
+}
+
+function equipmentTableHtml(items) {
+  if (!items || items.length === 0) {
+    return '<div class="empty-state"><div class="empty-icon">&#128230;</div><div class="empty-text">' + esc(t('equip.no_data')) + '</div></div>';
+  }
+  let rows = '';
+  items.forEach(function(e) {
+    rows += '<tr onclick="navigate(\'equipment-item\',' + e.id + ')">' +
+      '<td><strong>' + esc(e.code || '') + '</strong></td>' +
+      '<td>' + esc(e.name) + '</td>' +
+      '<td>' + esc(e.category || '\u2014') + '</td>' +
+      '<td>' + esc((e.brand || '') + (e.model ? ' ' + e.model : '') || '\u2014') + '</td>' +
+      '<td>' + pillHtml(e.status) + '</td>' +
+      '<td>' + esc(e.project_name || '\u2014') + '</td>' +
+      '<td style="font-size:12px;color:#888">' + fmtDate(e.maintenance_due) + '</td>' +
+      '<td onclick="event.stopPropagation()">' +
+      '<button class="btn btn-outline btn-sm" onclick="openEquipmentForm(' + e.id + ')">' + esc(t('btn.edit')) + '</button>' +
+      '</td>' +
+      '</tr>';
+  });
+  return '<table><thead><tr>' +
+    '<th>' + esc(t('equip.code')) + '</th>' +
+    '<th>' + esc(t('th.name')) + '</th>' +
+    '<th>' + esc(t('th.category')) + '</th>' +
+    '<th>Brand / Model</th>' +
+    '<th>' + esc(t('th.status')) + '</th>' +
+    '<th>Current Project</th>' +
+    '<th>' + esc(t('equip.maintenance_due')) + '</th>' +
+    '<th></th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+async function renderEquipmentItem(el) {
+  el.innerHTML = '<div class="topbar"><div class="topbar-title">...</div></div><div class="content">' + loadingHtml() + '</div>';
+  try {
+    const e = await api('GET', '/api/equipment/' + S.viewId);
+    if (!e) return;
+
+    let assignHtml = '';
+    if (e.assignments && e.assignments.length > 0) {
+      let rows = '';
+      e.assignments.forEach(function(a) {
+        rows += '<tr><td>' + esc(a.project_name || '') + '<br><span style="font-size:11px;color:#888">' + esc(a.project_code || '') + '</span></td>' +
+          '<td>' + pillHtml(a.project_status) + '</td>' +
+          '<td style="font-size:12px;color:#888">' + fmtDate(a.date_from) + ' \u2013 ' + fmtDate(a.date_to) + '</td>' +
+          '</tr>';
+      });
+      assignHtml = '<table><thead><tr><th>Project</th><th>Status</th><th>' + esc(t('th.dates')) + '</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    } else {
+      assignHtml = '<div class="empty-state" style="padding:24px"><div class="empty-text">' + esc(t('msg.no_data')) + '</div></div>';
+    }
+
+    el.innerHTML =
+      '<div class="topbar">' +
+      '<button class="btn btn-outline btn-sm" onclick="navigate(\'equipment\')">' + esc(t('btn.back')) + '</button>' +
+      '<div class="topbar-title">' + esc(e.name) + ' ' + pillHtml(e.status) + '</div>' +
+      '<button class="btn btn-outline btn-sm" onclick="openEquipmentForm(' + e.id + ')">' + esc(t('equip.edit')) + '</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="deleteEquipment(' + e.id + ')">' + esc(t('btn.delete')) + '</button>' +
+      '</div>' +
+      '<div class="content"><div class="two-col">' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128196; ' + esc(t('tab.overview')) + '</div></div>' +
+      '<div class="card-body"><table class="info-table">' +
+      infoRow(t('equip.code'), esc(e.code || '\u2014')) +
+      infoRow(t('th.category'), esc(e.category || '\u2014')) +
+      infoRow('Brand', esc(e.brand || '\u2014')) +
+      infoRow('Model', esc(e.model || '\u2014')) +
+      infoRow(t('equip.serial'), esc(e.serial_number || '\u2014')) +
+      infoRow(t('equip.purchase_date'), fmtDate(e.purchase_date)) +
+      infoRow(t('equip.purchase_price'), e.purchase_price ? fmtMoney(e.purchase_price) : '\u2014') +
+      infoRow(t('equip.maintenance_due'), fmtDate(e.maintenance_due)) +
+      (e.notes ? infoRow(t('label.notes'), esc(e.notes)) : '') +
+      '</table></div></div>' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128193; Assignments</div></div>' +
+      '<div class="card-body">' + assignHtml + '</div></div>' +
+      '</div></div>';
+  } catch (e2) {
+    el.innerHTML = '<div class="topbar"><button class="btn btn-outline btn-sm" onclick="navigate(\'equipment\')">' + esc(t('btn.back')) + '</button><div class="topbar-title">Error</div></div>' +
+      '<div class="content"><div class="alert alert-err"><div>' + esc(t('msg.error') + ': ' + e2.message) + '</div></div></div>';
+  }
+}
+
+async function openEquipmentForm(id) {
+  const modal = document.getElementById('modal-equipment');
+  if (!modal) return;
+  const titleEl = modal.querySelector('.modal-title');
+  const bodyEl = modal.querySelector('.modal-body');
+  titleEl.textContent = id ? t('equip.edit') : t('btn.addAsset');
+  bodyEl.innerHTML = loadingHtml();
+  openModal('modal-equipment');
+
+  let e = { status: 'available' };
+  try {
+    if (id) {
+      e = await api('GET', '/api/equipment/' + id);
+      if (!e) return;
+    }
+
+    const cats = ['camera', 'audio', 'cables', 'monitors', 'lighting', 'transport', 'other'];
+    const catOpts = '<option value="">-- Select --</option>' + cats.map(function(c) {
+      return '<option value="' + c + '"' + (c === e.category ? ' selected' : '') + '>' + esc(t('cat.' + c)) + '</option>';
+    }).join('');
+
+    const statuses = ['available', 'on_project', 'maintenance', 'retired'];
+    const statusOpts = statuses.map(function(s) {
+      return '<option value="' + s + '"' + (s === (e.status || 'available') ? ' selected' : '') + '>' + esc(t('status.' + s)) + '</option>';
+    }).join('');
+
+    bodyEl.innerHTML =
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('equip.code')) + '</label><input type="text" id="ef-code" value="' + esc(e.code || '') + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('th.status')) + '</label><select id="ef-status">' + statusOpts + '</select></div>' +
+      '</div>' +
+      '<div class="form-row"><div class="form-group full"><label>' + esc(t('th.name')) + ' *</label><input type="text" id="ef-name" value="' + esc(e.name || '') + '"></div></div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('th.category')) + '</label><select id="ef-category">' + catOpts + '</select></div>' +
+      '<div class="form-group"><label>Brand</label><input type="text" id="ef-brand" value="' + esc(e.brand || '') + '"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>Model</label><input type="text" id="ef-model" value="' + esc(e.model || '') + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('equip.serial')) + '</label><input type="text" id="ef-serial" value="' + esc(e.serial_number || '') + '"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('equip.purchase_date')) + '</label><input type="date" id="ef-purchase-date" value="' + esc(e.purchase_date || '') + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('equip.purchase_price')) + '</label><input type="number" id="ef-purchase-price" value="' + (e.purchase_price || '') + '" min="0"></div>' +
+      '</div>' +
+      '<div class="form-row"><div class="form-group"><label>' + esc(t('equip.maintenance_due')) + '</label><input type="date" id="ef-maintenance" value="' + esc(e.maintenance_due || '') + '"></div></div>' +
+      '<div class="form-row"><div class="form-group full"><label>' + esc(t('label.notes')) + '</label><textarea id="ef-notes">' + esc(e.notes || '') + '</textarea></div></div>' +
+      '<div class="form-actions">' +
+      '<button class="btn btn-outline" onclick="closeModal(\'modal-equipment\')">' + esc(t('btn.cancel')) + '</button>' +
+      '<button class="btn btn-red" onclick="saveEquipment(' + (id || 'null') + ')">' + esc(t('btn.save')) + '</button>' +
+      '</div>';
+  } catch (err) {
+    bodyEl.innerHTML = '<div class="alert alert-err">' + esc(t('msg.error') + ': ' + err.message) + '</div>';
+  }
+}
+
+async function saveEquipment(id) {
+  const name = (document.getElementById('ef-name') || {}).value || '';
+  if (!name.trim()) { toast(t('th.name') + ' required', 'err'); return; }
+  const body = {
+    code: (document.getElementById('ef-code') || {}).value || '',
+    name: name.trim(),
+    category: (document.getElementById('ef-category') || {}).value || '',
+    brand: (document.getElementById('ef-brand') || {}).value || '',
+    model: (document.getElementById('ef-model') || {}).value || '',
+    serial_number: (document.getElementById('ef-serial') || {}).value || '',
+    status: (document.getElementById('ef-status') || {}).value || 'available',
+    purchase_date: (document.getElementById('ef-purchase-date') || {}).value || null,
+    purchase_price: parseFloat((document.getElementById('ef-purchase-price') || {}).value) || 0,
+    maintenance_due: (document.getElementById('ef-maintenance') || {}).value || null,
+    notes: (document.getElementById('ef-notes') || {}).value || '',
+  };
+  try {
+    if (id) { await api('PUT', '/api/equipment/' + id, body); }
+    else { await api('POST', '/api/equipment', body); }
+    closeModal('modal-equipment');
+    toast(t('msg.saved'), 'ok');
+    _equipmentData = null;
+    if (id && S.view === 'equipment-item') { navigate('equipment-item', id); }
+    else { navigate('equipment'); }
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+async function deleteEquipment(id) {
+  if (!confirm(t('equip.delete_confirm'))) return;
+  try {
+    await api('DELETE', '/api/equipment/' + id);
+    toast(t('msg.deleted'), 'ok');
+    _equipmentData = null;
+    navigate('equipment');
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+// ---------------------------------------------------------------------------
+// Fleet module
+// ---------------------------------------------------------------------------
+let _fleetData = null;
+
+async function renderFleet(el) {
+  el.innerHTML = '<div class="topbar"><div class="topbar-title">' + esc(t('screen.fleet')) + '</div></div><div class="content">' + loadingHtml() + '</div>';
+  try {
+    const items = await api('GET', '/api/fleet');
+    if (!items) return;
+    _fleetData = items;
+    const topbar = '<div class="topbar">' +
+      '<div class="topbar-title">' + esc(t('screen.fleet')) + '</div>' +
+      '<div class="topbar-search"><span>&#128269;</span>' +
+      '<input type="text" id="fleet-search" placeholder="' + esc(t('ph.searchVehicles')) + '" oninput="filterFleet()">' +
+      '</div>' +
+      '<select id="fleet-status-filter" onchange="filterFleet()" style="border:1.5px solid #e8e8e8;border-radius:4px;padding:6px 10px;font-family:inherit;font-size:13px;outline:none;background:white;cursor:pointer;">' +
+      '<option value="">' + esc(t('chip.all')) + '</option>' +
+      '<option value="available">' + esc(t('status.available')) + '</option>' +
+      '<option value="on_project">' + esc(t('status.on_project')) + '</option>' +
+      '<option value="in_service">' + esc(t('status.in_service')) + '</option>' +
+      '<option value="retired">' + esc(t('status.retired')) + '</option>' +
+      '</select>' +
+      '<button class="btn btn-red btn-sm" onclick="openFleetForm(null)">' + esc(t('btn.addVehicle')) + '</button>' +
+      '</div>';
+    el.innerHTML = topbar + '<div class="content"><div class="card"><div class="card-body"><div id="fleet-table-wrap">' + fleetTableHtml(items) + '</div></div></div></div>';
+  } catch (e) {
+    el.innerHTML = '<div class="topbar"><div class="topbar-title">' + esc(t('screen.fleet')) + '</div></div>' +
+      '<div class="content"><div class="alert alert-err"><div>' + esc(t('msg.error') + ': ' + e.message) + '</div></div></div>';
+  }
+}
+
+function filterFleet() {
+  if (!_fleetData) return;
+  const search = (document.getElementById('fleet-search') || {}).value || '';
+  const status = (document.getElementById('fleet-status-filter') || {}).value || '';
+  const sl = search.toLowerCase();
+  const filtered = _fleetData.filter(function(r) {
+    const matchSearch = !sl ||
+      (r.name && r.name.toLowerCase().includes(sl)) ||
+      (r.registration && r.registration.toLowerCase().includes(sl)) ||
+      (r.brand && r.brand.toLowerCase().includes(sl));
+    const matchStatus = !status || r.status === status;
+    return matchSearch && matchStatus;
+  });
+  const wrap = document.getElementById('fleet-table-wrap');
+  if (wrap) wrap.innerHTML = fleetTableHtml(filtered);
+}
+
+function fleetTableHtml(items) {
+  if (!items || items.length === 0) {
+    return '<div class="empty-state"><div class="empty-icon">&#128667;</div><div class="empty-text">' + esc(t('fleet.no_data')) + '</div></div>';
+  }
+  let rows = '';
+  items.forEach(function(f) {
+    rows += '<tr onclick="navigate(\'fleet-item\',' + f.id + ')">' +
+      '<td><strong>' + esc(f.registration) + '</strong></td>' +
+      '<td>' + esc(f.name || '\u2014') + '</td>' +
+      '<td>' + esc((f.brand || '') + (f.model ? ' ' + f.model : '') || '\u2014') + '</td>' +
+      '<td>' + (f.year || '\u2014') + '</td>' +
+      '<td>' + esc(f.type || '\u2014') + '</td>' +
+      '<td>' + pillHtml(f.status) + '</td>' +
+      '<td>' + esc(f.project_name || '\u2014') + '</td>' +
+      '<td style="font-size:12px;color:#888">' + fmtDate(f.maintenance_due) + '</td>' +
+      '<td style="font-size:12px;color:#888">' + fmtDate(f.insurance_expiry) + '</td>' +
+      '<td onclick="event.stopPropagation()">' +
+      '<button class="btn btn-outline btn-sm" onclick="openFleetForm(' + f.id + ')">' + esc(t('btn.edit')) + '</button>' +
+      '</td>' +
+      '</tr>';
+  });
+  return '<table><thead><tr>' +
+    '<th>' + esc(t('fleet.registration')) + '</th>' +
+    '<th>' + esc(t('th.name')) + '</th>' +
+    '<th>Brand / Model</th>' +
+    '<th>' + esc(t('fleet.year')) + '</th>' +
+    '<th>' + esc(t('fleet.type')) + '</th>' +
+    '<th>' + esc(t('th.status')) + '</th>' +
+    '<th>Current Project</th>' +
+    '<th>' + esc(t('fleet.maintenance_due')) + '</th>' +
+    '<th>' + esc(t('fleet.insurance_expiry')) + '</th>' +
+    '<th></th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+async function renderFleetItem(el) {
+  el.innerHTML = '<div class="topbar"><div class="topbar-title">...</div></div><div class="content">' + loadingHtml() + '</div>';
+  try {
+    const f = await api('GET', '/api/fleet/' + S.viewId);
+    if (!f) return;
+
+    let assignHtml = '';
+    if (f.assignments && f.assignments.length > 0) {
+      let rows = '';
+      f.assignments.forEach(function(a) {
+        const driver = a.driver_first ? a.driver_first + ' ' + a.driver_last : '\u2014';
+        rows += '<tr><td>' + esc(a.project_name || '') + '<br><span style="font-size:11px;color:#888">' + esc(a.project_code || '') + '</span></td>' +
+          '<td>' + esc(driver) + '</td>' +
+          '<td style="font-size:12px;color:#888">' + fmtDate(a.date_from) + ' \u2013 ' + fmtDate(a.date_to) + '</td>' +
+          '</tr>';
+      });
+      assignHtml = '<table><thead><tr><th>Project</th><th>' + esc(t('th.driver')) + '</th><th>' + esc(t('th.dates')) + '</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    } else {
+      assignHtml = '<div class="empty-state" style="padding:24px"><div class="empty-text">' + esc(t('msg.no_data')) + '</div></div>';
+    }
+
+    el.innerHTML =
+      '<div class="topbar">' +
+      '<button class="btn btn-outline btn-sm" onclick="navigate(\'fleet\')">' + esc(t('btn.back')) + '</button>' +
+      '<div class="topbar-title">' + esc(f.registration) + (f.name ? ' \u2013 ' + esc(f.name) : '') + ' ' + pillHtml(f.status) + '</div>' +
+      '<button class="btn btn-outline btn-sm" onclick="openFleetForm(' + f.id + ')">' + esc(t('fleet.edit')) + '</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="deleteFleet(' + f.id + ')">' + esc(t('btn.delete')) + '</button>' +
+      '</div>' +
+      '<div class="content"><div class="two-col">' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128196; ' + esc(t('tab.overview')) + '</div></div>' +
+      '<div class="card-body"><table class="info-table">' +
+      infoRow(t('fleet.type'), esc(f.type || '\u2014')) +
+      infoRow('Brand', esc(f.brand || '\u2014')) +
+      infoRow('Model', esc(f.model || '\u2014')) +
+      infoRow(t('fleet.year'), f.year ? String(f.year) : '\u2014') +
+      infoRow(t('fleet.mileage'), f.mileage ? f.mileage + ' km' : '\u2014') +
+      infoRow(t('fleet.maintenance_due'), fmtDate(f.maintenance_due)) +
+      infoRow(t('fleet.insurance_expiry'), fmtDate(f.insurance_expiry)) +
+      (f.notes ? infoRow(t('label.notes'), esc(f.notes)) : '') +
+      '</table></div></div>' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128193; Assignments</div></div>' +
+      '<div class="card-body">' + assignHtml + '</div></div>' +
+      '</div></div>';
+  } catch (e2) {
+    el.innerHTML = '<div class="topbar"><button class="btn btn-outline btn-sm" onclick="navigate(\'fleet\')">' + esc(t('btn.back')) + '</button><div class="topbar-title">Error</div></div>' +
+      '<div class="content"><div class="alert alert-err"><div>' + esc(t('msg.error') + ': ' + e2.message) + '</div></div></div>';
+  }
+}
+
+async function openFleetForm(id) {
+  const modal = document.getElementById('modal-fleet');
+  if (!modal) return;
+  const titleEl = modal.querySelector('.modal-title');
+  const bodyEl = modal.querySelector('.modal-body');
+  titleEl.textContent = id ? t('fleet.edit') : t('btn.addVehicle');
+  bodyEl.innerHTML = loadingHtml();
+  openModal('modal-fleet');
+
+  let f = { status: 'available' };
+  try {
+    if (id) {
+      f = await api('GET', '/api/fleet/' + id);
+      if (!f) return;
+    }
+
+    const types = ['truck', 'van', 'car', 'trailer'];
+    const typeOpts = '<option value="">-- Select --</option>' + types.map(function(tp) {
+      return '<option value="' + tp + '"' + (tp === f.type ? ' selected' : '') + '>' + esc(t('type.' + tp)) + '</option>';
+    }).join('');
+
+    const statuses = ['available', 'on_project', 'in_service', 'retired'];
+    const statusOpts = statuses.map(function(s) {
+      return '<option value="' + s + '"' + (s === (f.status || 'available') ? ' selected' : '') + '>' + esc(t('status.' + s)) + '</option>';
+    }).join('');
+
+    bodyEl.innerHTML =
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('fleet.registration')) + ' *</label><input type="text" id="ff-reg" value="' + esc(f.registration || '') + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('th.name')) + '</label><input type="text" id="ff-name" value="' + esc(f.name || '') + '"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('fleet.type')) + '</label><select id="ff-type">' + typeOpts + '</select></div>' +
+      '<div class="form-group"><label>' + esc(t('th.status')) + '</label><select id="ff-status">' + statusOpts + '</select></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>Brand</label><input type="text" id="ff-brand" value="' + esc(f.brand || '') + '"></div>' +
+      '<div class="form-group"><label>Model</label><input type="text" id="ff-model" value="' + esc(f.model || '') + '"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('fleet.year')) + '</label><input type="number" id="ff-year" value="' + (f.year || '') + '" min="1900" max="2100"></div>' +
+      '<div class="form-group"><label>' + esc(t('fleet.mileage')) + '</label><input type="number" id="ff-mileage" value="' + (f.mileage || 0) + '" min="0"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('fleet.maintenance_due')) + '</label><input type="date" id="ff-maintenance" value="' + esc(f.maintenance_due || '') + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('fleet.insurance_expiry')) + '</label><input type="date" id="ff-insurance" value="' + esc(f.insurance_expiry || '') + '"></div>' +
+      '</div>' +
+      '<div class="form-row"><div class="form-group full"><label>' + esc(t('label.notes')) + '</label><textarea id="ff-notes">' + esc(f.notes || '') + '</textarea></div></div>' +
+      '<div class="form-actions">' +
+      '<button class="btn btn-outline" onclick="closeModal(\'modal-fleet\')">' + esc(t('btn.cancel')) + '</button>' +
+      '<button class="btn btn-red" onclick="saveFleet(' + (id || 'null') + ')">' + esc(t('btn.save')) + '</button>' +
+      '</div>';
+  } catch (err) {
+    bodyEl.innerHTML = '<div class="alert alert-err">' + esc(t('msg.error') + ': ' + err.message) + '</div>';
+  }
+}
+
+async function saveFleet(id) {
+  const reg = (document.getElementById('ff-reg') || {}).value || '';
+  if (!reg.trim()) { toast(t('fleet.registration') + ' required', 'err'); return; }
+  const body = {
+    registration: reg.trim(),
+    name: (document.getElementById('ff-name') || {}).value || '',
+    type: (document.getElementById('ff-type') || {}).value || '',
+    brand: (document.getElementById('ff-brand') || {}).value || '',
+    model: (document.getElementById('ff-model') || {}).value || '',
+    year: parseInt((document.getElementById('ff-year') || {}).value) || null,
+    status: (document.getElementById('ff-status') || {}).value || 'available',
+    mileage: parseInt((document.getElementById('ff-mileage') || {}).value) || 0,
+    maintenance_due: (document.getElementById('ff-maintenance') || {}).value || null,
+    insurance_expiry: (document.getElementById('ff-insurance') || {}).value || null,
+    notes: (document.getElementById('ff-notes') || {}).value || '',
+  };
+  try {
+    if (id) { await api('PUT', '/api/fleet/' + id, body); }
+    else { await api('POST', '/api/fleet', body); }
+    closeModal('modal-fleet');
+    toast(t('msg.saved'), 'ok');
+    _fleetData = null;
+    if (id && S.view === 'fleet-item') { navigate('fleet-item', id); }
+    else { navigate('fleet'); }
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+async function deleteFleet(id) {
+  if (!confirm(t('fleet.delete_confirm'))) return;
+  try {
+    await api('DELETE', '/api/fleet/' + id);
+    toast(t('msg.deleted'), 'ok');
+    _fleetData = null;
+    navigate('fleet');
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+// ---------------------------------------------------------------------------
+// Crew module
+// ---------------------------------------------------------------------------
+let _crewData = null;
+
+async function renderCrew(el) {
+  el.innerHTML = '<div class="topbar"><div class="topbar-title">' + esc(t('screen.crew')) + '</div></div><div class="content">' + loadingHtml() + '</div>';
+  try {
+    const items = await api('GET', '/api/crew');
+    if (!items) return;
+    _crewData = items;
+    const topbar = '<div class="topbar">' +
+      '<div class="topbar-title">' + esc(t('screen.crew')) + '</div>' +
+      '<div class="topbar-search"><span>&#128269;</span>' +
+      '<input type="text" id="crew-search" placeholder="' + esc(t('ph.searchCrew')) + '" oninput="filterCrew()">' +
+      '</div>' +
+      '<select id="crew-status-filter" onchange="filterCrew()" style="border:1.5px solid #e8e8e8;border-radius:4px;padding:6px 10px;font-family:inherit;font-size:13px;outline:none;background:white;cursor:pointer;">' +
+      '<option value="">' + esc(t('chip.all')) + '</option>' +
+      '<option value="available">' + esc(t('status.available')) + '</option>' +
+      '<option value="on_project">' + esc(t('status.on_project')) + '</option>' +
+      '<option value="leave">' + esc(t('status.leave')) + '</option>' +
+      '<option value="inactive">' + esc(t('status.inactive')) + '</option>' +
+      '</select>' +
+      '<button class="btn btn-red btn-sm" onclick="openCrewForm(null)">' + esc(t('btn.addMember')) + '</button>' +
+      '</div>';
+    el.innerHTML = topbar + '<div class="content"><div class="card"><div class="card-body"><div id="crew-table-wrap">' + crewTableHtml(items) + '</div></div></div></div>';
+  } catch (e) {
+    el.innerHTML = '<div class="topbar"><div class="topbar-title">' + esc(t('screen.crew')) + '</div></div>' +
+      '<div class="content"><div class="alert alert-err"><div>' + esc(t('msg.error') + ': ' + e.message) + '</div></div></div>';
+  }
+}
+
+function filterCrew() {
+  if (!_crewData) return;
+  const search = (document.getElementById('crew-search') || {}).value || '';
+  const status = (document.getElementById('crew-status-filter') || {}).value || '';
+  const sl = search.toLowerCase();
+  const filtered = _crewData.filter(function(r) {
+    const matchSearch = !sl ||
+      (r.first_name && r.first_name.toLowerCase().includes(sl)) ||
+      (r.last_name && r.last_name.toLowerCase().includes(sl)) ||
+      (r.position && r.position.toLowerCase().includes(sl)) ||
+      (r.email && r.email.toLowerCase().includes(sl));
+    const matchStatus = !status || r.status === status;
+    return matchSearch && matchStatus;
+  });
+  const wrap = document.getElementById('crew-table-wrap');
+  if (wrap) wrap.innerHTML = crewTableHtml(filtered);
+}
+
+function crewTableHtml(items) {
+  if (!items || items.length === 0) {
+    return '<div class="empty-state"><div class="empty-icon">&#128101;</div><div class="empty-text">' + esc(t('crew.no_data')) + '</div></div>';
+  }
+  let rows = '';
+  items.forEach(function(c) {
+    rows += '<tr onclick="navigate(\'crew-member\',' + c.id + ')">' +
+      '<td><strong>' + esc(c.last_name + ', ' + c.first_name) + '</strong></td>' +
+      '<td>' + esc(c.position || '\u2014') + '</td>' +
+      '<td>' + (c.phone ? '<a href="tel:' + esc(c.phone) + '" onclick="event.stopPropagation()">' + esc(c.phone) + '</a>' : '\u2014') + '</td>' +
+      '<td>' + (c.email ? '<a href="mailto:' + esc(c.email) + '" onclick="event.stopPropagation()">' + esc(c.email) + '</a>' : '\u2014') + '</td>' +
+      '<td>' + pillHtml(c.status) + '</td>' +
+      '<td onclick="event.stopPropagation()">' +
+      '<button class="btn btn-outline btn-sm" onclick="openCrewForm(' + c.id + ')">' + esc(t('btn.edit')) + '</button>' +
+      '</td>' +
+      '</tr>';
+  });
+  return '<table><thead><tr>' +
+    '<th>' + esc(t('th.name')) + '</th>' +
+    '<th>' + esc(t('crew.position')) + '</th>' +
+    '<th>' + esc(t('label.phone')) + '</th>' +
+    '<th>' + esc(t('label.email')) + '</th>' +
+    '<th>' + esc(t('th.status')) + '</th>' +
+    '<th></th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+async function renderCrewMember(el) {
+  el.innerHTML = '<div class="topbar"><div class="topbar-title">...</div></div><div class="content">' + loadingHtml() + '</div>';
+  try {
+    const c = await api('GET', '/api/crew/' + S.viewId);
+    if (!c) return;
+
+    let assignHtml = '';
+    if (c.assignments && c.assignments.length > 0) {
+      let rows = '';
+      c.assignments.forEach(function(a) {
+        rows += '<tr><td>' + esc(a.project_name || '') + '<br><span style="font-size:11px;color:#888">' + esc(a.project_code || '') + '</span></td>' +
+          '<td>' + pillHtml(a.project_status) + '</td>' +
+          '<td style="font-size:12px;color:#888">' + fmtDate(a.date_from) + ' \u2013 ' + fmtDate(a.date_to) + '</td>' +
+          '</tr>';
+      });
+      assignHtml = '<table><thead><tr><th>Project</th><th>Status</th><th>' + esc(t('th.dates')) + '</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    } else {
+      assignHtml = '<div class="empty-state" style="padding:24px"><div class="empty-text">' + esc(t('msg.no_data')) + '</div></div>';
+    }
+
+    el.innerHTML =
+      '<div class="topbar">' +
+      '<button class="btn btn-outline btn-sm" onclick="navigate(\'crew\')">' + esc(t('btn.back')) + '</button>' +
+      '<div class="topbar-title">' + esc(c.first_name + ' ' + c.last_name) + ' ' + pillHtml(c.status) + '</div>' +
+      '<button class="btn btn-outline btn-sm" onclick="openCrewForm(' + c.id + ')">' + esc(t('crew.edit')) + '</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="deleteCrew(' + c.id + ')">' + esc(t('btn.delete')) + '</button>' +
+      '</div>' +
+      '<div class="content"><div class="two-col">' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128196; ' + esc(t('tab.overview')) + '</div></div>' +
+      '<div class="card-body"><table class="info-table">' +
+      infoRow(t('crew.position'), esc(c.position || '\u2014')) +
+      infoRow(t('label.phone'), c.phone ? '<a href="tel:' + esc(c.phone) + '">' + esc(c.phone) + '</a>' : '\u2014') +
+      infoRow(t('label.email'), c.email ? '<a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a>' : '\u2014') +
+      (c.notes ? infoRow(t('label.notes'), esc(c.notes)) : '') +
+      '</table></div></div>' +
+      '<div class="card"><div class="card-header"><div class="card-title">&#128193; Assignments</div></div>' +
+      '<div class="card-body">' + assignHtml + '</div></div>' +
+      '</div></div>';
+  } catch (e2) {
+    el.innerHTML = '<div class="topbar"><button class="btn btn-outline btn-sm" onclick="navigate(\'crew\')">' + esc(t('btn.back')) + '</button><div class="topbar-title">Error</div></div>' +
+      '<div class="content"><div class="alert alert-err"><div>' + esc(t('msg.error') + ': ' + e2.message) + '</div></div></div>';
+  }
+}
+
+async function openCrewForm(id) {
+  const modal = document.getElementById('modal-crew');
+  if (!modal) return;
+  const titleEl = modal.querySelector('.modal-title');
+  const bodyEl = modal.querySelector('.modal-body');
+  titleEl.textContent = id ? t('crew.edit') : t('btn.addMember');
+  bodyEl.innerHTML = loadingHtml();
+  openModal('modal-crew');
+
+  let c = { status: 'available' };
+  try {
+    if (id) {
+      c = await api('GET', '/api/crew/' + id);
+      if (!c) return;
+    }
+
+    const statuses = ['available', 'on_project', 'leave', 'inactive'];
+    const statusOpts = statuses.map(function(s) {
+      return '<option value="' + s + '"' + (s === (c.status || 'available') ? ' selected' : '') + '>' + esc(t('status.' + s)) + '</option>';
+    }).join('');
+
+    bodyEl.innerHTML =
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('crew.first_name')) + ' *</label><input type="text" id="crf-first" value="' + esc(c.first_name || '') + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('crew.last_name')) + ' *</label><input type="text" id="crf-last" value="' + esc(c.last_name || '') + '"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('crew.position')) + '</label><input type="text" id="crf-position" value="' + esc(c.position || '') + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('th.status')) + '</label><select id="crf-status">' + statusOpts + '</select></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('label.phone')) + '</label><input type="text" id="crf-phone" value="' + esc(c.phone || '') + '"></div>' +
+      '<div class="form-group"><label>' + esc(t('label.email')) + '</label><input type="email" id="crf-email" value="' + esc(c.email || '') + '"></div>' +
+      '</div>' +
+      '<div class="form-row"><div class="form-group full"><label>' + esc(t('label.notes')) + '</label><textarea id="crf-notes">' + esc(c.notes || '') + '</textarea></div></div>' +
+      '<div class="form-actions">' +
+      '<button class="btn btn-outline" onclick="closeModal(\'modal-crew\')">' + esc(t('btn.cancel')) + '</button>' +
+      '<button class="btn btn-red" onclick="saveCrew(' + (id || 'null') + ')">' + esc(t('btn.save')) + '</button>' +
+      '</div>';
+  } catch (err) {
+    bodyEl.innerHTML = '<div class="alert alert-err">' + esc(t('msg.error') + ': ' + err.message) + '</div>';
+  }
+}
+
+async function saveCrew(id) {
+  const first = (document.getElementById('crf-first') || {}).value || '';
+  const last = (document.getElementById('crf-last') || {}).value || '';
+  if (!first.trim() || !last.trim()) { toast(t('crew.first_name') + ' and ' + t('crew.last_name') + ' required', 'err'); return; }
+  const body = {
+    first_name: first.trim(),
+    last_name: last.trim(),
+    position: (document.getElementById('crf-position') || {}).value || '',
+    phone: (document.getElementById('crf-phone') || {}).value || '',
+    email: (document.getElementById('crf-email') || {}).value || '',
+    status: (document.getElementById('crf-status') || {}).value || 'available',
+    notes: (document.getElementById('crf-notes') || {}).value || '',
+  };
+  try {
+    if (id) { await api('PUT', '/api/crew/' + id, body); }
+    else { await api('POST', '/api/crew', body); }
+    closeModal('modal-crew');
+    toast(t('msg.saved'), 'ok');
+    _crewData = null;
+    if (id && S.view === 'crew-member') { navigate('crew-member', id); }
+    else { navigate('crew'); }
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+async function deleteCrew(id) {
+  if (!confirm(t('crew.delete_confirm'))) return;
+  try {
+    await api('DELETE', '/api/crew/' + id);
+    toast(t('msg.deleted'), 'ok');
+    _crewData = null;
+    navigate('crew');
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+// ---------------------------------------------------------------------------
+// Offers module
+// ---------------------------------------------------------------------------
+let _offersData = null;
+let _offersClients = null;
+let _offersProjects = null;
+
+async function renderOffers(el) {
+  el.innerHTML = '<div class="topbar"><div class="topbar-title">' + esc(t('screen.offers')) + '</div></div><div class="content">' + loadingHtml() + '</div>';
+  try {
+    const [items, clients] = await Promise.all([
+      api('GET', '/api/offers'),
+      api('GET', '/api/clients'),
+    ]);
+    if (!items) return;
+    _offersData = items;
+    _offersClients = clients || [];
+
+    const pipeline = items.filter(function(o) { return o.status === 'won' || o.status === 'negotiation' || o.status === 'sent'; })
+      .reduce(function(sum, o) { return sum + (o.total_value || 0); }, 0);
+    const wonCount = items.filter(function(o) { return o.status === 'won'; }).length;
+    const closedCount = items.filter(function(o) { return o.status === 'won' || o.status === 'lost'; }).length;
+    const winRate = closedCount > 0 ? Math.round((wonCount / closedCount) * 100) : 0;
+
+    const topbar = '<div class="topbar">' +
+      '<div class="topbar-title">' + esc(t('screen.offers')) + '</div>' +
+      '<div class="topbar-search"><span>&#128269;</span>' +
+      '<input type="text" id="offers-search" placeholder="' + esc(t('ph.searchOffers')) + '" oninput="filterOffers()">' +
+      '</div>' +
+      '<select id="offers-status-filter" onchange="filterOffers()" style="border:1.5px solid #e8e8e8;border-radius:4px;padding:6px 10px;font-family:inherit;font-size:13px;outline:none;background:white;cursor:pointer;">' +
+      '<option value="">' + esc(t('chip.all')) + '</option>' +
+      '<option value="draft">' + esc(t('status.draft')) + '</option>' +
+      '<option value="sent">' + esc(t('status.sent')) + '</option>' +
+      '<option value="negotiation">' + esc(t('status.negotiation')) + '</option>' +
+      '<option value="won">' + esc(t('status.won')) + '</option>' +
+      '<option value="lost">' + esc(t('status.lost')) + '</option>' +
+      '</select>' +
+      '<button class="btn btn-red btn-sm" onclick="openOfferForm(null)">' + esc(t('btn.newOffer')) + '</button>' +
+      '</div>';
+
+    const statsHtml = '<div class="stats-grid" style="margin-bottom:20px">' +
+      statCard(fmtMoney(pipeline), t('stat.pipelineVal'), 'blue') +
+      statCard(winRate + '%', t('stat.winRate'), 'green') +
+      statCard(items.length, 'Total Offers', '') +
+      statCard(wonCount, t('status.won'), '') +
+      '</div>';
+
+    el.innerHTML = topbar + '<div class="content">' + statsHtml +
+      '<div class="card"><div class="card-body"><div id="offers-table-wrap">' + offersTableHtml(items) + '</div></div></div></div>';
+  } catch (e) {
+    el.innerHTML = '<div class="topbar"><div class="topbar-title">' + esc(t('screen.offers')) + '</div></div>' +
+      '<div class="content"><div class="alert alert-err"><div>' + esc(t('msg.error') + ': ' + e.message) + '</div></div></div>';
+  }
+}
+
+function filterOffers() {
+  if (!_offersData) return;
+  const search = (document.getElementById('offers-search') || {}).value || '';
+  const status = (document.getElementById('offers-status-filter') || {}).value || '';
+  const sl = search.toLowerCase();
+  const filtered = _offersData.filter(function(r) {
+    const matchSearch = !sl ||
+      (r.number && r.number.toLowerCase().includes(sl)) ||
+      (r.client_name && r.client_name.toLowerCase().includes(sl));
+    const matchStatus = !status || r.status === status;
+    return matchSearch && matchStatus;
+  });
+  const wrap = document.getElementById('offers-table-wrap');
+  if (wrap) wrap.innerHTML = offersTableHtml(filtered);
+}
+
+function offersTableHtml(items) {
+  if (!items || items.length === 0) {
+    return '<div class="empty-state"><div class="empty-icon">&#128176;</div><div class="empty-text">' + esc(t('offer.no_data')) + '</div></div>';
+  }
+  let rows = '';
+  items.forEach(function(o) {
+    rows += '<tr onclick="navigate(\'offer-item\',' + o.id + ')">' +
+      '<td><strong>' + esc(o.number) + '</strong></td>' +
+      '<td>' + esc(o.client_name || '\u2014') + '</td>' +
+      '<td>' + (o.project_name ? esc(o.project_name) : '\u2014') + '</td>' +
+      '<td>' + pillHtml(o.status) + '</td>' +
+      '<td>' + fmtMoney(o.total_value) + '</td>' +
+      '<td>' + (o.margin_pct ? o.margin_pct + '%' : '\u2014') + '</td>' +
+      '<td style="font-size:12px;color:#888">' + fmtDate(o.valid_until) + '</td>' +
+      '<td onclick="event.stopPropagation()">' +
+      '<button class="btn btn-outline btn-sm" onclick="openOfferForm(' + o.id + ')">' + esc(t('btn.edit')) + '</button>' +
+      '</td>' +
+      '</tr>';
+  });
+  return '<table><thead><tr>' +
+    '<th>' + esc(t('offer.number')) + '</th>' +
+    '<th>' + esc(t('th.client')) + '</th>' +
+    '<th>Project</th>' +
+    '<th>' + esc(t('th.status')) + '</th>' +
+    '<th>' + esc(t('offer.total')) + '</th>' +
+    '<th>' + esc(t('offer.margin')) + '</th>' +
+    '<th>' + esc(t('offer.valid_until')) + '</th>' +
+    '<th></th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+async function renderOfferItem(el) {
+  el.innerHTML = '<div class="topbar"><div class="topbar-title">...</div></div><div class="content">' + loadingHtml() + '</div>';
+  try {
+    const o = await api('GET', '/api/offers/' + S.viewId);
+    if (!o) return;
+
+    el.innerHTML =
+      '<div class="topbar">' +
+      '<button class="btn btn-outline btn-sm" onclick="navigate(\'offers\')">' + esc(t('btn.back')) + '</button>' +
+      '<div class="topbar-title">' + esc(o.number) + ' ' + pillHtml(o.status) + '</div>' +
+      '<button class="btn btn-outline btn-sm" onclick="openOfferForm(' + o.id + ')">' + esc(t('offer.edit')) + '</button>' +
+      '<button class="btn btn-danger btn-sm" onclick="deleteOffer(' + o.id + ')">' + esc(t('btn.delete')) + '</button>' +
+      '</div>' +
+      '<div class="content"><div class="card"><div class="card-body"><table class="info-table">' +
+      infoRow(t('th.client'), o.client_name ? '<a onclick="navigate(\'client\',' + o.client_id + ')" style="cursor:pointer;color:var(--red)">' + esc(o.client_name) + '</a>' : '\u2014') +
+      infoRow('Project', o.project_name ? '<a onclick="navigate(\'project\',' + o.project_id + ')" style="cursor:pointer;color:var(--red)">' + esc(o.project_name) + ' (' + esc(o.project_code || '') + ')</a>' : '\u2014') +
+      infoRow(t('th.status'), pillHtml(o.status)) +
+      '<tr><td>' + esc(t('offer.total')) + '</td><td style="font-size:20px;font-weight:800">' + fmtMoney(o.total_value) + '</td></tr>' +
+      infoRow(t('offer.margin'), o.margin_pct ? o.margin_pct + '%' : '\u2014') +
+      infoRow(t('offer.valid_until'), fmtDate(o.valid_until)) +
+      (o.notes ? infoRow(t('label.notes'), esc(o.notes)) : '') +
+      '</table></div></div></div>';
+  } catch (e2) {
+    el.innerHTML = '<div class="topbar"><button class="btn btn-outline btn-sm" onclick="navigate(\'offers\')">' + esc(t('btn.back')) + '</button><div class="topbar-title">Error</div></div>' +
+      '<div class="content"><div class="alert alert-err"><div>' + esc(t('msg.error') + ': ' + e2.message) + '</div></div></div>';
+  }
+}
+
+async function openOfferForm(id) {
+  const modal = document.getElementById('modal-offer');
+  if (!modal) return;
+  const titleEl = modal.querySelector('.modal-title');
+  const bodyEl = modal.querySelector('.modal-body');
+  titleEl.textContent = id ? t('offer.edit') : t('btn.newOffer');
+  bodyEl.innerHTML = loadingHtml();
+  openModal('modal-offer');
+
+  let o = { status: 'draft' };
+  try {
+    const [clients, projects] = await Promise.all([
+      api('GET', '/api/clients'),
+      api('GET', '/api/projects'),
+    ]);
+    if (id) {
+      o = await api('GET', '/api/offers/' + id);
+      if (!o) return;
+    }
+
+    let clientOpts = '<option value="">-- No client --</option>';
+    (clients || []).forEach(function(c) {
+      clientOpts += '<option value="' + c.id + '"' + (String(c.id) === String(o.client_id) ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+    });
+
+    let projectOpts = '<option value="">-- No project --</option>';
+    (projects || []).forEach(function(p) {
+      projectOpts += '<option value="' + p.id + '"' + (String(p.id) === String(o.project_id) ? ' selected' : '') + '>' + esc(p.name + (p.code ? ' (' + p.code + ')' : '')) + '</option>';
+    });
+
+    const statuses = ['draft', 'sent', 'negotiation', 'won', 'lost'];
+    const statusOpts = statuses.map(function(s) {
+      return '<option value="' + s + '"' + (s === (o.status || 'draft') ? ' selected' : '') + '>' + esc(t('status.' + s)) + '</option>';
+    }).join('');
+
+    bodyEl.innerHTML =
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('offer.number')) + ' (auto if empty)</label><input type="text" id="of-number" value="' + esc(o.number || '') + '" placeholder="OFR-2026-001"></div>' +
+      '<div class="form-group"><label>' + esc(t('th.status')) + '</label><select id="of-status">' + statusOpts + '</select></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('th.client')) + '</label><select id="of-client">' + clientOpts + '</select></div>' +
+      '<div class="form-group"><label>Project</label><select id="of-project">' + projectOpts + '</select></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('offer.total')) + ' (CZK)</label><input type="number" id="of-total" value="' + (o.total_value || 0) + '" min="0"></div>' +
+      '<div class="form-group"><label>' + esc(t('offer.margin')) + '</label><input type="number" id="of-margin" value="' + (o.margin_pct || 0) + '" min="0" max="100"></div>' +
+      '</div>' +
+      '<div class="form-row"><div class="form-group"><label>' + esc(t('offer.valid_until')) + '</label><input type="date" id="of-valid" value="' + esc(o.valid_until || '') + '"></div></div>' +
+      '<div class="form-row"><div class="form-group full"><label>' + esc(t('label.notes')) + '</label><textarea id="of-notes">' + esc(o.notes || '') + '</textarea></div></div>' +
+      '<div class="form-actions">' +
+      '<button class="btn btn-outline" onclick="closeModal(\'modal-offer\')">' + esc(t('btn.cancel')) + '</button>' +
+      '<button class="btn btn-red" onclick="saveOffer(' + (id || 'null') + ')">' + esc(t('btn.save')) + '</button>' +
+      '</div>';
+  } catch (err) {
+    bodyEl.innerHTML = '<div class="alert alert-err">' + esc(t('msg.error') + ': ' + err.message) + '</div>';
+  }
+}
+
+async function saveOffer(id) {
+  const body = {
+    number: (document.getElementById('of-number') || {}).value || '',
+    client_id: (document.getElementById('of-client') || {}).value || null,
+    project_id: (document.getElementById('of-project') || {}).value || null,
+    status: (document.getElementById('of-status') || {}).value || 'draft',
+    total_value: parseFloat((document.getElementById('of-total') || {}).value) || 0,
+    margin_pct: parseFloat((document.getElementById('of-margin') || {}).value) || 0,
+    valid_until: (document.getElementById('of-valid') || {}).value || null,
+    notes: (document.getElementById('of-notes') || {}).value || '',
+  };
+  if (!body.client_id) body.client_id = null;
+  if (!body.project_id) body.project_id = null;
+  if (!body.valid_until) body.valid_until = null;
+  try {
+    if (id) { await api('PUT', '/api/offers/' + id, body); }
+    else { await api('POST', '/api/offers', body); }
+    closeModal('modal-offer');
+    toast(t('msg.saved'), 'ok');
+    _offersData = null;
+    if (id && S.view === 'offer-item') { navigate('offer-item', id); }
+    else { navigate('offers'); }
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
+}
+
+async function deleteOffer(id) {
+  if (!confirm(t('offer.delete_confirm'))) return;
+  try {
+    await api('DELETE', '/api/offers/' + id);
+    toast(t('msg.deleted'), 'ok');
+    _offersData = null;
+    navigate('offers');
+  } catch (e) { toast(t('msg.error') + ': ' + e.message, 'err'); }
 }
 
 // ---------------------------------------------------------------------------
@@ -1166,16 +2140,28 @@ function render() {
       renderClient(el);
       break;
     case 'equipment':
-      renderComingSoon(el, t('screen.equipment'));
+      renderEquipment(el);
+      break;
+    case 'equipment-item':
+      renderEquipmentItem(el);
       break;
     case 'fleet':
-      renderComingSoon(el, t('screen.fleet'));
+      renderFleet(el);
+      break;
+    case 'fleet-item':
+      renderFleetItem(el);
       break;
     case 'crew':
-      renderComingSoon(el, t('screen.crew'));
+      renderCrew(el);
+      break;
+    case 'crew-member':
+      renderCrewMember(el);
       break;
     case 'offers':
-      renderComingSoon(el, t('screen.offers'));
+      renderOffers(el);
+      break;
+    case 'offer-item':
+      renderOfferItem(el);
       break;
     case 'reports':
       renderComingSoon(el, t('screen.reports'));
@@ -1243,6 +2229,22 @@ window.filterClients = filterClients;
 window.saveProject = saveProject;
 window.saveClient = saveClient;
 window.deleteProject = deleteProject;
+window.openEquipmentForm = openEquipmentForm;
+window.saveEquipment = saveEquipment;
+window.deleteEquipment = deleteEquipment;
+window.filterEquipment = filterEquipment;
+window.openFleetForm = openFleetForm;
+window.saveFleet = saveFleet;
+window.deleteFleet = deleteFleet;
+window.filterFleet = filterFleet;
+window.openCrewForm = openCrewForm;
+window.saveCrew = saveCrew;
+window.deleteCrew = deleteCrew;
+window.filterCrew = filterCrew;
+window.openOfferForm = openOfferForm;
+window.saveOffer = saveOffer;
+window.deleteOffer = deleteOffer;
+window.filterOffers = filterOffers;
 
 // ---------------------------------------------------------------------------
 // Boot
