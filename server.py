@@ -201,6 +201,14 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
         # Migrations for existing databases
         for col_sql in [
             "ALTER TABLE clients ADD COLUMN ico TEXT DEFAULT ''",
+            "ALTER TABLE fleet ADD COLUMN unit_id INTEGER DEFAULT NULL",
+            "ALTER TABLE fleet ADD COLUMN length_m REAL DEFAULT NULL",
+            "ALTER TABLE fleet ADD COLUMN width_m REAL DEFAULT NULL",
+            "ALTER TABLE fleet ADD COLUMN height_m REAL DEFAULT NULL",
+            "ALTER TABLE fleet ADD COLUMN power_connection TEXT DEFAULT ''",
+            "ALTER TABLE fleet ADD COLUMN specs_support TEXT DEFAULT ''",
+            "ALTER TABLE fleet ADD COLUMN specs_video TEXT DEFAULT ''",
+            "ALTER TABLE fleet ADD COLUMN specs_audio TEXT DEFAULT ''",
         ]:
             try:
                 conn.execute(col_sql)
@@ -1312,8 +1320,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
                 conn.execute(
                     "INSERT INTO fleet (registration,name,type,brand,model,year,status,"
-                    "mileage,maintenance_due,insurance_expiry,notes,created_at,updated_at) "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "mileage,maintenance_due,insurance_expiry,notes,"
+                    "unit_id,length_m,width_m,height_m,power_connection,"
+                    "specs_support,specs_video,specs_audio,created_at,updated_at) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (reg, body.get("name") or "", body.get("type") or "",
                      body.get("brand") or "", body.get("model") or "",
                      int(body.get("year") or 0) or None,
@@ -1321,7 +1331,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
                      int(body.get("mileage") or 0),
                      body.get("maintenance_due") or None,
                      body.get("insurance_expiry") or None,
-                     body.get("notes") or "", now, now)
+                     body.get("notes") or "",
+                     int(body.get("unit_id") or 0) or None,
+                     float(body.get("length_m") or 0) or None,
+                     float(body.get("width_m") or 0) or None,
+                     float(body.get("height_m") or 0) or None,
+                     body.get("power_connection") or "",
+                     body.get("specs_support") or "",
+                     body.get("specs_video") or "",
+                     body.get("specs_audio") or "",
+                     now, now)
                 )
                 conn.commit()
                 rid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
@@ -1339,7 +1358,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
                 conn.execute(
                     "UPDATE fleet SET registration=?,name=?,type=?,brand=?,model=?,year=?,"
-                    "status=?,mileage=?,maintenance_due=?,insurance_expiry=?,notes=?,updated_at=? WHERE id=?",
+                    "status=?,mileage=?,maintenance_due=?,insurance_expiry=?,notes=?,"
+                    "unit_id=?,length_m=?,width_m=?,height_m=?,power_connection=?,"
+                    "specs_support=?,specs_video=?,specs_audio=?,updated_at=? WHERE id=?",
                     (reg, body.get("name") or "", body.get("type") or "",
                      body.get("brand") or "", body.get("model") or "",
                      int(body.get("year") or 0) or None,
@@ -1347,7 +1368,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
                      int(body.get("mileage") or 0),
                      body.get("maintenance_due") or None,
                      body.get("insurance_expiry") or None,
-                     body.get("notes") or "", now, fid)
+                     body.get("notes") or "",
+                     int(body.get("unit_id") or 0) or None,
+                     float(body.get("length_m") or 0) or None,
+                     float(body.get("width_m") or 0) or None,
+                     float(body.get("height_m") or 0) or None,
+                     body.get("power_connection") or "",
+                     body.get("specs_support") or "",
+                     body.get("specs_video") or "",
+                     body.get("specs_audio") or "",
+                     now, fid)
                 )
                 conn.commit()
                 json_response(self, dict(conn.execute("SELECT * FROM fleet WHERE id=?", (fid,)).fetchone()))
@@ -1786,6 +1816,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 result = self._import_projects_csv(csv_text, delimiter)
             elif entity_type == "crew":
                 result = self._import_crew_csv(csv_text, delimiter)
+            elif entity_type == "units":
+                result = self._import_units_csv(csv_text, delimiter)
+            elif entity_type == "productions":
+                result = self._import_productions_csv(csv_text, delimiter)
             else:
                 error_response(self, "Unknown entity_type"); return
             json_response(self, result)
@@ -2002,6 +2036,199 @@ class Handler(http.server.BaseHTTPRequestHandler):
                          mapped.get('position',''), 'available',
                          mapped.get('notes',''), now, now)
                     )
+                    created += 1
+                conn.commit()
+            except Exception as e:
+                errors.append(str(e))
+            finally:
+                conn.close()
+        return {"created": created, "skipped": skipped, "errors": errors}
+
+    def _import_units_csv(self, csv_text, delimiter):
+        """Import CAFLOU Units as Fleet entries."""
+        COL_MAP = {
+            'nazev': 'name', 'name': 'name', 'jednotka': 'name',
+            'unit id': 'unit_id', 'id jednotky': 'unit_id', 'cislo': 'unit_id',
+            'spz tahace': 'registration', 'reg. plate tractor': 'registration',
+            'registrace': 'registration', 'registration': 'registration', 'spz': 'registration',
+            'delka': 'length_m', 'length': 'length_m', 'lenght': 'length_m',
+            'sirka': 'width_m', 'width': 'width_m',
+            'vyska': 'height_m', 'height': 'height_m',
+            'pripojeni': 'power_connection', 'power connection': 'power_connection',
+            'elektrika': 'power_connection',
+            'typ': 'type', 'type': 'type',
+            'znacka': 'brand', 'brand': 'brand',
+            'model': 'model',
+            'rok': 'year', 'year': 'year',
+            'poznamky': 'notes', 'notes': 'notes',
+            'support': 'specs_support',
+            'video': 'specs_video',
+            'audio': 'specs_audio',
+        }
+        reader = csv.DictReader(csv_text.splitlines(), delimiter=delimiter)
+        hdr_map = {}
+        for col in (reader.fieldnames or []):
+            norm = _normalize_col(col)
+            if norm in COL_MAP:
+                hdr_map[col] = COL_MAP[norm]
+            else:
+                for alias, field in COL_MAP.items():
+                    if alias in norm or norm in alias:
+                        hdr_map[col] = field
+                        break
+        created = skipped = 0
+        errors = []
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+        with _db_lock:
+            conn = get_conn()
+            try:
+                for row in reader:
+                    mapped = {}
+                    for col, val in row.items():
+                        if col in hdr_map:
+                            mapped[hdr_map[col]] = (val or "").strip()
+                    name = mapped.get('name', '').strip()
+                    reg = mapped.get('registration', '').strip()
+                    if not name and not reg:
+                        continue
+                    if not name:
+                        name = reg
+                    if not reg:
+                        reg = name
+                    exists = conn.execute("SELECT id FROM fleet WHERE name=?", (name,)).fetchone()
+                    if exists:
+                        skipped += 1
+                        continue
+                    def _safe_float(v):
+                        try:
+                            return float((v or '').replace(',', '.').strip()) or None
+                        except Exception:
+                            return None
+                    def _safe_int(v):
+                        try:
+                            return int(v.strip()) or None
+                        except Exception:
+                            return None
+                    conn.execute(
+                        "INSERT INTO fleet (registration,name,type,brand,model,year,status,"
+                        "mileage,notes,unit_id,length_m,width_m,height_m,power_connection,"
+                        "specs_support,specs_video,specs_audio,created_at,updated_at) "
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (reg, name,
+                         mapped.get('type','') or 'OB Truck',
+                         mapped.get('brand',''), mapped.get('model',''),
+                         _safe_int(mapped.get('year','')),
+                         'available', 0,
+                         mapped.get('notes',''),
+                         _safe_int(mapped.get('unit_id','')),
+                         _safe_float(mapped.get('length_m','')),
+                         _safe_float(mapped.get('width_m','')),
+                         _safe_float(mapped.get('height_m','')),
+                         mapped.get('power_connection',''),
+                         mapped.get('specs_support',''),
+                         mapped.get('specs_video',''),
+                         mapped.get('specs_audio',''),
+                         now, now)
+                    )
+                    created += 1
+                conn.commit()
+            except Exception as e:
+                errors.append(str(e))
+            finally:
+                conn.close()
+        return {"created": created, "skipped": skipped, "errors": errors}
+
+    def _import_productions_csv(self, csv_text, delimiter):
+        """Import CAFLOU Productions/Ukoly as Projects, linking to fleet by unit name."""
+        COL_MAP = {
+            'nazev': 'name', 'name': 'name', 'nazev ukolu': 'name', 'task name': 'name',
+            'title': 'name',
+            'unit': 'unit_name', 'jednotka': 'unit_name',
+            'zacatek': 'start_date', 'start': 'start_date', 'datum zahajeni': 'start_date',
+            'od': 'start_date', 'begin': 'start_date',
+            'konec': 'end_date', 'end': 'end_date', 'datum ukonceni': 'end_date', 'do': 'end_date',
+            'typ ukolu': 'task_type', 'task type': 'task_type', 'type': 'task_type',
+            'lokalita': 'location', 'location': 'location', 'misto': 'location',
+            'stav ukolu': 'status', 'task status': 'status', 'stav': 'status',
+            'klient': 'client_name', 'client': 'client_name', 'firma': 'client_name',
+            'popis': 'description', 'description': 'description',
+            'poznamky': 'notes', 'notes': 'notes',
+        }
+        reader = csv.DictReader(csv_text.splitlines(), delimiter=delimiter)
+        hdr_map = {}
+        for col in (reader.fieldnames or []):
+            norm = _normalize_col(col)
+            if norm in COL_MAP:
+                hdr_map[col] = COL_MAP[norm]
+            else:
+                for alias, field in COL_MAP.items():
+                    if alias in norm or norm in alias:
+                        hdr_map[col] = field
+                        break
+        created = skipped = 0
+        errors = []
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+        year = datetime.now(timezone.utc).year
+        with _db_lock:
+            conn = get_conn()
+            try:
+                for row in reader:
+                    mapped = {}
+                    for col, val in row.items():
+                        if col in hdr_map:
+                            mapped[hdr_map[col]] = (val or "").strip()
+                    name = mapped.get('name', '').strip()
+                    if not name:
+                        continue
+                    exists = conn.execute("SELECT id FROM projects WHERE name=?", (name,)).fetchone()
+                    if exists:
+                        skipped += 1
+                        continue
+                    # Auto-code
+                    count = conn.execute("SELECT COUNT(*) FROM projects WHERE code LIKE ?",
+                                         (f"PRJ-{year}-%",)).fetchone()[0]
+                    code = f"PRJ-{year}-{count+1:03d}"
+                    # Lookup client
+                    client_id = None
+                    cn = mapped.get('client_name', '')
+                    if cn:
+                        cr = conn.execute("SELECT id FROM clients WHERE name=?", (cn,)).fetchone()
+                        if cr:
+                            client_id = cr[0]
+                    # Map status: PREPARATION -> planning, PRODUCTION -> in_progress, etc.
+                    raw_status = mapped.get('status', '')
+                    if not raw_status:
+                        raw_status = mapped.get('task_type', '')
+                    status = _map_caflou_project_status(raw_status)
+                    # Parse datetimes (CAFLOU uses DD.MM.YYYY HH:MM format)
+                    start_date = _parse_caflou_date(mapped.get('start_date', '').split()[0] if mapped.get('start_date') else '')
+                    end_date = _parse_caflou_date(mapped.get('end_date', '').split()[0] if mapped.get('end_date') else '')
+                    # Store task type in description if present
+                    task_type = mapped.get('task_type', '')
+                    description = mapped.get('description', '')
+                    if task_type and not description:
+                        description = f"Type: {task_type}"
+                    elif task_type:
+                        description = f"Type: {task_type}\n{description}"
+                    conn.execute(
+                        "INSERT INTO projects (code,name,client_id,status,start_date,end_date,"
+                        "location,description,notes,created_at,updated_at) "
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                        (code, name, client_id, status, start_date, end_date,
+                         mapped.get('location',''), description,
+                         mapped.get('notes',''), now, now)
+                    )
+                    pid = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+                    # Link to fleet unit if unit name provided
+                    unit_name = mapped.get('unit_name', '').strip()
+                    if unit_name:
+                        fleet_row = conn.execute("SELECT id FROM fleet WHERE name=?", (unit_name,)).fetchone()
+                        if fleet_row:
+                            conn.execute(
+                                "INSERT INTO project_fleet (project_id,vehicle_id,date_from,date_to,created_at) "
+                                "VALUES (?,?,?,?,?)",
+                                (pid, fleet_row[0], start_date, end_date, now)
+                            )
                     created += 1
                 conn.commit()
             except Exception as e:

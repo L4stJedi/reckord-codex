@@ -111,6 +111,11 @@ const LANGS = {
     'fleet.year': 'Year', 'fleet.mileage': 'Mileage (km)', 'fleet.maintenance_due': 'Service Due',
     'fleet.insurance_expiry': 'Insurance Expiry', 'fleet.edit': 'Edit Vehicle',
     'fleet.delete_confirm': 'Delete this vehicle?',
+    'fleet.unit_id': 'Unit ID', 'fleet.length_m': 'Length (m)', 'fleet.width_m': 'Width (m)',
+    'fleet.height_m': 'Height (m)', 'fleet.power': 'Power Connection',
+    'fleet.specs_support': 'Support Specs', 'fleet.specs_video': 'Video Specs',
+    'fleet.specs_audio': 'Audio Specs', 'fleet.dimensions': 'Dimensions',
+    'fleet.technical': 'Technical Specs',
     'crew.no_data': 'No crew members', 'crew.first_name': 'First Name',
     'crew.last_name': 'Last Name', 'crew.position': 'Position',
     'crew.edit': 'Edit Member', 'crew.delete_confirm': 'Delete this crew member?',
@@ -147,6 +152,8 @@ const LANGS = {
     'settings.caflou_hint_clients': 'Export: CRM \u2192 Contacts \u2192 Companies \u2192 Export to CSV',
     'settings.caflou_hint_projects': 'Export: Projects \u2192 All projects \u2192 Export to CSV',
     'settings.caflou_hint_crew': 'Export: CRM \u2192 Contacts \u2192 People \u2192 Export to CSV',
+    'settings.caflou_hint_units': 'Export: Units \u2192 list view \u2192 Export to CSV',
+    'settings.caflou_hint_productions': 'Export: Units \u2192 open unit \u2192 \u00dakoly tab \u2192 Export to CSV (repeat per unit)',
     'offer.to_project': '\u2192 Convert to Project',
     'offer.convert_confirm': 'Create a project from this offer? The offer will be marked as Won.',
     'offer.converted': 'Project created from offer!',
@@ -253,6 +260,11 @@ const LANGS = {
     'fleet.year': 'Rok', 'fleet.mileage': 'Km', 'fleet.maintenance_due': 'Datum servisu',
     'fleet.insurance_expiry': 'Platnost poji\u0161t\u011bn\u00ed', 'fleet.edit': 'Upravit vozidlo',
     'fleet.delete_confirm': 'Smazat toto vozidlo?',
+    'fleet.unit_id': 'ID jednotky', 'fleet.length_m': 'D\u00e9lka (m)', 'fleet.width_m': '\u0160\u00ed\u0159ka (m)',
+    'fleet.height_m': 'V\u00fd\u0161ka (m)', 'fleet.power': 'P\u0159ipojen\u00ed el.',
+    'fleet.specs_support': 'Technick\u00e1 podpora', 'fleet.specs_video': 'Video specs',
+    'fleet.specs_audio': 'Audio specs', 'fleet.dimensions': 'Rozm\u011bry',
+    'fleet.technical': 'Technick\u00e9 specifikace',
     'crew.no_data': '\u017d\u00e1dn\u00ed \u010dlenov\u00e9 \u0161t\u00e1bu', 'crew.first_name': 'Jm\u00e9no',
     'crew.last_name': 'P\u0159\u00edjmen\u00ed', 'crew.position': 'Pozice',
     'crew.edit': 'Upravit \u010dlena', 'crew.delete_confirm': 'Smazat tohoto \u010dlena?',
@@ -288,6 +300,8 @@ const LANGS = {
     'settings.caflou_hint_clients': 'Export: CRM \u2192 Kontakty \u2192 Firmy \u2192 Exportovat do CSV',
     'settings.caflou_hint_projects': 'Export: Projekty \u2192 V\u0161echny projekty \u2192 Exportovat do CSV',
     'settings.caflou_hint_crew': 'Export: CRM \u2192 Kontakty \u2192 Osoby \u2192 Exportovat do CSV',
+    'settings.caflou_hint_units': 'Export: Units \u2192 seznam \u2192 Exportovat do CSV',
+    'settings.caflou_hint_productions': 'Export: Units \u2192 otev\u0159\u00edt jednotku \u2192 z\u00e1lo\u017eka \u00dakoly \u2192 Exportovat do CSV',
     'offer.to_project': '\u2192 P\u0159ev\u00e9st na projekt',
     'offer.convert_confirm': 'Vytvo\u0159it projekt z t\u00e9to nab\u00eddky? Nab\u00eddka bude ozna\u010dena jako vyhran\u00e1.',
     'offer.converted': 'Projekt vytvo\u0159en z nab\u00eddky!',
@@ -393,6 +407,11 @@ const LANGS = {
     'fleet.year': 'Rok', 'fleet.mileage': 'Km', 'fleet.maintenance_due': 'Termin serwisu',
     'fleet.insurance_expiry': 'Wa\u017cno\u015b\u0107 ubezpieczenia', 'fleet.edit': 'Edytuj pojazd',
     'fleet.delete_confirm': 'Usun\u0105\u0107 ten pojazd?',
+    'fleet.unit_id': 'ID jednostki', 'fleet.length_m': 'D\u0142ugo\u015b\u0107 (m)', 'fleet.width_m': 'Szeroko\u015b\u0107 (m)',
+    'fleet.height_m': 'Wysoko\u015b\u0107 (m)', 'fleet.power': 'Zasilanie',
+    'fleet.specs_support': 'Specyf. wsparcia', 'fleet.specs_video': 'Specyf. video',
+    'fleet.specs_audio': 'Specyf. audio', 'fleet.dimensions': 'Wymiary',
+    'fleet.technical': 'Specyfikacje techniczne',
     'crew.no_data': 'Brak cz\u0142onk\u00f3w ekipy', 'crew.first_name': 'Imi\u0119',
     'crew.last_name': 'Nazwisko', 'crew.position': 'Stanowisko',
     'crew.edit': 'Edytuj cz\u0142onka', 'crew.delete_confirm': 'Usun\u0105\u0107 tego cz\u0142onka?',
@@ -428,6 +447,8 @@ const LANGS = {
     'settings.caflou_hint_clients': 'Eksport: CRM \u2192 Kontakty \u2192 Firmy \u2192 Eksportuj do CSV',
     'settings.caflou_hint_projects': 'Eksport: Projekty \u2192 Wszystkie projekty \u2192 Eksportuj do CSV',
     'settings.caflou_hint_crew': 'Eksport: CRM \u2192 Kontakty \u2192 Os\u00f3b \u2192 Eksportuj do CSV',
+    'settings.caflou_hint_units': 'Eksport: Units \u2192 lista \u2192 Eksportuj do CSV',
+    'settings.caflou_hint_productions': 'Eksport: Units \u2192 otw\u00f3rz jednostk\u0119 \u2192 zak\u0142adka \u00dakoly \u2192 Eksportuj do CSV',
     'offer.to_project': '\u2192 Konwertuj na projekt',
     'offer.convert_confirm': 'Utworzy\u0107 projekt z tej oferty? Oferta zostanie oznaczona jako wygrana.',
     'offer.converted': 'Projekt utworzony z oferty!',
@@ -1622,7 +1643,7 @@ function fleetTableHtml(items) {
   items.forEach(function(f) {
     rows += '<tr onclick="navigate(\'fleet-item\',' + f.id + ')">' +
       '<td><strong>' + esc(f.registration) + '</strong></td>' +
-      '<td>' + esc(f.name || '\u2014') + '</td>' +
+      '<td>' + esc(f.name || '\u2014') + (f.unit_id ? ' <span class="tag">#' + f.unit_id + '</span>' : '') + '</td>' +
       '<td>' + esc((f.brand || '') + (f.model ? ' ' + f.model : '') || '\u2014') + '</td>' +
       '<td>' + (f.year || '\u2014') + '</td>' +
       '<td>' + esc(f.type || '\u2014') + '</td>' +
@@ -1688,7 +1709,21 @@ async function renderFleetItem(el) {
       infoRow(t('fleet.maintenance_due'), fmtDate(f.maintenance_due)) +
       infoRow(t('fleet.insurance_expiry'), fmtDate(f.insurance_expiry)) +
       (f.notes ? infoRow(t('label.notes'), esc(f.notes)) : '') +
+      (f.unit_id ? infoRow(t('fleet.unit_id'), '<strong>#' + f.unit_id + '</strong>') : '') +
+      (f.power_connection ? infoRow(t('fleet.power'), esc(f.power_connection)) : '') +
+      ((f.length_m || f.width_m || f.height_m) ? infoRow(t('fleet.dimensions'),
+        [f.length_m ? f.length_m + ' m' : null, f.width_m ? f.width_m + ' m' : null, f.height_m ? f.height_m + ' m' : null]
+        .filter(Boolean).join(' \u00d7 ')) : '') +
       '</table></div></div>' +
+      (f.specs_support || f.specs_video || f.specs_audio ?
+        '<div class="card" style="margin-top:0">' +
+        '<div class="card-header"><div class="card-title">\u2699\ufe0f ' + esc(t('fleet.technical')) + '</div></div>' +
+        '<div class="card-body"><table class="info-table">' +
+        (f.specs_support ? infoRow(t('fleet.specs_support'), '<span style="white-space:pre-wrap;font-size:12px">' + esc(f.specs_support) + '</span>') : '') +
+        (f.specs_video ? infoRow(t('fleet.specs_video'), '<span style="white-space:pre-wrap;font-size:12px">' + esc(f.specs_video) + '</span>') : '') +
+        (f.specs_audio ? infoRow(t('fleet.specs_audio'), '<span style="white-space:pre-wrap;font-size:12px">' + esc(f.specs_audio) + '</span>') : '') +
+        '</table></div></div>'
+        : '') +
       '<div class="card"><div class="card-header"><div class="card-title">&#128193; Assignments</div></div>' +
       '<div class="card-body">' + assignHtml + '</div></div>' +
       '</div></div>';
@@ -1746,6 +1781,21 @@ async function openFleetForm(id) {
       '<div class="form-group"><label>' + esc(t('fleet.insurance_expiry')) + '</label><input type="date" id="ff-insurance" value="' + esc(f.insurance_expiry || '') + '"></div>' +
       '</div>' +
       '<div class="form-row"><div class="form-group full"><label>' + esc(t('label.notes')) + '</label><textarea id="ff-notes">' + esc(f.notes || '') + '</textarea></div></div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('fleet.unit_id')) + '</label><input type="number" id="fl-unit-id" value="' + esc(String(f.unit_id || '')) + '" placeholder="101"></div>' +
+      '<div class="form-group"><label>' + esc(t('fleet.power')) + '</label><input type="text" id="fl-power" value="' + esc(f.power_connection || '') + '" placeholder="63A"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('fleet.length_m')) + '</label><input type="number" id="fl-length" value="' + esc(String(f.length_m || '')) + '" step="0.01" placeholder="11.5"></div>' +
+      '<div class="form-group"><label>' + esc(t('fleet.width_m')) + '</label><input type="number" id="fl-width" value="' + esc(String(f.width_m || '')) + '" step="0.01" placeholder="2.5"></div>' +
+      '</div>' +
+      '<div class="form-row">' +
+      '<div class="form-group"><label>' + esc(t('fleet.height_m')) + '</label><input type="number" id="fl-height" value="' + esc(String(f.height_m || '')) + '" step="0.01" placeholder="3.75"></div>' +
+      '<div class="form-group"></div>' +
+      '</div>' +
+      '<div class="form-row"><div class="form-group full"><label>' + esc(t('fleet.specs_support')) + '</label><textarea id="fl-specs-support" style="min-height:60px">' + esc(f.specs_support || '') + '</textarea></div></div>' +
+      '<div class="form-row"><div class="form-group full"><label>' + esc(t('fleet.specs_video')) + '</label><textarea id="fl-specs-video" style="min-height:60px">' + esc(f.specs_video || '') + '</textarea></div></div>' +
+      '<div class="form-row"><div class="form-group full"><label>' + esc(t('fleet.specs_audio')) + '</label><textarea id="fl-specs-audio" style="min-height:60px">' + esc(f.specs_audio || '') + '</textarea></div></div>' +
       '<div class="form-actions">' +
       '<button class="btn btn-outline" onclick="closeModal(\'modal-fleet\')">' + esc(t('btn.cancel')) + '</button>' +
       '<button class="btn btn-red" onclick="saveFleet(' + (id || 'null') + ')">' + esc(t('btn.save')) + '</button>' +
@@ -1770,6 +1820,14 @@ async function saveFleet(id) {
     maintenance_due: (document.getElementById('ff-maintenance') || {}).value || null,
     insurance_expiry: (document.getElementById('ff-insurance') || {}).value || null,
     notes: (document.getElementById('ff-notes') || {}).value || '',
+    unit_id: parseInt((document.getElementById('fl-unit-id') || {}).value) || null,
+    power_connection: (document.getElementById('fl-power') || {}).value || '',
+    length_m: parseFloat((document.getElementById('fl-length') || {}).value) || null,
+    width_m: parseFloat((document.getElementById('fl-width') || {}).value) || null,
+    height_m: parseFloat((document.getElementById('fl-height') || {}).value) || null,
+    specs_support: (document.getElementById('fl-specs-support') || {}).value || '',
+    specs_video: (document.getElementById('fl-specs-video') || {}).value || '',
+    specs_audio: (document.getElementById('fl-specs-audio') || {}).value || '',
   };
   try {
     if (id) { await api('PUT', '/api/fleet/' + id, body); }
@@ -2405,6 +2463,8 @@ async function renderSettings(el) {
     { value: 'clients', label: t('nav.clients') },
     { value: 'projects', label: t('nav.projects') },
     { value: 'crew', label: t('nav.crew') },
+    { value: 'units', label: t('nav.fleet') + ' (Units)' },
+    { value: 'productions', label: t('nav.projects') + ' (Productions / \u00dakoly)' },
   ];
   const entityOpts = entityOptions.map(function(o) {
     return '<option value="' + o.value + '">' + esc(o.label) + '</option>';
@@ -2414,6 +2474,8 @@ async function renderSettings(el) {
     clients: t('settings.caflou_hint_clients'),
     projects: t('settings.caflou_hint_projects'),
     crew: t('settings.caflou_hint_crew'),
+    units: t('settings.caflou_hint_units'),
+    productions: t('settings.caflou_hint_productions'),
   };
   const hintsJson = JSON.stringify(hints).replace(/</g, '\\u003c');
 
