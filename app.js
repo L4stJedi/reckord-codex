@@ -10,6 +10,7 @@ const LANGS = {
     'nav.reports': 'Reports', 'nav.dashboard': 'Dashboard', 'nav.projects': 'Projects',
     'nav.clients': 'Clients', 'nav.equipment': 'Equipment', 'nav.fleet': 'Fleet',
     'nav.crew': 'Crew', 'nav.offers': 'Offers', 'nav.overview': 'Reporting',
+    'nav.calendar': 'Calendar', 'cal.today': 'Today', 'cal.month': 'Month', 'cal.week': 'Week', 'cal.no_events': 'No productions', 'cal.conflict': 'Scheduling conflict!', 'cal.legend': 'Units', 'cal.crew': 'crew',
     // Roles
     'role.opsManager': 'Operations Manager', 'role.admin': 'Admin', 'role.crew': 'Crew',
     // Screens
@@ -172,6 +173,7 @@ const LANGS = {
     'nav.reports': 'P\u0159ehledy', 'nav.dashboard': 'P\u0159ehled', 'nav.projects': 'Projekty',
     'nav.clients': 'Klienti', 'nav.equipment': 'Technika', 'nav.fleet': 'Vozov\u00fd park',
     'nav.crew': '\u0160t\u00e1b', 'nav.offers': 'Nab\u00eddky', 'nav.overview': 'Reporting',
+    'nav.calendar': 'Kalend\u00e1\u0159', 'cal.today': 'Dnes', 'cal.month': 'M\u011bs\u00edc', 'cal.week': 'T\u00fdden', 'cal.no_events': '\u017d\u00e1dn\u00e9 produkce', 'cal.conflict': 'Konflikt pl\u00e1nov\u00e1n\u00ed!', 'cal.legend': 'Jednotky', 'cal.crew': '\u0161t\u00e1b',
     'role.opsManager': 'Provozn\u00ed mana\u017eer', 'role.admin': 'Admin', 'role.crew': '\u010clen \u0161t\u00e1bu',
     'screen.dashboard': 'P\u0159ehled', 'screen.projects': 'Projekty',
     'screen.projectDetail': 'Detail projektu', 'screen.clients': 'Klienti',
@@ -323,6 +325,7 @@ const LANGS = {
     'nav.reports': 'Raporty', 'nav.dashboard': 'Pulpit', 'nav.projects': 'Projekty',
     'nav.clients': 'Klienci', 'nav.equipment': 'Sprz\u0119t', 'nav.fleet': 'Flota',
     'nav.crew': 'Ekipa', 'nav.offers': 'Oferty', 'nav.overview': 'Reporting',
+    'nav.calendar': 'Kalendarz', 'cal.today': 'Dzi\u015b', 'cal.month': 'Miesi\u0105c', 'cal.week': 'Tydzie\u0144', 'cal.no_events': 'Brak produkcji', 'cal.conflict': 'Konflikt planowania!', 'cal.legend': 'Jednostki', 'cal.crew': 'ekipa',
     'role.opsManager': 'Kierownik operacyjny', 'role.admin': 'Admin', 'role.crew': 'Ekipa',
     'screen.dashboard': 'Pulpit', 'screen.projects': 'Projekty',
     'screen.projectDetail': 'Szczeg\u00f3\u0142y projektu', 'screen.clients': 'Klienci',
@@ -609,6 +612,7 @@ const VIEW_NAV_MAP = {
   offers: 'nav-offers',
   'offer-item': 'nav-offers',
   reports: 'nav-reports',
+  calendar: 'nav-calendar',
 };
 
 function updateSidebar() {
@@ -2744,6 +2748,369 @@ async function runImport() {
 }
 
 // ---------------------------------------------------------------------------
+// 21a. Calendar
+// ---------------------------------------------------------------------------
+const CAL_COLORS = [
+  '#E10B17','#27ae60','#e67e22','#2980b9','#8e44ad',
+  '#16a085','#f39c12','#c0392b','#1abc9c','#d35400','#2c3e50','#7f8c8d'
+];
+var _calFleetColorMap = {};
+
+function calFleetColor(vehicleName) {
+  if (!_calFleetColorMap[vehicleName]) {
+    var keys = Object.keys(_calFleetColorMap);
+    _calFleetColorMap[vehicleName] = CAL_COLORS[keys.length % CAL_COLORS.length];
+  }
+  return _calFleetColorMap[vehicleName];
+}
+
+function calDaysBetween(startStr, endStr) {
+  // Returns array of 'YYYY-MM-DD' strings between start and end inclusive
+  var days = [];
+  var cur = new Date(startStr + 'T00:00:00');
+  var end = new Date((endStr || startStr) + 'T00:00:00');
+  while (cur <= end) {
+    days.push(cur.toISOString().slice(0, 10));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return days;
+}
+
+// Global calendar state
+var _calYear = new Date().getFullYear();
+var _calMonth = new Date().getMonth() + 1; // 1-12
+var _calView = 'month'; // 'month' | 'week'
+var _calWeekStart = null; // ISO date string for week view start
+
+async function renderCalendar(el) {
+  var todayStr = new Date().toISOString().slice(0, 10);
+  el.innerHTML =
+    '<div class="topbar">' +
+    '<div class="topbar-title">&#128197; ' + esc(t('nav.calendar')) + '</div>' +
+    '<div style="display:flex;gap:8px;align-items:center">' +
+    '<button class="btn btn-outline btn-sm" id="cal-prev">&#8249;</button>' +
+    '<button class="btn btn-outline btn-sm" id="cal-today">' + esc(t('cal.today')) + '</button>' +
+    '<button class="btn btn-outline btn-sm" id="cal-next">&#8250;</button>' +
+    '</div>' +
+    '<div style="display:flex;gap:4px">' +
+    '<button class="btn btn-sm" id="cal-view-month" style="' + (_calView==='month'?'background:#111;color:white':'background:white;border:1.5px solid #e8e8e8') + '">' + esc(t('cal.month')) + '</button>' +
+    '<button class="btn btn-sm" id="cal-view-week" style="' + (_calView==='week'?'background:#111;color:white':'background:white;border:1.5px solid #e8e8e8') + '">' + esc(t('cal.week')) + '</button>' +
+    '</div>' +
+    '</div>' +
+    '<div class="content" id="cal-content">' + loadingHtml() + '</div>';
+
+  // Wire navigation buttons
+  document.getElementById('cal-prev').onclick = function() {
+    if (_calView === 'month') {
+      _calMonth--;
+      if (_calMonth < 1) { _calMonth = 12; _calYear--; }
+    } else {
+      var d = new Date(_calWeekStart + 'T00:00:00');
+      d.setDate(d.getDate() - 7);
+      _calWeekStart = d.toISOString().slice(0, 10);
+    }
+    loadCalendarData(el);
+  };
+  document.getElementById('cal-next').onclick = function() {
+    if (_calView === 'month') {
+      _calMonth++;
+      if (_calMonth > 12) { _calMonth = 1; _calYear++; }
+    } else {
+      var d = new Date(_calWeekStart + 'T00:00:00');
+      d.setDate(d.getDate() + 7);
+      _calWeekStart = d.toISOString().slice(0, 10);
+    }
+    loadCalendarData(el);
+  };
+  document.getElementById('cal-today').onclick = function() {
+    var now = new Date();
+    _calYear = now.getFullYear();
+    _calMonth = now.getMonth() + 1;
+    _calWeekStart = null;
+    loadCalendarData(el);
+  };
+  document.getElementById('cal-view-month').onclick = function() {
+    _calView = 'month'; renderCalendar(el);
+  };
+  document.getElementById('cal-view-week').onclick = function() {
+    _calView = 'week';
+    if (!_calWeekStart) {
+      // Start of current week (Monday)
+      var d = new Date();
+      var day = d.getDay() || 7; // make Sunday = 7
+      d.setDate(d.getDate() - day + 1);
+      _calWeekStart = d.toISOString().slice(0, 10);
+    }
+    renderCalendar(el);
+  };
+
+  loadCalendarData(el);
+}
+
+async function loadCalendarData(el) {
+  var content = document.getElementById('cal-content');
+  if (!content) return;
+  content.innerHTML = loadingHtml();
+  try {
+    var data = await api('GET', '/api/calendar?year=' + _calYear + '&month=' + _calMonth);
+    if (!data) return;
+
+    // Assign colors to fleet units in a stable order
+    _calFleetColorMap = {};
+    var allUnits = [];
+    (data.projects || []).forEach(function(p) {
+      (p.fleet || []).forEach(function(f) {
+        if (!allUnits.includes(f.vehicle_name)) allUnits.push(f.vehicle_name);
+      });
+    });
+    allUnits.sort().forEach(function(name, i) {
+      _calFleetColorMap[name] = CAL_COLORS[i % CAL_COLORS.length];
+    });
+
+    // Build event map: date -> [{project, color, vehicleName}]
+    var eventMap = {}; // 'YYYY-MM-DD' -> array of event objects
+    var conflictDays = {};
+    var conflictProjectIds = new Set();
+    (data.conflicts || []).forEach(function(c) {
+      (c.project_ids || []).forEach(function(pid) { conflictProjectIds.add(pid); });
+    });
+
+    (data.projects || []).forEach(function(p) {
+      var start = (p.start_date || '').slice(0, 10);
+      var end = (p.end_date || start).slice(0, 10);
+      if (!start) return;
+      var days = calDaysBetween(start, end);
+      var hasConflict = conflictProjectIds.has(p.id);
+
+      if (p.fleet && p.fleet.length > 0) {
+        p.fleet.forEach(function(f) {
+          var color = calFleetColor(f.vehicle_name);
+          var fStart = (f.date_from || start).slice(0, 10);
+          var fEnd = (f.date_to || end).slice(0, 10);
+          calDaysBetween(fStart, fEnd).forEach(function(day) {
+            if (!eventMap[day]) eventMap[day] = [];
+            eventMap[day].push({
+              project: p, color: color,
+              vehicleName: f.vehicle_name, unitId: f.unit_id,
+              isFirst: day === fStart, isLast: day === fEnd,
+              conflict: hasConflict
+            });
+          });
+        });
+      } else {
+        // Project without fleet — show as gray
+        days.forEach(function(day) {
+          if (!eventMap[day]) eventMap[day] = [];
+          eventMap[day].push({
+            project: p, color: '#95a5a6',
+            vehicleName: '', unitId: null,
+            isFirst: day === start, isLast: day === end,
+            conflict: hasConflict
+          });
+        });
+      }
+    });
+
+    if (_calView === 'month') {
+      content.innerHTML = renderCalendarMonth(data.year, data.month, eventMap, data.conflicts, allUnits);
+    } else {
+      content.innerHTML = renderCalendarWeek(eventMap, data.conflicts, allUnits);
+    }
+  } catch(e) {
+    if (content) content.innerHTML = '<div class="alert alert-err" style="margin:20px"><div>' + esc(t('msg.error') + ': ' + e.message) + '</div></div>';
+  }
+}
+
+function renderCalendarMonth(year, month, eventMap, conflicts, allUnits) {
+  var monthNames = ['January','February','March','April','May','June',
+    'July','August','September','October','November','December'];
+  var dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var todayStr = new Date().toISOString().slice(0, 10);
+
+  // First day of month (0=Sun, convert to Mon-based)
+  var firstDate = new Date(year, month - 1, 1);
+  var startDow = firstDate.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Mon=0
+  var daysInMonth = new Date(year, month, 0).getDate();
+
+  var html = '<div style="padding:20px">';
+
+  // Conflicts banner
+  if (conflicts && conflicts.length > 0) {
+    html += '<div class="alert alert-err" style="margin-bottom:16px"><div class="alert-icon">&#9888;</div><div>' +
+      '<strong>' + esc(t('cal.conflict')) + '</strong> ' +
+      conflicts.map(function(c) { return esc(c.vehicle_name); }).join(', ') +
+      '</div></div>';
+  }
+
+  // Legend
+  if (allUnits.length > 0) {
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center">' +
+      '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#aaa;margin-right:4px">' + esc(t('cal.legend')) + ':</span>';
+    allUnits.forEach(function(name) {
+      var color = _calFleetColorMap[name] || '#888';
+      html += '<span style="display:flex;align-items:center;gap:5px;font-size:12px">' +
+        '<span style="width:12px;height:12px;border-radius:2px;background:' + color + ';flex-shrink:0"></span>' +
+        esc(name) + '</span>';
+    });
+    html += '</div>';
+  }
+
+  // Month title
+  html += '<div style="text-align:center;font-size:18px;font-weight:800;margin-bottom:16px">' +
+    esc(monthNames[month - 1]) + ' ' + year + '</div>';
+
+  // Grid header
+  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#e8e8e8;border:1px solid #e8e8e8;border-radius:6px;overflow:hidden">';
+
+  // Day name headers
+  dayNames.forEach(function(d, i) {
+    html += '<div style="background:#f9f9f9;padding:8px 4px;text-align:center;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#aaa">' + d + '</div>';
+  });
+
+  // Empty cells before month start
+  for (var i = 0; i < startDow; i++) {
+    html += '<div style="background:#fafafa;min-height:110px;padding:6px"></div>';
+  }
+
+  // Day cells
+  for (var day = 1; day <= daysInMonth; day++) {
+    var dateStr = year + '-' + String(month).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    var isToday = dateStr === todayStr;
+    var isWeekend = ((startDow + day - 1) % 7) >= 5;
+    var events = eventMap[dateStr] || [];
+
+    html += '<div style="background:' + (isToday ? '#fff8f8' : isWeekend ? '#fafafa' : 'white') + ';' +
+      'min-height:110px;padding:6px;cursor:default;border-left:' +
+      (isToday ? '3px solid #E10B17' : '0') + '">';
+
+    // Day number
+    html += '<div style="font-size:12px;font-weight:' + (isToday ? '800' : '500') + ';' +
+      'color:' + (isToday ? '#E10B17' : isWeekend ? '#aaa' : '#333') + ';margin-bottom:4px">' + day + '</div>';
+
+    // Events — group by vehicle to avoid duplicates on same day
+    var seen = {};
+    events.forEach(function(ev) {
+      var key = ev.project.id + '-' + ev.vehicleName;
+      if (seen[key]) return;
+      seen[key] = true;
+      var label = ev.vehicleName ? ev.vehicleName + ': ' + (ev.project.name || '').slice(0, 22) :
+        (ev.project.name || '').slice(0, 30);
+      html += '<div onclick="navigate(\'project\',' + ev.project.id + ')" ' +
+        'style="background:' + ev.color + ';color:white;font-size:10px;padding:2px 5px;' +
+        'border-radius:3px;margin-bottom:2px;cursor:pointer;white-space:nowrap;overflow:hidden;' +
+        'text-overflow:ellipsis;' + (ev.conflict ? 'outline:2px solid #f39c12' : '') + '"' +
+        'title="' + esc(ev.project.name) + (ev.project.location ? ' \u2014 ' + ev.project.location : '') + '">' +
+        (ev.conflict ? '\u26a0 ' : '') + esc(label) +
+        '</div>';
+    });
+
+    html += '</div>';
+  }
+
+  // Fill remaining cells
+  var total = startDow + daysInMonth;
+  var remaining = (7 - (total % 7)) % 7;
+  for (var i = 0; i < remaining; i++) {
+    html += '<div style="background:#fafafa;min-height:110px;padding:6px"></div>';
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
+function renderCalendarWeek(eventMap, conflicts, allUnits) {
+  var todayStr = new Date().toISOString().slice(0, 10);
+  var dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // Get week days (Mon–Sun)
+  var weekDays = [];
+  var startDate = new Date(_calWeekStart + 'T00:00:00');
+  for (var i = 0; i < 7; i++) {
+    var d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    weekDays.push(d.toISOString().slice(0, 10));
+  }
+
+  var html = '<div style="padding:20px">';
+
+  // Conflicts
+  if (conflicts && conflicts.length > 0) {
+    html += '<div class="alert alert-err" style="margin-bottom:16px"><div class="alert-icon">&#9888;</div><div><strong>' +
+      esc(t('cal.conflict')) + '</strong> ' +
+      conflicts.map(function(c) { return esc(c.vehicle_name); }).join(', ') +
+      '</div></div>';
+  }
+
+  // Legend
+  if (allUnits.length > 0) {
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center">' +
+      '<span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#aaa;margin-right:4px">' + esc(t('cal.legend')) + ':</span>';
+    allUnits.forEach(function(name) {
+      var color = _calFleetColorMap[name] || '#888';
+      html += '<span style="display:flex;align-items:center;gap:5px;font-size:12px">' +
+        '<span style="width:12px;height:12px;border-radius:2px;background:' + color + ';flex-shrink:0"></span>' +
+        esc(name) + '</span>';
+    });
+    html += '</div>';
+  }
+
+  // Week title
+  var wStart = new Date(weekDays[0] + 'T00:00:00');
+  var wEnd = new Date(weekDays[6] + 'T00:00:00');
+  html += '<div style="text-align:center;font-size:18px;font-weight:800;margin-bottom:16px">' +
+    wStart.getDate() + ' ' + monthNames[wStart.getMonth()] + ' \u2013 ' +
+    wEnd.getDate() + ' ' + monthNames[wEnd.getMonth()] + ' ' + wEnd.getFullYear() + '</div>';
+
+  // Week grid
+  html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">';
+
+  weekDays.forEach(function(dateStr, i) {
+    var d = new Date(dateStr + 'T00:00:00');
+    var isToday = dateStr === todayStr;
+    var isWeekend = i >= 5;
+    var events = eventMap[dateStr] || [];
+
+    html += '<div style="background:' + (isToday ? '#fff8f8' : isWeekend ? '#fafafa' : 'white') + ';' +
+      'border:1px solid #eee;border-radius:6px;padding:10px;min-height:200px;' +
+      (isToday ? 'border-left:3px solid #E10B17' : '') + '">';
+
+    html += '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#aaa">' +
+      dayNames[i] + '</div>';
+    html += '<div style="font-size:20px;font-weight:800;color:' + (isToday ? '#E10B17' : '#111') + ';margin-bottom:8px">' +
+      d.getDate() + '</div>';
+
+    var seen = {};
+    events.forEach(function(ev) {
+      var key = ev.project.id + '-' + ev.vehicleName;
+      if (seen[key]) return;
+      seen[key] = true;
+      html += '<div onclick="navigate(\'project\',' + ev.project.id + ')" ' +
+        'style="background:' + ev.color + ';color:white;font-size:11px;padding:4px 7px;' +
+        'border-radius:4px;margin-bottom:4px;cursor:pointer;' +
+        (ev.conflict ? 'outline:2px solid #f39c12' : '') + '"' +
+        'title="' + esc(ev.project.name) + (ev.project.location ? ' \u2014 ' + ev.project.location : '') + '">' +
+        (ev.conflict ? '\u26a0 ' : '') +
+        (ev.vehicleName ? '<div style="font-weight:700;font-size:10px">' + esc(ev.vehicleName) + '</div>' : '') +
+        '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(ev.project.name || '') + '</div>' +
+        (ev.project.location ? '<div style="opacity:0.8;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">\ud83d\udccd ' + esc(ev.project.location) + '</div>' : '') +
+        (ev.project.crew_count ? '<div style="opacity:0.75;font-size:10px">\ud83d\udc65 ' + ev.project.crew_count + ' ' + esc(t('cal.crew')) + '</div>' : '') +
+        '</div>';
+    });
+
+    if (!events.length) {
+      html += '<div style="color:#ddd;font-size:11px;margin-top:8px">' + esc(t('cal.no_events')) + '</div>';
+    }
+
+    html += '</div>';
+  });
+
+  html += '</div></div>';
+  return html;
+}
+
+// ---------------------------------------------------------------------------
 // 21. render
 // ---------------------------------------------------------------------------
 function render() {
@@ -2796,6 +3163,7 @@ function render() {
       renderReports(el);
       break;
     case 'settings': renderSettings(el); break;
+    case 'calendar': renderCalendar(el); break;
     default:
       renderDashboard(el);
   }
@@ -2896,6 +3264,8 @@ window.removeAssignment = removeAssignment;
 window.convertOfferToProject = convertOfferToProject;
 window.renderReports = renderReports;
 window.renderSettings = renderSettings;
+window.renderCalendar = renderCalendar;
+window.loadCalendarData = loadCalendarData;
 window.updateImportHint = updateImportHint;
 window.previewImport = previewImport;
 window.runImport = runImport;

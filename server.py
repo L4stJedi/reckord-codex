@@ -757,7 +757,88 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if m:
             self._api_offer_print(int(m.group(1))); return
 
+        if path == "/api/calendar":
+            self._api_calendar(qs); return
+
         error_response(self, "Not found", 404)
+
+    def _api_calendar(self, qs):
+        import calendar as cal_mod
+        try:
+            year = int(qs.get("year") or datetime.now(timezone.utc).year)
+            month = int(qs.get("month") or datetime.now(timezone.utc).month)
+            # Clamp
+            month = max(1, min(12, month))
+        except Exception:
+            year = datetime.now(timezone.utc).year
+            month = datetime.now(timezone.utc).month
+
+        # First and last day of month (with a buffer for events starting in prev month)
+        first_day = f"{year:04d}-{month:02d}-01"
+        last_day_num = cal_mod.monthrange(year, month)[1]
+        last_day = f"{year:04d}-{month:02d}-{last_day_num:02d}"
+
+        conn = get_conn()
+        try:
+            # Fetch all projects overlapping this month
+            rows = conn.execute("""
+                SELECT p.id, p.code, p.name, p.status, p.start_date, p.end_date,
+                       p.location, p.description,
+                       c.name as client_name
+                FROM projects p
+                LEFT JOIN clients c ON c.id = p.client_id
+                WHERE p.start_date IS NOT NULL
+                  AND p.start_date <= ? AND (p.end_date IS NULL OR p.end_date >= ?)
+                ORDER BY p.start_date
+            """, (last_day, first_day)).fetchall()
+
+            projects = []
+            for row in rows:
+                proj = dict(row)
+                # Get fleet assignments for this project
+                fleet = [dict(r) for r in conn.execute("""
+                    SELECT f.id as fleet_id, f.name as vehicle_name, f.unit_id,
+                           f.registration, pf.date_from, pf.date_to
+                    FROM project_fleet pf
+                    JOIN fleet f ON pf.vehicle_id = f.id
+                    WHERE pf.project_id = ?
+                """, (proj["id"],)).fetchall()]
+                proj["fleet"] = fleet
+                # Crew count
+                proj["crew_count"] = conn.execute(
+                    "SELECT COUNT(*) FROM project_crew WHERE project_id=?",
+                    (proj["id"],)).fetchone()[0]
+                projects.append(proj)
+
+            # Detect conflicts: fleet units double-booked in this month
+            conflicts = []
+            fleet_bookings = {}  # vehicle_id -> list of (start, end, project_id)
+            for proj in projects:
+                for f in proj["fleet"]:
+                    fid = f["fleet_id"]
+                    s = (f.get("date_from") or proj.get("start_date") or "")[:10]
+                    e = (f.get("date_to") or proj.get("end_date") or s)[:10]
+                    if fid not in fleet_bookings:
+                        fleet_bookings[fid] = []
+                    fleet_bookings[fid].append({"start": s, "end": e, "project_id": proj["id"],
+                                                 "vehicle_name": f["vehicle_name"]})
+            for fid, bookings in fleet_bookings.items():
+                for i in range(len(bookings)):
+                    for j in range(i+1, len(bookings)):
+                        a, b = bookings[i], bookings[j]
+                        if a["start"] <= b["end"] and b["start"] <= a["end"]:
+                            conflicts.append({
+                                "vehicle_name": a["vehicle_name"],
+                                "project_ids": [a["project_id"], b["project_id"]]
+                            })
+
+            json_response(self, {
+                "year": year, "month": month,
+                "projects": projects,
+                "conflicts": conflicts,
+            })
+        finally:
+            conn.close()
 
     def _api_dashboard(self):
         conn = get_conn()
